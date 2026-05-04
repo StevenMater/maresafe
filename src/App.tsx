@@ -18,7 +18,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-mid font-sans">
-      {/* MareSafe layout — vessel: {data.vesselName} */}
+      {/* MareSafe — {data.vesselName} */}
     </div>
   )
 }
