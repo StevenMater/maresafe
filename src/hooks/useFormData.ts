@@ -34,15 +34,13 @@ export const EMPTY_FORM: CardData = {
 interface FormState {
   data: CardData
   outdated: boolean
-  storedLang: Language | null
+  savedLanguage: Language | null
 }
 
 type RawData = Record<string, unknown>
 
 function isValidCountry(c: unknown): c is CountryCode {
-  return (
-    typeof c === "string" && (SUPPORTED_COUNTRIES as string[]).includes(c)
-  )
+  return typeof c === "string" && (SUPPORTED_COUNTRIES as string[]).includes(c)
 }
 
 function toContact(c: RawData): Contact {
@@ -53,7 +51,10 @@ function toContact(c: RawData): Contact {
   }
 }
 
-function parseStoredData(raw: RawData): { data: CardData; lang: Language | null } {
+function parseStoredData(raw: RawData): {
+  data: CardData
+  lang: Language | null
+} {
   if (raw._maresafe !== true) throw new Error("invalid")
 
   const str = (v: unknown): string => (typeof v === "string" ? v : "")
@@ -103,12 +104,12 @@ function loadFromStorage(): FormState {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const { data, lang } = parseStoredData(JSON.parse(raw) as RawData)
-      return { data, outdated: false, storedLang: lang }
+      return { data, outdated: false, savedLanguage: lang }
     }
   } catch {
     // corrupted / foreign data — start fresh
   }
-  return { data: EMPTY_FORM, outdated: false, storedLang: null }
+  return { data: EMPTY_FORM, outdated: false, savedLanguage: null }
 }
 
 export function saveToStorage(data: CardData, lang: Language): void {
@@ -129,17 +130,19 @@ export function saveToStorage(data: CardData, lang: Language): void {
 
 export interface UseFormDataReturn {
   data: CardData
-  storedLang: Language | null
+  savedLanguage: Language | null
   setField: (key: keyof Omit<CardData, "contacts">, value: string) => void
   addContact: () => void
   removeContact: (index: number) => void
   updateContact: (index: number, patch: Partial<Contact>) => void
   clearAll: () => void
   exportJSON: (lang: Language) => void
-  importJSON: (file: File) => Promise<{ success: boolean; lang: Language | null }>
+  importJSON: (
+    file: File,
+  ) => Promise<{ success: boolean; lang: Language | null }>
   outdated: boolean
   dismissOutdated: () => void
-  saveNow: (lang: Language) => void
+  save: (lang: Language) => void
 }
 
 export function useFormData(): UseFormDataReturn {
@@ -153,7 +156,9 @@ export function useFormData(): UseFormDataReturn {
     setState((s) => {
       const { contacts } = s.data
       const hasEmpty = contacts.some((c) => !c.label && !c.number)
+
       if (contacts.length >= MAX_CONTACTS || hasEmpty) return s
+
       return {
         ...s,
         data: {
@@ -170,11 +175,13 @@ export function useFormData(): UseFormDataReturn {
   function removeContact(index: number) {
     setState((s) => {
       const contacts = [...s.data.contacts]
+
       if (contacts.length <= 1) {
         contacts[0] = { label: "", country: DEFAULT_COUNTRY, number: "" }
       } else {
         contacts.splice(index, 1)
       }
+
       return { ...s, data: { ...s.data, contacts } }
     })
   }
@@ -184,6 +191,7 @@ export function useFormData(): UseFormDataReturn {
       const contacts = s.data.contacts.map((c, i) =>
         i === index ? { ...c, ...patch } : c,
       )
+
       return { ...s, data: { ...s.data, contacts } }
     })
   }
@@ -204,6 +212,7 @@ export function useFormData(): UseFormDataReturn {
       { type: "application/json" },
     )
     const a = document.createElement("a")
+
     a.href = URL.createObjectURL(blob)
     a.download = `MareSafe - ${state.data.vesselName || "emergency-card"} - ${new Date().toISOString().slice(0, 10)}.json`
     a.click()
@@ -215,11 +224,13 @@ export function useFormData(): UseFormDataReturn {
   ): Promise<{ success: boolean; lang: Language | null }> {
     return new Promise((resolve) => {
       const reader = new FileReader()
+
       reader.onload = (ev) => {
         try {
           const raw = JSON.parse(ev.target!.result as string) as RawData
           const { data, lang } = parseStoredData(raw)
-          setState({ data, outdated: false, storedLang: null })
+
+          setState({ data, outdated: false, savedLanguage: null })
           resolve({ success: true, lang })
         } catch {
           resolve({ success: false, lang: null })
@@ -234,13 +245,13 @@ export function useFormData(): UseFormDataReturn {
     setState((s) => ({ ...s, outdated: false }))
   }
 
-  function saveNow(lang: Language) {
+  function save(lang: Language) {
     saveToStorage(state.data, lang)
   }
 
   return {
     data: state.data,
-    storedLang: state.storedLang,
+    savedLanguage: state.savedLanguage,
     setField,
     addContact,
     removeContact,
@@ -250,6 +261,6 @@ export function useFormData(): UseFormDataReturn {
     importJSON,
     outdated: state.outdated,
     dismissOutdated,
-    saveNow,
+    save,
   }
 }

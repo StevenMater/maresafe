@@ -42,6 +42,9 @@ Do not add abstractions, error handling, or features beyond what is asked.
 Three similar JSX blocks beats a premature abstraction.
 No comments unless the WHY is non-obvious.
 
+### Human-readable naming
+All variables, functions, and CSS classes must be descriptive enough to understand without context. Avoid abbreviations (`fmtDim`, `c25`, `gL`, `secHdr`), single-letter variables outside map/reduce callbacks, and terse shorthand (`storedLang`, `saveNow`). A reader should be able to understand what something does from its name alone — `formatDimension`, `sectionHeader`, `beatLong`, `savedLanguage` are all preferable to their short forms.
+
 ### Reusable components
 Before building a new input, select, button, or modal — check `src/components/ui/` first.
 Every generic UI primitive lives there. Do not create one-off wrappers.
