@@ -21,7 +21,7 @@ export function CardPreview({ data, showWatermark }: CardPreviewProps) {
     <div className={s.card}>
       {showWatermark && (
         <div className={s.watermark} aria-hidden="true">
-          {t("watermark")}
+          PREVIEW
         </div>
       )}
 
