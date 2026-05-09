@@ -41,6 +41,7 @@
   "tip_f_insurer_office": "Numéro de bureau pour les questions non urgentes.",
   "clear_confirm": "Effacer toutes les données ? Cette action est irréversible.",
   "btn_add_contact": "+ Ajouter un contact",
+  "btn_remove_contact": "Supprimer",
   "contact_label_placeholder": "Personne, navire, entreprise…",
   "contact_phone_placeholder": "Téléphone",
   "digits_only": "Chiffres uniquement",

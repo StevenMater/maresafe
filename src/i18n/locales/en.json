@@ -41,6 +41,7 @@
   "tip_f_insurer_office": "Office number for non-urgent matters.",
   "clear_confirm": "Clear all data? This cannot be undone.",
   "btn_add_contact": "+ Add contact",
+  "btn_remove_contact": "Remove",
   "contact_label_placeholder": "Person, vessel, company…",
   "contact_phone_placeholder": "Phone number",
   "digits_only": "Digits only",

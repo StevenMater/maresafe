@@ -41,6 +41,7 @@
   "tip_f_insurer_office": "Kantoornummer voor niet-spoedeisende zaken.",
   "clear_confirm": "Alle gegevens wissen? Dit kan niet ongedaan worden gemaakt.",
   "btn_add_contact": "+ Contact toevoegen",
+  "btn_remove_contact": "Verwijder",
   "contact_label_placeholder": "Persoon, schip, bedrijf…",
   "contact_phone_placeholder": "Telefoonnummer",
   "digits_only": "Alleen cijfers",

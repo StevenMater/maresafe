@@ -41,6 +41,7 @@
   "tip_f_insurer_office": "Büronummer für nicht dringende Angelegenheiten.",
   "clear_confirm": "Alle Daten löschen? Dies kann nicht rückgängig gemacht werden.",
   "btn_add_contact": "+ Kontakt hinzufügen",
+  "btn_remove_contact": "Entfernen",
   "contact_label_placeholder": "Person, Schiff, Unternehmen…",
   "contact_phone_placeholder": "Telefon",
   "digits_only": "Nur Ziffern",
