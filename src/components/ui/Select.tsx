@@ -55,7 +55,16 @@ function OptionContent({ opt }: { opt: SelectOption }) {
 const MAX_FLAGS = 4
 
 export function Select(props: SelectProps) {
-  const { label, error, placeholder, disabled, className, options, id: idProp, variant = "field" } = props
+  const {
+    label,
+    error,
+    placeholder,
+    disabled,
+    className,
+    options,
+    id: idProp,
+    variant = "field",
+  } = props
   const generatedId = useId()
   const id = idProp ?? generatedId
 
@@ -70,14 +79,18 @@ export function Select(props: SelectProps) {
   const listRef = useRef<HTMLUListElement>(null)
 
   const filteredOptions = query
-    ? options.filter((o) =>
-        o.label.toLowerCase().includes(query.toLowerCase()) ||
-        o.flag?.includes(query)
+    ? options.filter(
+        (o) =>
+          o.label.toLowerCase().includes(query.toLowerCase()) ||
+          o.flag?.includes(query),
       )
     : options
 
   useEffect(() => {
-    if (!open) { setQuery(""); return }
+    if (!open) {
+      setQuery("")
+      return
+    }
     requestAnimationFrame(() => searchRef.current?.focus())
   }, [open])
 
@@ -87,14 +100,19 @@ export function Select(props: SelectProps) {
 
   useEffect(() => {
     if (!open) return
-    const item = listRef.current?.children[focusedIndex] as HTMLElement | undefined
+    const item = listRef.current?.children[focusedIndex] as
+      | HTMLElement
+      | undefined
     item?.scrollIntoView({ block: "nearest" })
   }, [open, focusedIndex])
 
   useEffect(() => {
     if (!open) return
     function handleMouseDown(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false)
       }
     }
@@ -145,14 +163,25 @@ export function Select(props: SelectProps) {
   }
 
   function handleTriggerKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDropdown() }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      openDropdown()
+    }
     if (e.key === "Escape") setOpen(false)
-    if (e.key === "ArrowDown") { e.preventDefault(); if (!open) openDropdown() }
-    if (e.key === "ArrowUp") { e.preventDefault() }
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      if (!open) openDropdown()
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault()
+    }
   }
 
   function handleSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Escape") { close(); return }
+    if (e.key === "Escape") {
+      close()
+      return
+    }
     if (e.key === "ArrowDown") {
       e.preventDefault()
       setFocusedIndex((i) => Math.min(i + 1, filteredOptions.length - 1))
@@ -171,13 +200,19 @@ export function Select(props: SelectProps) {
   const selectedOpts = props.multiple
     ? options.filter((o) => props.value.includes(o.value))
     : []
-  const singleSelected = !props.multiple ? options.find((o) => o.value === props.value) : undefined
-  const showPlaceholder = props.multiple ? props.value.length === 0 : !props.value
+  const singleSelected = !props.multiple
+    ? options.find((o) => o.value === props.value)
+    : undefined
+  const showPlaceholder = props.multiple
+    ? props.value.length === 0
+    : !props.value
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (
-        <label htmlFor={id} className="text-[10px] font-semibold tracking-[0.07em] uppercase text-navy2">
+        <label
+          htmlFor={id}
+          className="text-xs font-semibold tracking-wider uppercase text-navy2">
           {label}
         </label>
       )}
@@ -195,8 +230,8 @@ export function Select(props: SelectProps) {
             "flex items-center gap-2 text-left transition-colors",
             "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
             variant === "field" && [
-              "w-full px-2 py-1.5 rounded-sm border-[1.5px] border-[#a8c4e0] bg-[#f0f6ff]",
-              "font-mono text-[13px] text-dark",
+              "w-full px-2 py-1.75 rounded-sm border border-[#a8c4e0] bg-[#f0f6ff]",
+              "font-mono text-sm text-dark",
               "focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
               error && "border-red",
               open && "border-navy2 shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
@@ -206,27 +241,37 @@ export function Select(props: SelectProps) {
               "hover:bg-white/15",
               open && "bg-white/15",
             ],
-          )}
-        >
+          )}>
           {props.multiple ? (
             showPlaceholder ? (
               <span className="flex-1 truncate text-lgray">{placeholder}</span>
             ) : (
               <span className="flex items-center gap-1 flex-1 min-w-0">
                 {selectedOpts.slice(0, MAX_FLAGS).map((opt) => (
-                  <span key={opt.value} title={opt.label} className="shrink-0 text-base leading-none">
+                  <span
+                    key={opt.value}
+                    title={opt.label}
+                    className="shrink-0 text-base leading-none">
                     {opt.flag ?? opt.label.slice(0, 2)}
                   </span>
                 ))}
                 {selectedOpts.length > MAX_FLAGS && (
-                  <span className="text-xs text-lgray shrink-0">+{selectedOpts.length - MAX_FLAGS}</span>
+                  <span className="text-xs text-lgray shrink-0">
+                    +{selectedOpts.length - MAX_FLAGS}
+                  </span>
                 )}
               </span>
             )
           ) : (
             <>
-              {singleSelected?.flag && <span className="shrink-0">{singleSelected.flag}</span>}
-              <span className={cn("flex-1 truncate", showPlaceholder && "text-lgray")}>
+              {singleSelected?.flag && (
+                <span className="shrink-0">{singleSelected.flag}</span>
+              )}
+              <span
+                className={cn(
+                  "flex-1 truncate",
+                  showPlaceholder && "text-lgray",
+                )}>
                 {singleSelected?.label ?? placeholder}
               </span>
             </>
@@ -234,7 +279,10 @@ export function Select(props: SelectProps) {
           <ChevronDown
             size={14}
             strokeWidth={1.5}
-            className={cn("shrink-0 text-lgray transition-transform", open && "rotate-180")}
+            className={cn(
+              "shrink-0 text-lgray transition-transform",
+              open && "rotate-180",
+            )}
           />
         </button>
 
@@ -243,10 +291,13 @@ export function Select(props: SelectProps) {
             className={cn(
               "absolute right-0 z-50 bg-white border border-navy/20 rounded shadow-lg min-w-full",
               above ? "bottom-full mb-1" : "top-full mt-1",
-            )}
-          >
+            )}>
             <div className="flex items-center gap-2 px-3 py-2 border-b border-lgray/20">
-              <Search size={12} strokeWidth={1.5} className="shrink-0 text-lgray" />
+              <Search
+                size={12}
+                strokeWidth={1.5}
+                className="shrink-0 text-lgray"
+              />
               <input
                 ref={searchRef}
                 type="text"
@@ -261,8 +312,7 @@ export function Select(props: SelectProps) {
               ref={listRef}
               role="listbox"
               aria-multiselectable={props.multiple}
-              className="max-h-48 overflow-y-auto py-1"
-            >
+              className="max-h-48 overflow-y-auto py-1">
               {filteredOptions.length === 0 ? (
                 <li className="px-3 py-2 text-sm text-lgray">No results</li>
               ) : (
@@ -282,11 +332,14 @@ export function Select(props: SelectProps) {
                         i === focusedIndex && "bg-navy/10",
                         selected && "text-navy font-medium",
                         optDisabled && "opacity-40 cursor-not-allowed",
-                      )}
-                    >
+                      )}>
                       <OptionContent opt={opt} />
                       {selected && (
-                        <Check size={12} strokeWidth={2} className="ml-auto shrink-0 text-navy" />
+                        <Check
+                          size={12}
+                          strokeWidth={2}
+                          className="ml-auto shrink-0 text-navy"
+                        />
                       )}
                     </li>
                   )

@@ -25,13 +25,21 @@ const COUNTRY_OPTIONS = SUPPORTED_COUNTRIES.map((code) => ({
   flag: countryFlag(code),
 }))
 
-export function PhoneInput({ value, onChange, label, error, className }: PhoneInputProps) {
+export function PhoneInput({
+  value,
+  onChange,
+  label,
+  error,
+  className,
+}: PhoneInputProps) {
   const id = useId()
 
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (
-        <label htmlFor={id} className="text-[10px] font-semibold tracking-[0.07em] uppercase text-navy2">
+        <label
+          htmlFor={id}
+          className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none">
           {label}
         </label>
       )}
@@ -39,7 +47,9 @@ export function PhoneInput({ value, onChange, label, error, className }: PhoneIn
         <Select
           options={COUNTRY_OPTIONS}
           value={value.country}
-          onChange={(country) => onChange({ ...value, country: country as CountryCode })}
+          onChange={(country) =>
+            onChange({ ...value, country: country as CountryCode })
+          }
           className="w-28 shrink-0"
         />
         <Input
