@@ -53,7 +53,7 @@ export function DownloadBar() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") verifyCode()
               }}
-              className="h-full min-w-36 pr-13 rounded-sm border-[1.5px] border-[#a8c4e0] bg-[#f0f6ff] px-2.5 font-mono text-sm uppercase text-dark placeholder:text-lgray focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)] transition-[border-color]"
+              className="h-full min-w-36 pr-13 rounded-sm border border-[#a8c4e0] bg-[#f0f6ff] px-2.5 font-mono text-sm uppercase text-dark placeholder:text-lgray focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)] transition-[border-color]"
             />
             <div className="absolute right-1.5 flex items-center gap-0.5">
               <button
