@@ -85,13 +85,16 @@ export function Input({
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (
-        <div className="flex items-center gap-1">
-          <label htmlFor={id} className="text-sm font-medium text-mid">
+        <div className="flex items-center gap-[5px]">
+          <label
+            htmlFor={id}
+            className="text-[10px] font-semibold tracking-[0.07em] uppercase text-navy2"
+          >
             {label}
           </label>
           {tooltip && (
             <Tooltip content={tooltip}>
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-lgray/30 text-mid text-xs font-medium leading-none">
+              <span className="inline-flex items-center justify-center w-[15px] h-[15px] rounded-full bg-navy/[.08] border border-navy/[.35] text-navy2 text-[9px] font-bold leading-none cursor-pointer select-none hover:bg-navy/[.16] hover:border-navy/[.55] transition-colors">
                 ?
               </span>
             </Tooltip>
@@ -105,17 +108,17 @@ export function Input({
           inputMode={numeric || decimal ? "decimal" : undefined}
           onKeyDown={handleKeyDown}
           className={cn(
-            "w-full rounded border border-lgray/50 bg-white px-3 py-1.5 text-sm text-mid",
-            "placeholder:text-lgray",
-            "focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-red focus:ring-red/30 focus:border-red",
+            "w-full rounded-[4px] border-[1.5px] border-[#a8c4e0] bg-[#f0f6ff] px-[10px] py-[7px]",
+            "font-mono text-[13px] text-dark placeholder:text-lgray",
+            "focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
+            "disabled:opacity-50 disabled:cursor-not-allowed transition-[border-color]",
+            error && "border-red focus:border-red focus:shadow-[0_0_0_3px_rgba(169,50,38,0.15)]",
             suffix && "pr-10",
           )}
           {...props}
         />
         {suffix && (
-          <span className="pointer-events-none absolute right-3 text-sm text-lgray">
+          <span className="pointer-events-none absolute right-[10px] text-[12px] font-mono text-lgray">
             {suffix}
           </span>
         )}

@@ -31,7 +31,7 @@ export function PhoneInput({ value, onChange, label, error, className }: PhoneIn
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-mid">
+        <label htmlFor={id} className="text-[10px] font-semibold tracking-[0.07em] uppercase text-navy2">
           {label}
         </label>
       )}

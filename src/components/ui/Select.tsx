@@ -24,6 +24,7 @@ interface SelectBase {
   className?: string
   options: SelectOption[]
   id?: string
+  variant?: "field" | "ghost"
 }
 
 interface SingleSelectProps extends SelectBase {
@@ -54,7 +55,7 @@ function OptionContent({ opt }: { opt: SelectOption }) {
 const MAX_FLAGS = 4
 
 export function Select(props: SelectProps) {
-  const { label, error, placeholder, disabled, className, options, id: idProp } = props
+  const { label, error, placeholder, disabled, className, options, id: idProp, variant = "field" } = props
   const generatedId = useId()
   const id = idProp ?? generatedId
 
@@ -176,7 +177,7 @@ export function Select(props: SelectProps) {
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-mid">
+        <label htmlFor={id} className="text-[10px] font-semibold tracking-[0.07em] uppercase text-navy2">
           {label}
         </label>
       )}
@@ -191,12 +192,20 @@ export function Select(props: SelectProps) {
           onClick={openDropdown}
           onKeyDown={handleTriggerKeyDown}
           className={cn(
-            "w-full flex items-center gap-2 px-3 py-1.5 rounded border text-sm text-left",
-            "border-lgray/50 bg-white transition-colors",
-            "focus:outline-none focus:ring-2 focus:ring-navy/30 focus:border-navy",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            error && "border-red focus:ring-red/30 focus:border-red",
-            open && "border-navy ring-2 ring-navy/30",
+            "flex items-center gap-2 text-left transition-colors",
+            "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
+            variant === "field" && [
+              "w-full px-2 py-1.5 rounded-sm border-[1.5px] border-[#a8c4e0] bg-[#f0f6ff]",
+              "font-mono text-[13px] text-dark",
+              "focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
+              error && "border-red",
+              open && "border-navy2 shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
+            ],
+            variant === "ghost" && [
+              "px-1.5 py-1 rounded-md border-none bg-transparent text-white",
+              "hover:bg-white/15",
+              open && "bg-white/15",
+            ],
           )}
         >
           {props.multiple ? (
@@ -232,7 +241,7 @@ export function Select(props: SelectProps) {
         {open && (
           <div
             className={cn(
-              "absolute left-0 right-0 z-50 bg-white border border-navy/20 rounded shadow-lg",
+              "absolute right-0 z-50 bg-white border border-navy/20 rounded shadow-lg min-w-full",
               above ? "bottom-full mb-1" : "top-full mt-1",
             )}
           >
