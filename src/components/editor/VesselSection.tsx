@@ -12,7 +12,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
 
   return (
     <section className="pt-3 pb-3.5 px-6 border-b border-[#d0dbe8]">
-      <h2 className="font-mono text-[12px] font-bold uppercase tracking-widest text-navy mb-2.5 pb-1.25 border-b-[1.5px] border-[#eef3f8]">
+      <h2 className="font-mono text-xs font-bold uppercase tracking-widest text-navy mb-2.5 pb-1.25 border-b border-[#eef3f8]">
         {t("sec_ship")}
       </h2>
 
