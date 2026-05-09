@@ -12,9 +12,6 @@
   --color-lgray: #aaaaaa;
   --color-mob-blue: #1a7fc4;
   --color-brand-red: #6b1212;
-
-  --font-sans: system-ui, "Segoe UI", Roboto, sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", monospace;
 }
 
 *,
