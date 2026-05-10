@@ -1,6 +1,45 @@
-import type { CardData, CodeStatus, Language } from "../types"
+import type { CardData, CodeStatus, CountryCode, Language } from "../types"
 
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
+
+const COUNTRY_TO_DIAL: Partial<Record<CountryCode, string>> = {
+  NL: "+31", BE: "+32", DE: "+49", FR: "+33",
+  GB: "+44", US: "+1",  DK: "+45", NO: "+47", SE: "+46",
+}
+const DEFAULT_DIAL = "+31"
+
+function dial(country: CountryCode): string {
+  return COUNTRY_TO_DIAL[country] ?? DEFAULT_DIAL
+}
+
+function toWorkerFormData(data: CardData, lang: Language) {
+  return {
+    _maresafe: true,
+    version: "1.0",
+    lang,
+    name: data.vesselName,
+    type: data.type,
+    eni: data.eni,
+    length: data.length,
+    width: data.width,
+    draft: data.draft,
+    airDraft: data.airDraft,
+    altLength: data.altLength,
+    altAirDraft: data.altAirDraft,
+    callSign: data.callSign,
+    atis: data.atis,
+    mmsi: data.mmsi,
+    insurerName: data.insurerName,
+    policyNumber: data.policyNumber,
+    insurerEmergencyDialCode: dial(data.insurerEmergencyCountry),
+    insurerEmergencyNumber: data.insurerEmergencyNumber,
+    insurerOfficeDialCode: dial(data.insurerOfficeCountry),
+    insurerOfficeNumber: data.insurerOfficeNumber,
+    contacts: data.contacts
+      .filter((c) => c.label || c.number)
+      .map((c) => ({ label: c.label, dialCode: dial(c.country), number: c.number })),
+  }
+}
 
 export async function createCheckoutSession(origin: string): Promise<string> {
   const res = await fetch(`${WORKER_BASE}/create-checkout-session`, {
@@ -33,7 +72,13 @@ export async function generatePdf(params: GeneratePdfParams): Promise<Blob> {
   const res = await fetch(`${WORKER_BASE}/generate-pdf`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...params, area: "netherlands" }), // TODO: change hardcoded country to sailing area select
+    body: JSON.stringify({
+      code: params.code,
+      languages: params.languages,
+      area: "netherlands",
+      lang: params.lang,
+      formData: toWorkerFormData(params.formData, params.lang),
+    }),
   })
   if (!res.ok) {
     const err = new Error(`PDF generation failed: ${res.status}`)
