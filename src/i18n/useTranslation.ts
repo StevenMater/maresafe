@@ -44,10 +44,11 @@ const TranslationContext = createContext<TranslationContextValue | null>(null)
 
 interface TranslationProviderProps {
   children: ReactNode
+  initialLang?: Language
 }
 
-export function TranslationProvider({ children }: TranslationProviderProps) {
-  const [lang, setLangState] = useState<Language>(getInitialLang)
+export function TranslationProvider({ children, initialLang }: TranslationProviderProps) {
+  const [lang, setLangState] = useState<Language>(initialLang ?? getInitialLang)
 
   function setLang(l: Language) {
     setLangState(l)
