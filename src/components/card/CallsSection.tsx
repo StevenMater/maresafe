@@ -1,3 +1,4 @@
+import { AlertTriangle } from "lucide-react"
 import { useTranslation } from "../../i18n/useTranslation"
 import { toPhonetic } from "../../lib/format"
 import s from "./CardPreview.module.css"
@@ -17,7 +18,12 @@ export function CallsSection({ vesselName, callSign }: CallsSectionProps) {
     <div>
       <div className={`${s.sectionHeader} ${s.sectionHeaderEmergencyCalls}`}>
         <span>{t("card_calls")}</span>
-        <span className={s.callsLangNote}>⚠️ {t("calls_english_note")}</span>
+        <span
+          className={s.callsLangNote}
+          style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+          <AlertTriangle size={8} strokeWidth={2} />
+          {t("calls_english_note")}
+        </span>
       </div>
       <div className={s.callsGrid}>
         {/* MAYDAY */}
