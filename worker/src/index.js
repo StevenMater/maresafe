@@ -27,7 +27,7 @@ const EMAIL_T = {
     receipt_subject: (v) => `MareSafe — downloadbevestiging voor ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
       `<p>Je hebt ${count} kaart${count > 1 ? "en" : ""} (${langList}) gedownload voor <strong>${vessel}</strong>.</p>
-       <p>${remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} resterend</strong> op je code.` : "Je code is volledig gebruikt."}</p>
+       <p>${remaining === "unlimited" ? "Mastercode — onbeperkt gebruik." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} resterend</strong> op je code.` : "Je code is volledig gebruikt."}</p>
        <p>Bijgevoegd vind je een JSON-backup van je kaartgegevens. Open <a href="https://www.maresafe.eu">maresafe.eu</a> om hem te importeren.</p>
        <p>— MareSafe</p>`,
   },
@@ -43,7 +43,7 @@ const EMAIL_T = {
     receipt_subject: (v) => `MareSafe — download receipt for ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
       `<p>You downloaded ${count} card${count > 1 ? "s" : ""} (${langList}) for <strong>${vessel}</strong>.</p>
-       <p>${remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} remaining</strong> on your code.` : "Your code has been fully used."}</p>
+       <p>${remaining === "unlimited" ? "Master code — unlimited use." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} remaining</strong> on your code.` : "Your code has been fully used."}</p>
        <p>Attached is a JSON backup of your card data. Open <a href="https://www.maresafe.eu">maresafe.eu</a> to import it.</p>
        <p>— MareSafe</p>`,
   },
@@ -59,7 +59,7 @@ const EMAIL_T = {
     receipt_subject: (v) => `MareSafe — reçu de téléchargement pour ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
       `<p>Vous avez téléchargé ${count} carte${count > 1 ? "s" : ""} (${langList}) pour <strong>${vessel}</strong>.</p>
-       <p>${remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}</strong> sur votre code.` : "Votre code est entièrement utilisé."}</p>
+       <p>${remaining === "unlimited" ? "Code maître — utilisation illimitée." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}</strong> sur votre code.` : "Votre code est entièrement utilisé."}</p>
        <p>Ci-joint une sauvegarde JSON de vos données. Ouvrez <a href="https://www.maresafe.eu">maresafe.eu</a> pour l'importer.</p>
        <p>— MareSafe</p>`,
   },
@@ -75,7 +75,7 @@ const EMAIL_T = {
     receipt_subject: (v) => `MareSafe — Download-Beleg für ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
       `<p>Sie haben ${count} Karte${count > 1 ? "n" : ""} (${langList}) für <strong>${vessel}</strong> heruntergeladen.</p>
-       <p>${remaining > 0 ? `<strong>${remaining} Token${remaining > 1 ? "s" : ""} verbleibend</strong> auf Ihrem Code.` : "Ihr Code wurde vollständig verbraucht."}</p>
+       <p>${remaining === "unlimited" ? "Mastercode — unbegrenzte Nutzung." : remaining > 0 ? `<strong>${remaining} Token${remaining > 1 ? "s" : ""} verbleibend</strong> auf Ihrem Code.` : "Ihr Code wurde vollständig verbraucht."}</p>
        <p>Anbei eine JSON-Sicherung Ihrer Kartendaten. Öffnen Sie <a href="https://www.maresafe.eu">maresafe.eu</a>, um sie zu importieren.</p>
        <p>— MareSafe</p>`,
   },
@@ -117,13 +117,6 @@ export default {
       return handleRevokeCode(request, env)
     }
 
-    if (
-      request.method === "POST" &&
-      url.pathname === "/create-checkout-session"
-    ) {
-      return handleCreateCheckoutSession(request, env)
-    }
-
     return corsResponse({ error: "Not found" }, 404, env)
   },
 }
@@ -137,13 +130,16 @@ async function handleCheckCode(request, env) {
     return corsResponse({ valid: true, tokens: "unlimited" }, 200, env)
   }
 
-  const raw = await env.BYPASS_CODES.get(code)
-  if (!raw) return corsResponse({ valid: false }, 200, env)
+  const row = await env.DB.prepare(
+    "SELECT tokens_remaining, status FROM download_codes WHERE code = ?",
+  )
+    .bind(code)
+    .first()
 
-  const { tokens_remaining, status } = JSON.parse(raw)
-  if (status && status !== "active")
+  if (!row || row.status !== "active") {
     return corsResponse({ valid: false }, 200, env)
-  return corsResponse({ valid: true, tokens: tokens_remaining }, 200, env)
+  }
+  return corsResponse({ valid: true, tokens: row.tokens_remaining }, 200, env)
 }
 
 // ── /create-code ───────────────────────────────────────────────────
@@ -160,18 +156,13 @@ async function handleCreateCode(request, env) {
 
   const total = uses || 3
   const code = generateCode()
-  await env.BYPASS_CODES.put(
-    code,
-    JSON.stringify({
-      tokens_total: total,
-      tokens_remaining: total,
-      email,
-      source: "manual",
-      status: "active",
-      created_at: new Date().toISOString(),
-      uses_log: [],
-    }),
+  await env.DB.prepare(
+    `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, email_failed, created_at)
+     VALUES (?, ?, 'manual', 'active', ?, ?, 0, ?)`,
   )
+    .bind(code, email, total, total, new Date().toISOString())
+    .run()
+
   await sendCodeEmail(email, code, "en", env)
   return corsResponse({ code }, 200, env)
 }
@@ -196,16 +187,20 @@ async function handleGeneratePdf(request, env) {
   }
 
   // ── Auth ───────────────────────────────────────────────────────
+  const isMasterCode = code === env.MASTER_CODE
   let codeData = null
 
-  if (code !== env.MASTER_CODE) {
-    const raw = await env.BYPASS_CODES.get(code)
-    if (!raw) return corsResponse({ error: "Invalid code" }, 403, env)
-
-    codeData = JSON.parse(raw)
-    if (codeData.tokens_remaining < languages.length) {
+  if (!isMasterCode) {
+    const row = await env.DB.prepare(
+      "SELECT * FROM download_codes WHERE code = ?",
+    )
+      .bind(code)
+      .first()
+    if (!row) return corsResponse({ error: "Invalid code" }, 403, env)
+    if (row.tokens_remaining < languages.length) {
       return corsResponse({ error: "Not enough tokens remaining" }, 403, env)
     }
+    codeData = row
   }
 
   // ── Fetch page HTML ────────────────────────────────────────────
@@ -214,51 +209,53 @@ async function handleGeneratePdf(request, env) {
     return corsResponse({ error: "Could not fetch card page" }, 503, env)
   const pageHtml = await pageRes.text()
 
-  // ── Render PDFs in parallel ────────────────────────────────────
+  // ── Render PDFs ────────────────────────────────────────────────
   let pdfs
   try {
     pdfs = []
     for (const l of languages) {
       pdfs.push(await renderPdf(pageHtml, { ...formData, lang: l }, env))
     }
-  } catch (err) {
+  } catch {
     return corsResponse({ error: "PDF generation failed" }, 503, env)
   }
 
-  // ── Decrement tokens + append uses_log ────────────────────────
+  // ── Decrement tokens + log uses ────────────────────────────────
+  const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
+
   if (codeData) {
     const newRemaining = codeData.tokens_remaining - languages.length
     const now = new Date().toISOString()
-    const newEntries = languages.map((l) => ({ at: now, lang: l }))
-
-    if (newRemaining <= 0) {
-      await env.BYPASS_CODES.put(
-        code,
-        JSON.stringify({
-          ...codeData,
-          tokens_remaining: 0,
-          status: "depleted",
-          uses_log: [...(codeData.uses_log || []), ...newEntries],
-        }),
+    await env.DB.prepare(
+      "UPDATE download_codes SET tokens_remaining = ?, status = ? WHERE code = ?",
+    )
+      .bind(newRemaining, newRemaining <= 0 ? "depleted" : "active", code)
+      .run()
+    for (const l of languages) {
+      await env.DB.prepare(
+        "INSERT INTO download_uses (code, used_at, lang) VALUES (?, ?, ?)",
       )
-    } else {
-      await env.BYPASS_CODES.put(
-        code,
-        JSON.stringify({
-          ...codeData,
-          tokens_remaining: newRemaining,
-          uses_log: [...(codeData.uses_log || []), ...newEntries],
-        }),
-      )
+        .bind(code, now, l)
+        .run()
     }
-
     if (codeData.email) {
-      const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
       await sendReceiptEmail(
         codeData.email,
         formData,
         languages,
         newRemaining,
+        emailLang,
+        env,
+      )
+    }
+  } else {
+    // Master code — send receipt to admin
+    if (env.ADMIN_EMAIL) {
+      await sendReceiptEmail(
+        env.ADMIN_EMAIL,
+        formData,
+        languages,
+        "unlimited",
         emailLang,
         env,
       )
@@ -292,7 +289,12 @@ async function handleStripeWebhook(request, env) {
   const rawBody = await request.text()
   const sig = request.headers.get("Stripe-Signature")
 
-  if (!sig || !env.STRIPE_WEBHOOK_SECRET) {
+  const webhookSecret =
+    env.STRIPE_MODE === "test"
+      ? env.STRIPE_WEBHOOK_SECRET_TEST
+      : env.STRIPE_WEBHOOK_SECRET_LIVE
+
+  if (!sig || !webhookSecret) {
     return new Response("Forbidden", { status: 403 })
   }
 
@@ -301,7 +303,7 @@ async function handleStripeWebhook(request, env) {
   const payload = `${sigParts.t}.${rawBody}`
   const key = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(env.STRIPE_WEBHOOK_SECRET),
+    new TextEncoder().encode(webhookSecret),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
@@ -325,24 +327,35 @@ async function handleStripeWebhook(request, env) {
   }
 
   const session = event.data?.object
+  const sessionId = session.id
   const email = session?.customer_details?.email || null
   const lang = localeToLang(session?.locale)
 
   const code = generateCode()
-  await env.BYPASS_CODES.put(
-    code,
-    JSON.stringify({
-      tokens_total: 3,
-      tokens_remaining: 3,
-      email,
-      source: "payment",
-      status: "active",
-      created_at: new Date().toISOString(),
-      uses_log: [],
-    }),
-  )
 
-  if (email) await sendCodeEmail(email, code, lang, env)
+  try {
+    await env.DB.prepare(
+      `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, email_failed, created_at, stripe_session_id)
+       VALUES (?, ?, 'payment', 'active', 3, 3, 0, ?, ?)`,
+    )
+      .bind(code, email, new Date().toISOString(), sessionId)
+      .run()
+  } catch {
+    // UNIQUE constraint on stripe_session_id — duplicate webhook, already processed
+    return new Response("OK", { status: 200 })
+  }
+
+  if (email) {
+    try {
+      await sendCodeEmail(email, code, lang, env)
+    } catch {
+      await env.DB.prepare(
+        "UPDATE download_codes SET email_failed = 1 WHERE code = ?",
+      )
+        .bind(code)
+        .run()
+    }
+  }
 
   return new Response("OK", { status: 200 })
 }
@@ -390,24 +403,25 @@ async function handleListCodes(request, env) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
-  const list = await env.BYPASS_CODES.list()
-  const codes = await Promise.all(
-    list.keys.map(async ({ name }) => {
-      const raw = await env.BYPASS_CODES.get(name)
-      const data = raw
-        ? JSON.parse(raw)
-        : {
-            tokens_total: 0,
-            tokens_remaining: 0,
-            source: "unknown",
-            uses_log: [],
-          }
-      return { code: name, ...data }
-    }),
-  )
-  codes.sort(
-    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
-  )
+  const { results } = await env.DB.prepare(
+    `SELECT dc.*,
+       GROUP_CONCAT(du.used_at || ':' || du.lang) as uses_raw
+     FROM download_codes dc
+     LEFT JOIN download_uses du ON dc.code = du.code
+     GROUP BY dc.code
+     ORDER BY dc.created_at DESC`,
+  ).all()
+
+  const codes = results.map((row) => ({
+    ...row,
+    uses_log: row.uses_raw
+      ? row.uses_raw.split(",").map((e) => {
+          const colonIdx = e.indexOf(":")
+          return { at: e.slice(0, colonIdx), lang: e.slice(colonIdx + 1) }
+        })
+      : [],
+  }))
+
   return corsResponse({ codes }, 200, env)
 }
 
@@ -416,54 +430,24 @@ async function handleRevokeCode(request, env) {
   const { masterCode, code } = await request.json().catch(() => ({}))
   if (masterCode !== env.MASTER_CODE)
     return corsResponse({ error: "Forbidden" }, 403, env)
-  const raw = await env.BYPASS_CODES.get(code)
-  if (!raw) return corsResponse({ error: "Code not found" }, 404, env)
-  const data = JSON.parse(raw)
-  await env.BYPASS_CODES.put(
-    code,
-    JSON.stringify({ ...data, status: "revoked" }),
+  const row = await env.DB.prepare(
+    "SELECT code FROM download_codes WHERE code = ?",
   )
+    .bind(code)
+    .first()
+  if (!row) return corsResponse({ error: "Code not found" }, 404, env)
+  await env.DB.prepare(
+    "UPDATE download_codes SET status = 'revoked' WHERE code = ?",
+  )
+    .bind(code)
+    .run()
   return corsResponse({ ok: true }, 200, env)
-}
-
-// ── /create-checkout-session ───────────────────────────────────────
-async function handleCreateCheckoutSession(request, env) {
-  const { origin } = await request.json().catch(() => ({}))
-  if (!origin) return corsResponse({ error: "Missing origin" }, 400, env)
-  if (!env.STRIPE_PRICE_ID)
-    return corsResponse({ error: "STRIPE_PRICE_ID not configured" }, 500, env)
-
-  const params = new URLSearchParams({
-    mode: "payment",
-    "line_items[0][price]": env.STRIPE_PRICE_ID,
-    "line_items[0][quantity]": "1",
-    success_url: `${origin}?payment=success`,
-    cancel_url: origin,
-  })
-
-  const res = await fetch("https://api.stripe.com/v1/checkout/sessions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: params.toString(),
-  })
-
-  const session = await res.json()
-  if (!res.ok)
-    return corsResponse(
-      { error: session.error?.message || "Stripe error" },
-      502,
-      env,
-    )
-  return corsResponse({ url: session.url }, 200, env)
 }
 
 // ── Email: code delivery ───────────────────────────────────────────
 async function sendCodeEmail(email, code, lang, env) {
   const t = EMAIL_T[lang] || EMAIL_T.en
-  await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
@@ -475,7 +459,8 @@ async function sendCodeEmail(email, code, lang, env) {
       subject: t.code_subject,
       html: t.code_body(code),
     }),
-  }).catch(() => {})
+  })
+  if (!res.ok) throw new Error(`Resend ${res.status}`)
 }
 
 // ── Email: download receipt + JSON backup ─────────────────────────
@@ -524,7 +509,7 @@ function adminPage() {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MareSafe Admin</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 60px auto; padding: 0 20px; color: #111; }
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 60px auto; padding: 0 20px; color: #111; }
     h2 { color: #1b3a5c; }
     label { display: block; font-size: 13px; margin-bottom: 4px; color: #444; }
     input { display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 8px 10px; font-size: 14px; border: 1.5px solid #a8c4e0; border-radius: 4px; }
@@ -563,7 +548,7 @@ function adminPage() {
   <h2>MareSafe Admin</h2>
   <div class="tabs">
     <button class="tab active" onclick="showTab('generate')">Generate code</button>
-    <button class="tab" onclick="showTab('issued')">Issued codes</button>
+    <button class="tab" onclick="showTab('issued')">Download codes</button>
   </div>
 
   <div id="panel-generate" class="panel active">
@@ -607,6 +592,7 @@ function adminPage() {
             <th>Created</th>
             <th>Status</th>
             <th>Tokens</th>
+            <th>Email</th>
             <th>Use log</th>
             <th></th>
           </tr>
@@ -681,6 +667,9 @@ function adminPage() {
         const tokenClass = tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
         const srcClass = c.source === "payment" ? "badge-green" : "badge-grey"
         const st = c.status || "active"
+        const emailBadge = c.email_failed
+          ? \`<span class="badge badge-red">Failed</span>\`
+          : \`<span class="badge badge-green">Sent</span>\`
         const log = (c.uses_log || []).map(e =>
           \`<span class="log-entry">\${e.at?.slice(0,10) || "?"}: \${(e.lang || "?").toUpperCase()}</span>\`
         ).join("") || "—"
@@ -694,6 +683,7 @@ function adminPage() {
           <td>\${c.created_at?.slice(0,10) || "—"}</td>
           <td>\${statusBadge(st)}</td>
           <td><span class="badge \${tokenClass}">\${tr} / \${tt}</span></td>
+          <td>\${emailBadge}</td>
           <td>\${log}</td>
           <td>\${revokeBtn}</td>
         </tr>\`

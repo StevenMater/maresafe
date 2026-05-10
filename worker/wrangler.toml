@@ -4,14 +4,6 @@ compatibility_date = "2024-01-01"
 workers_dev      = true
 preview_urls     = false
 
-[[kv_namespaces]]
-binding = "PAYMENT_SESSIONS"
-id      = "ad31e1f30c0d4de48b7db2c8ff5dbf0c"
-
-[[kv_namespaces]]
-binding = "BYPASS_CODES"
-id      = "8297312154374ee59c22171ce184fe55"
-
 [[d1_databases]]
 binding       = "DB"
 database_name = "maresafe-db"
@@ -20,10 +12,16 @@ database_id   = "2ec22b61-8912-4850-aed1-e89808ff839b"
 [vars]
 ALLOWED_ORIGIN = "*"
 CARD_URL       = "https://maresafe.eu/"
+STRIPE_MODE    = "live"
+ADMIN_EMAIL    = "stevenmater@gmail.com"
+
+[observability.logs]
+enabled = true
+invocation_logs = true
 
 # Secrets — set via `wrangler secret put`:
-#   STRIPE_SECRET_KEY
-#   STRIPE_PRICE_ID
+#   STRIPE_WEBHOOK_SECRET_LIVE   ← rename of existing STRIPE_WEBHOOK_SECRET
+#   STRIPE_WEBHOOK_SECRET_TEST   ← test webhook signing secret (Stripe dashboard)
 #   BROWSERLESS_TOKEN
 #   MASTER_CODE
 #   RESEND_API_KEY
