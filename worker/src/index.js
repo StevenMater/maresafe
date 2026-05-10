@@ -204,19 +204,26 @@ async function handleGeneratePdf(request, env) {
   }
 
   // ── Fetch page HTML ────────────────────────────────────────────
+  console.log("Fetching card page:", env.CARD_URL)
   const pageRes = await fetch(env.CARD_URL)
-  if (!pageRes.ok)
+  if (!pageRes.ok) {
+    console.error("Card page fetch failed:", pageRes.status)
     return corsResponse({ error: "Could not fetch card page" }, 503, env)
+  }
   const pageHtml = await pageRes.text()
+  console.log("Card page fetched, length:", pageHtml.length)
 
   // ── Render PDFs ────────────────────────────────────────────────
   let pdfs
   try {
     pdfs = []
     for (const l of languages) {
+      console.log("Calling Browserless for lang:", l)
       pdfs.push(await renderPdf(pageHtml, { ...formData, lang: l }, env))
+      console.log("Browserless returned PDF for lang:", l)
     }
-  } catch {
+  } catch (err) {
+    console.error("PDF generation failed:", err?.message ?? err)
     return corsResponse({ error: "PDF generation failed" }, 503, env)
   }
 
