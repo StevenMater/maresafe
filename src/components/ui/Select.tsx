@@ -5,9 +5,12 @@ import {
   useId,
   type ReactNode,
   type KeyboardEvent,
+  type CSSProperties,
 } from "react"
+import { createPortal } from "react-dom"
 import { ChevronDown, Check, Search } from "lucide-react"
 import { cn } from "../../lib/cn"
+import { useTranslation } from "../../i18n/useTranslation"
 
 export interface SelectOption {
   value: string
@@ -55,6 +58,7 @@ function OptionContent({ opt }: { opt: SelectOption }) {
 const MAX_FLAGS = 4
 
 export function Select(props: SelectProps) {
+  const { t } = useTranslation()
   const {
     label,
     error,
@@ -69,12 +73,13 @@ export function Select(props: SelectProps) {
   const id = idProp ?? generatedId
 
   const [open, setOpen] = useState(false)
-  const [above, setAbove] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(0)
   const [query, setQuery] = useState("")
+  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties>({})
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
 
@@ -111,7 +116,9 @@ export function Select(props: SelectProps) {
     function handleMouseDown(e: MouseEvent) {
       if (
         containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        !containerRef.current.contains(e.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
       ) {
         setOpen(false)
       }
@@ -124,7 +131,16 @@ export function Select(props: SelectProps) {
     if (disabled) return
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
-      setAbove(rect.bottom + 260 > window.innerHeight)
+      const openAbove = rect.bottom + 260 > window.innerHeight
+      setDropdownStyle({
+        position: "fixed",
+        zIndex: 9999,
+        minWidth: rect.width,
+        right: window.innerWidth - rect.right,
+        ...(openAbove
+          ? { bottom: window.innerHeight - rect.top + 4 }
+          : { top: rect.bottom + 4 }),
+      })
       setFocusedIndex(0)
     }
     setOpen((v) => !v)
@@ -286,68 +302,71 @@ export function Select(props: SelectProps) {
           />
         </button>
 
-        {open && (
-          <div
-            className={cn(
-              "absolute right-0 z-50 bg-white border border-navy/20 rounded shadow-lg min-w-full",
-              above ? "bottom-full mb-1" : "top-full mt-1",
-            )}>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-lgray/20">
-              <Search
-                size={12}
-                strokeWidth={1.5}
-                className="shrink-0 text-lgray"
-              />
-              <input
-                ref={searchRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-                placeholder="Search…"
-                className="flex-1 text-sm outline-none placeholder:text-lgray bg-transparent"
-              />
-            </div>
-            <ul
-              ref={listRef}
-              role="listbox"
-              aria-multiselectable={props.multiple}
-              className="max-h-48 overflow-y-auto py-1">
-              {filteredOptions.length === 0 ? (
-                <li className="px-3 py-2 text-sm text-lgray">No results</li>
-              ) : (
-                filteredOptions.map((opt, i) => {
-                  const selected = isSelected(opt.value)
-                  const optDisabled = isDisabledOption(opt.value)
-                  return (
-                    <li
-                      key={opt.value}
-                      role="option"
-                      aria-selected={selected}
-                      aria-disabled={optDisabled}
-                      onClick={() => !optDisabled && selectOption(opt.value)}
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer",
-                        "hover:bg-navy/5",
-                        i === focusedIndex && "bg-navy/10",
-                        selected && "text-navy font-medium",
-                        optDisabled && "opacity-40 cursor-not-allowed",
-                      )}>
-                      <OptionContent opt={opt} />
-                      {selected && (
-                        <Check
-                          size={12}
-                          strokeWidth={2}
-                          className="ml-auto shrink-0 text-navy"
-                        />
-                      )}
-                    </li>
-                  )
-                })
-              )}
-            </ul>
-          </div>
-        )}
+        {open &&
+          createPortal(
+            <div
+              ref={dropdownRef}
+              style={dropdownStyle}
+              className="bg-white border border-navy/20 rounded shadow-lg">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-lgray/20">
+                <Search
+                  size={12}
+                  strokeWidth={1.5}
+                  className="shrink-0 text-lgray"
+                />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleSearchKeyDown}
+                  placeholder={t("select_search")}
+                  className="flex-1 text-sm outline-none placeholder:text-lgray bg-transparent"
+                />
+              </div>
+              <ul
+                ref={listRef}
+                role="listbox"
+                aria-multiselectable={props.multiple}
+                className="max-h-48 overflow-y-auto py-1">
+                {filteredOptions.length === 0 ? (
+                  <li className="px-3 py-2 text-sm text-lgray">
+                    {t("select_no_results")}
+                  </li>
+                ) : (
+                  filteredOptions.map((opt, i) => {
+                    const selected = isSelected(opt.value)
+                    const optDisabled = isDisabledOption(opt.value)
+                    return (
+                      <li
+                        key={opt.value}
+                        role="option"
+                        aria-selected={selected}
+                        aria-disabled={optDisabled}
+                        onClick={() => !optDisabled && selectOption(opt.value)}
+                        className={cn(
+                          "flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer",
+                          "hover:bg-navy/5",
+                          i === focusedIndex && "bg-navy/10",
+                          selected && "text-navy font-medium",
+                          optDisabled && "opacity-40 cursor-not-allowed",
+                        )}>
+                        <OptionContent opt={opt} />
+                        {selected && (
+                          <Check
+                            size={12}
+                            strokeWidth={2}
+                            className="ml-auto shrink-0 text-navy"
+                          />
+                        )}
+                      </li>
+                    )
+                  })
+                )}
+              </ul>
+            </div>,
+            document.body,
+          )}
       </div>
       {error && <span className="text-xs text-red">{error}</span>}
     </div>
