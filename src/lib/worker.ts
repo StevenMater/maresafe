@@ -2,6 +2,14 @@ import type { CardData, CodeStatus, CountryCode, Language } from "../types"
 
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
+const PAYMENT_LINK_LIVE = "https://buy.stripe.com/cNi4gzachcuR5vN0Ao97G00"
+const PAYMENT_LINK_TEST = "https://buy.stripe.com/test_cNi4gzachcuR5vN0Ao97G00"
+
+export const PAYMENT_LINK_URL =
+  import.meta.env.VITE_STRIPE_ENV === "test"
+    ? PAYMENT_LINK_TEST
+    : PAYMENT_LINK_LIVE
+
 const COUNTRY_TO_DIAL: Partial<Record<CountryCode, string>> = {
   NL: "+31",
   BE: "+32",

@@ -1,4 +1,5 @@
 import { useTranslation } from "../../i18n/useTranslation"
+import { PAYMENT_LINK_URL } from "../../lib/worker"
 
 export function CheckoutWidget() {
   const { t } = useTranslation()
@@ -11,6 +12,9 @@ export function CheckoutWidget() {
       </div>
       <button
         type="button"
+        onClick={() => {
+          window.location.href = PAYMENT_LINK_URL
+        }}
         className="w-full bg-mob-blue hover:bg-navy2 text-white text-base font-semibold rounded-lg py-3 px-5 cursor-pointer transition-colors border-none"
       >
         {t("btn_buy")}
