@@ -4,6 +4,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react"
+import { createPortal } from "react-dom"
 import { cn } from "../../lib/cn"
 
 interface TooltipProps {
@@ -12,9 +13,21 @@ interface TooltipProps {
   className?: string
 }
 
+const TOOLTIP_WIDTH = 192
+const VIEWPORT_PADDING = 8
+const ARROW_SIZE = 8
+const GAP = 6
+
+interface TooltipPosition {
+  top: number
+  left: number
+  arrowLeft: number
+  above: boolean
+}
+
 export function Tooltip({ content, children, className }: TooltipProps) {
   const [open, setOpen] = useState(false)
-  const [above, setAbove] = useState(false)
+  const [position, setPosition] = useState<TooltipPosition | null>(null)
   const wrapperRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
@@ -24,14 +37,35 @@ export function Tooltip({ content, children, className }: TooltipProps) {
         setOpen(false)
       }
     }
+    function handleScroll() {
+      setOpen(false)
+    }
     document.addEventListener("mousedown", handleMouseDown)
-    return () => document.removeEventListener("mousedown", handleMouseDown)
+    window.addEventListener("scroll", handleScroll, true)
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown)
+      window.removeEventListener("scroll", handleScroll, true)
+    }
   }, [open])
 
   function handleToggle() {
     if (!open && wrapperRef.current) {
       const rect = wrapperRef.current.getBoundingClientRect()
-      setAbove(rect.bottom + 80 > window.innerHeight)
+      const triggerCenter = rect.left + rect.width / 2
+      const idealLeft = triggerCenter - TOOLTIP_WIDTH / 2
+      const clampedLeft = Math.max(
+        VIEWPORT_PADDING,
+        Math.min(idealLeft, window.innerWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING),
+      )
+      const above = rect.bottom + 80 > window.innerHeight
+      setPosition({
+        above,
+        left: clampedLeft,
+        arrowLeft: triggerCenter - clampedLeft,
+        top: above
+          ? rect.top - GAP - ARROW_SIZE
+          : rect.bottom + GAP,
+      })
     }
     setOpen((v) => !v)
   }
@@ -48,27 +82,28 @@ export function Tooltip({ content, children, className }: TooltipProps) {
       >
         {children}
       </span>
-      {open && (
+      {open && position && createPortal(
         <span
           role="tooltip"
-          className={cn(
-            "absolute left-1/2 -translate-x-1/2 z-50 w-48 px-2 py-1.5",
-            "bg-navy text-white text-xs rounded leading-snug pointer-events-none",
-            above
-              ? "bottom-full mb-1.5"
-              : "top-full mt-1.5",
-          )}
+          style={{
+            position: "fixed",
+            top: position.above ? undefined : position.top,
+            bottom: position.above ? window.innerHeight - position.top : undefined,
+            left: position.left,
+            width: TOOLTIP_WIDTH,
+          }}
+          className="z-9999 px-2 py-1.5 bg-navy text-white text-xs rounded leading-snug pointer-events-none"
         >
           {content}
           <span
+            style={{ left: position.arrowLeft }}
             className={cn(
-              "absolute left-1/2 -translate-x-1/2 border-4 border-transparent",
-              above
-                ? "top-full border-t-navy"
-                : "bottom-full border-b-navy",
+              "absolute -translate-x-1/2 border-4 border-transparent",
+              position.above ? "top-full border-t-navy" : "bottom-full border-b-navy",
             )}
           />
-        </span>
+        </span>,
+        document.body,
       )}
     </span>
   )
