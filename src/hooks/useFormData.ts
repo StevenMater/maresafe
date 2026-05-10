@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import type { CardData, Contact, CountryCode, Language } from "../types"
 import {
   DEFAULT_COUNTRY,
@@ -35,6 +35,8 @@ interface FormState {
   data: CardData
   outdated: boolean
   savedLanguage: Language | null
+  formCollapsed: boolean
+  seenInfo: boolean
 }
 
 type RawData = Record<string, unknown>
@@ -90,11 +92,14 @@ function parseStoredData(raw: RawData): {
         ? raw.insurerOfficeCountry
         : DEFAULT_COUNTRY,
       insurerOfficeNumber: str(raw.insurerOfficeNumber),
-      contacts: Array.isArray(raw.contacts)
-        ? (raw.contacts as RawData[])
-            .filter((c) => c.label || c.number)
-            .map(toContact)
-        : EMPTY_FORM.contacts,
+      contacts: (() => {
+        const parsed = Array.isArray(raw.contacts)
+          ? (raw.contacts as RawData[])
+              .filter((c) => c.label || c.number)
+              .map(toContact)
+          : []
+        return parsed.length > 0 ? parsed : EMPTY_FORM.contacts
+      })(),
     },
   }
 }
@@ -103,24 +108,41 @@ function loadFromStorage(): FormState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
-      const { data, lang } = parseStoredData(JSON.parse(raw) as RawData)
-      return { data, outdated: false, savedLanguage: lang }
+      const parsed = JSON.parse(raw) as RawData
+      const { data, lang } = parseStoredData(parsed.formData as RawData)
+      return {
+        data,
+        outdated: false,
+        savedLanguage: lang,
+        formCollapsed: parsed.formCollapsed !== false,
+        seenInfo: parsed.seenInfo === true,
+      }
     }
   } catch {
     // corrupted / foreign data — start fresh
   }
-  return { data: EMPTY_FORM, outdated: false, savedLanguage: null }
+  return {
+    data: EMPTY_FORM,
+    outdated: false,
+    savedLanguage: null,
+    formCollapsed: true,
+    seenInfo: false,
+  }
 }
 
-export function saveToStorage(data: CardData, lang: Language): void {
+function saveToStorage(state: FormState, lang: Language): void {
   try {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        _maresafe: true,
-        version: CURRENT_VERSION,
-        lang,
-        ...data,
+        seenInfo: state.seenInfo,
+        formCollapsed: state.formCollapsed,
+        formData: {
+          _maresafe: true,
+          version: CURRENT_VERSION,
+          lang,
+          ...state.data,
+        },
       }),
     )
   } catch {
@@ -143,6 +165,10 @@ export interface UseFormDataReturn {
   outdated: boolean
   dismissOutdated: () => void
   save: (lang: Language) => void
+  formCollapsed: boolean
+  setFormCollapsed: (collapsed: boolean) => void
+  seenInfo: boolean
+  markSeen: () => void
 }
 
 export function useFormData(): UseFormDataReturn {
@@ -230,7 +256,12 @@ export function useFormData(): UseFormDataReturn {
           const raw = JSON.parse(ev.target!.result as string) as RawData
           const { data, lang } = parseStoredData(raw)
 
-          setState({ data, outdated: false, savedLanguage: null })
+          setState((s) => ({
+            ...s,
+            data,
+            outdated: false,
+            savedLanguage: null,
+          }))
           resolve({ success: true, lang })
         } catch {
           resolve({ success: false, lang: null })
@@ -245,12 +276,31 @@ export function useFormData(): UseFormDataReturn {
     setState((s) => ({ ...s, outdated: false }))
   }
 
-  function save(lang: Language) {
-    saveToStorage(state.data, lang)
+  const save = useCallback(
+    (lang: Language) => {
+      saveToStorage(state, lang)
+    },
+    [state],
+  )
+
+  function setFormCollapsed(collapsed: boolean) {
+    setState((s) => ({ ...s, formCollapsed: collapsed }))
+  }
+
+  function markSeen() {
+    setState((s) => ({ ...s, seenInfo: true }))
+  }
+
+  const safeData = {
+    ...state.data,
+    contacts:
+      state.data.contacts.length > 0
+        ? state.data.contacts
+        : [{ label: "", country: DEFAULT_COUNTRY, number: "" }],
   }
 
   return {
-    data: state.data,
+    data: safeData,
     savedLanguage: state.savedLanguage,
     setField,
     addContact,
@@ -262,5 +312,9 @@ export function useFormData(): UseFormDataReturn {
     outdated: state.outdated,
     dismissOutdated,
     save,
+    formCollapsed: state.formCollapsed,
+    setFormCollapsed,
+    seenInfo: state.seenInfo,
+    markSeen,
   }
 }

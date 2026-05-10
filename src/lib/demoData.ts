@@ -1,0 +1,28 @@
+import type { CardData } from "../types"
+
+export const DEMO_DATA: CardData = {
+  vesselName: "Boaty McBoatface",
+  type: "Motor Cruiser",
+  eni: "02331847",
+  length: "12.4",
+  width: "3.8",
+  draft: "1.1",
+  airDraft: "4.2",
+  altLength: "10.9",
+  altAirDraft: "3.1",
+  callSign: "AB1234",
+  atis: "123456789",
+  mmsi: "244123456",
+  insurerName: "Blue Ocean Marine Insurance",
+  policyNumber: "BOI-2024-774821",
+  insurerEmergencyCountry: "NL",
+  insurerEmergencyNumber: "0800123456",
+  insurerOfficeCountry: "NL",
+  insurerOfficeNumber: "0102345678",
+  contacts: [
+    { label: "Alex Martin", country: "NL", number: "0612345678" },
+    { label: "Sam Rivera", country: "NL", number: "0687654321" },
+    { label: "Jordan Lee", country: "NL", number: "0104567890" },
+    { label: "Chris Morgan", country: "GB", number: "07911123456" },
+  ],
+}
