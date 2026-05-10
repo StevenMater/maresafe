@@ -42,9 +42,9 @@ function AppContent() {
   const cardData = hasValidCode ? data : DEMO_DATA
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-[#f4f7fa]">
       <Header seenInfo={seenInfo} markSeen={markSeen} />
-      <div className="flex-1 overflow-y-auto bg-[#f4f7fa]">
+      <div className="flex-1">
         <div
           ref={cardRowRef}
           className="flex flex-wrap justify-center items-center gap-6 px-4 pt-5">
