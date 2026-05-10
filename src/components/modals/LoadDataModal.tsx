@@ -1,5 +1,5 @@
 import { useState, useRef } from "react"
-import { Upload } from "lucide-react"
+import { Upload, Lightbulb } from "lucide-react"
 import { Modal } from "../ui/Modal"
 import { useTranslation } from "../../i18n/useTranslation"
 import type { Language } from "../../types"
@@ -50,7 +50,10 @@ export function LoadDataModal({
     <Modal open={open} onClose={onClose} title={t("modal_load_title")}>
       <div className="flex flex-col gap-3">
         <p className="text-sm text-mid">{t("modal_load_body")}</p>
-        <p className="text-xs text-lgray">{t("modal_load_tip")}</p>
+        <p className="flex items-start gap-1.5 text-xs text-lgray">
+          <Lightbulb size={14} strokeWidth={1.5} className="shrink-0 mt-px" />
+          {t("modal_load_tip")}
+        </p>
 
         <button
           type="button"
