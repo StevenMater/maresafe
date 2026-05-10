@@ -35,7 +35,8 @@ export function InfoModal({ open, onClose }: InfoModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/12 border border-white/20 text-white/70 p-0 cursor-pointer hover:bg-white/24 hover:text-white transition-colors shrink-0">
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/12 border border-white/20 text-white/70 p-0 cursor-pointer hover:bg-white/24 hover:text-white transition-colors shrink-0"
+          >
             <X size={14} strokeWidth={1.5} />
           </button>
         </div>

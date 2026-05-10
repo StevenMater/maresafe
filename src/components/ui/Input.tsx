@@ -108,7 +108,8 @@ export function Input({
         <div className="flex items-baseline gap-1.25">
           <label
             htmlFor={id}
-            className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none">
+            className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none"
+          >
             {label}
           </label>
           {tooltip && (

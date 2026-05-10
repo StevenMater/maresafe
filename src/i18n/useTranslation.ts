@@ -47,7 +47,10 @@ interface TranslationProviderProps {
   initialLang?: Language
 }
 
-export function TranslationProvider({ children, initialLang }: TranslationProviderProps) {
+export function TranslationProvider({
+  children,
+  initialLang,
+}: TranslationProviderProps) {
   const [lang, setLangState] = useState<Language>(initialLang ?? getInitialLang)
 
   function setLang(l: Language) {

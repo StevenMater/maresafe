@@ -44,7 +44,8 @@ export function EditorPanel({
   return (
     <div
       className="w-full flex flex-col items-center gap-2 pb-2"
-      style={{ maxWidth: MAX_FORM_WIDTH }}>
+      style={{ maxWidth: MAX_FORM_WIDTH }}
+    >
       {/* Download action bar */}
       <div className="w-full bg-white border border-[#d0dbe8] rounded-lg">
         <DownloadBar
@@ -59,7 +60,8 @@ export function EditorPanel({
         type="button"
         onClick={() => setFormCollapsed(!formCollapsed)}
         aria-expanded={!formCollapsed}
-        className="flex items-center gap-2 bg-navy2 hover:bg-navy text-white text-xs font-semibold rounded-md px-4 py-1.75 border-none cursor-pointer transition-colors">
+        className="flex items-center gap-2 bg-navy2 hover:bg-navy text-white text-xs font-semibold rounded-md px-4 py-1.75 border-none cursor-pointer transition-colors"
+      >
         <ChevronDown
           size={14}
           className={cn(
@@ -82,7 +84,8 @@ export function EditorPanel({
         className={cn(
           "w-full overflow-hidden transition-[max-height] ease-in-out duration-400",
           formCollapsed ? "max-h-0" : "max-h-1250",
-        )}>
+        )}
+      >
         <div className="flex flex-col gap-2">
           <div className="bg-white border border-[#d0dbe8] rounded-lg overflow-hidden">
             <VesselSection data={data} setField={setField} />

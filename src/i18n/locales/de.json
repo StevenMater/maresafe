@@ -13,7 +13,10 @@
   "btn_download_pdf_zero": "Sprache auswählen",
   "label_free": "kostenlos",
   "placeholder_code": "Code eingeben",
-  "code_uses_remaining": { "one": "{n} Nutzung verbleibend", "other": "{n} Nutzungen verbleibend" },
+  "code_uses_remaining": {
+    "one": "{n} Nutzung verbleibend",
+    "other": "{n} Nutzungen verbleibend"
+  },
   "code_uses_unlimited": "unbegrenzt gültig",
   "code_uses_depleted": "Code vollständig verbraucht",
   "code_invalid": "Ungültiger Code",

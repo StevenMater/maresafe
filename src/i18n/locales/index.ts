@@ -11,11 +11,18 @@ export type StringTranslationKey = {
 }[keyof TranslationShape]
 
 export type ArrayTranslationKey = {
-  [K in keyof TranslationShape]: TranslationShape[K] extends string[] ? K : never
+  [K in keyof TranslationShape]: TranslationShape[K] extends string[]
+    ? K
+    : never
 }[keyof TranslationShape]
 
 export type PluralTranslationKey = {
-  [K in keyof TranslationShape]: TranslationShape[K] extends { one: string; other: string } ? K : never
+  [K in keyof TranslationShape]: TranslationShape[K] extends {
+    one: string
+    other: string
+  }
+    ? K
+    : never
 }[keyof TranslationShape]
 
 // tsc error here if nl/fr/de.json is missing any key present in en.json

@@ -31,7 +31,8 @@ export function NotificationBanner({
   return (
     <div
       style={{ background: bg, borderBottom: `3px solid ${border}` }}
-      className="flex items-center gap-3 px-6 py-2.5">
+      className="flex items-center gap-3 px-6 py-2.5"
+    >
       <Icon size={18} strokeWidth={2} className="text-white shrink-0" />
       <div className="flex-1 text-xs text-white leading-snug">
         {title && (
@@ -44,7 +45,8 @@ export function NotificationBanner({
       <button
         onClick={onDismiss}
         className="shrink-0 text-white/60 hover:text-white transition-colors cursor-pointer"
-        aria-label="Dismiss">
+        aria-label="Dismiss"
+      >
         <X size={18} strokeWidth={2} />
       </button>
     </div>

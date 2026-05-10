@@ -13,9 +13,7 @@ function formatDimensionIfSet(v: string | undefined): string | null {
   if (!v) return null
   const n = parseFloat(v.replace(",", "."))
 
-  return v.trim() && !isNaN(n) && n > 0
-    ? n.toFixed(2).replace(".", ",")
-    : null
+  return v.trim() && !isNaN(n) && n > 0 ? n.toFixed(2).replace(".", ",") : null
 }
 
 interface ShipSectionProps {
@@ -82,27 +80,37 @@ export function ShipSection({ data }: ShipSectionProps) {
               </td>
               <td className={s.colValue}>
                 {formatDimension(data.length)} m
-                {altLen && <span className={s.altValueSeparator}> | {altLen} m</span>}
+                {altLen && (
+                  <span className={s.altValueSeparator}> | {altLen} m</span>
+                )}
               </td>
             </tr>
             <tr>
               <td className={s.colLabel}>
                 {t("f_width")}
-                {altWidth && <span className={s.altValueSeparator}> | alt.</span>}
+                {altWidth && (
+                  <span className={s.altValueSeparator}> | alt.</span>
+                )}
               </td>
               <td className={s.colValue}>
                 {formatDimension(data.width)} m
-                {altWidth && <span className={s.altValueSeparator}> | {altWidth} m</span>}
+                {altWidth && (
+                  <span className={s.altValueSeparator}> | {altWidth} m</span>
+                )}
               </td>
             </tr>
             <tr>
               <td className={s.colLabel}>
                 {t("f_draft")}
-                {altDraft && <span className={s.altValueSeparator}> | alt.</span>}
+                {altDraft && (
+                  <span className={s.altValueSeparator}> | alt.</span>
+                )}
               </td>
               <td className={s.colValue}>
                 {formatDimension(data.draft)} m
-                {altDraft && <span className={s.altValueSeparator}> | {altDraft} m</span>}
+                {altDraft && (
+                  <span className={s.altValueSeparator}> | {altDraft} m</span>
+                )}
               </td>
             </tr>
             <tr>
@@ -112,7 +120,9 @@ export function ShipSection({ data }: ShipSectionProps) {
               </td>
               <td className={s.colValue}>
                 {formatDimension(data.headway)} m
-                {altAir && <span className={s.altValueSeparator}> | {altAir} m</span>}
+                {altAir && (
+                  <span className={s.altValueSeparator}> | {altAir} m</span>
+                )}
               </td>
             </tr>
           </tbody>

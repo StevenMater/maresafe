@@ -39,7 +39,8 @@ export function PhoneInput({
       {label && (
         <label
           htmlFor={id}
-          className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none">
+          className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none"
+        >
           {label}
         </label>
       )}

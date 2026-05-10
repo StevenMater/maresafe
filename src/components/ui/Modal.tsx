@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useRef,
-  useId,
-  type ReactNode,
-} from "react"
+import { useEffect, useRef, useId, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import { cn } from "../../lib/cn"
@@ -25,7 +20,13 @@ const FOCUSABLE = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ")
 
-export function Modal({ open, onClose, title, children, className }: ModalProps) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  className,
+}: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
   const previousFocusRef = useRef<Element | null>(null)
@@ -56,7 +57,9 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
 
       const panel = panelRef.current
       if (!panel) return
-      const focusable = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE))
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(FOCUSABLE),
+      )
       if (focusable.length === 0) return
 
       const first = focusable[0]

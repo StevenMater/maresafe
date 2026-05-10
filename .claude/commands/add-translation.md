@@ -7,7 +7,9 @@ Add a new i18n key to all four language objects.
 1. Open `src/i18n/translations.ts`
 2. Add the key to **all four** language objects: `nl`, `en`, `fr`, `de`
 3. Keep keys in alphabetical order within each object
-4. The `satisfies Record<Language, Record<string, string>>` constraint will cause a TS error if any language is missing the key — use that as your verification
+4. The `satisfies Record<Language, Record<string, string>>` constraint will
+   cause a TS error if any language is missing the key — use that as your
+   verification
 
 ## Key naming convention
 
@@ -34,4 +36,5 @@ const { t } = useTranslation()
 <label data-i18n="lbl_vessel_name" />
 ```
 
-After adding the key, search for any hardcoded English strings in the same area you're working and replace them too.
+After adding the key, search for any hardcoded English strings in the same area
+you're working and replace them too.

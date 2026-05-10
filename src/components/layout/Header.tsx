@@ -36,7 +36,8 @@ export function Header({ seenInfo, markSeen }: HeaderProps) {
             type="button"
             onClick={() => setShowInfo(true)}
             aria-label={t("tip_info_btn")}
-            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/12 border border-white/20 text-white text-sm font-bold leading-none p-0 cursor-pointer hover:bg-white/24 transition-colors shrink-0">
+            className="flex items-center justify-center w-7 h-7 rounded-full bg-white/12 border border-white/20 text-white text-sm font-bold leading-none p-0 cursor-pointer hover:bg-white/24 transition-colors shrink-0"
+          >
             ?
           </button>
         </div>

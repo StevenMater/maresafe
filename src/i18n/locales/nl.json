@@ -13,7 +13,10 @@
   "btn_download_pdf_zero": "Selecteer een taal",
   "label_free": "gratis",
   "placeholder_code": "Code invoeren",
-  "code_uses_remaining": { "one": "{n} gebruik resterend", "other": "{n} gebruik resterend" },
+  "code_uses_remaining": {
+    "one": "{n} gebruik resterend",
+    "other": "{n} gebruik resterend"
+  },
   "code_uses_unlimited": "onbeperkt geldig",
   "code_uses_depleted": "Code volledig gebruikt",
   "code_invalid": "Ongeldige code",

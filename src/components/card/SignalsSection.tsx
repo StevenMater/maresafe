@@ -41,7 +41,8 @@ export function SignalsSection() {
           return (
             <div
               key={i}
-              className={`${s.signalRow} ${isAlt ? s.signalRowAlt : s.signalRowDefault}`}>
+              className={`${s.signalRow} ${isAlt ? s.signalRowAlt : s.signalRowDefault}`}
+            >
               <div className={s.signalPattern}>
                 {SIGNAL_PATTERNS[i]?.map((beat, j) => (
                   <SignalShape key={j} beat={beat} />

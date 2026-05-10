@@ -2,9 +2,16 @@
 
 ## Project Overview
 
-Maritime emergency card generator. Users fill in vessel/crew details, preview an A4 card, pay €2 via Stripe, receive a download code by email, then download a PDF. SPA deployed to GitHub Pages. Cloudflare Worker handles Stripe checkout, webhook fulfillment (code generation + email), and PDF rendering via Browserless.
+Maritime emergency card generator. Users fill in vessel/crew details, preview an
+A4 card, pay €2 via Stripe, receive a download code by email, then download a
+PDF. SPA deployed to GitHub Pages. Cloudflare Worker handles Stripe checkout,
+webhook fulfillment (code generation + email), and PDF rendering via
+Browserless.
 
-Ground-up React rewrite of an existing vanilla JS app. The Cloudflare Worker (`../maritime-emergency-card/worker/`) is **unchanged** — do not touch it. Original app at `../maritime-emergency-card/` — read for reference (translations, card logic, field structure).
+Ground-up React rewrite of an existing vanilla JS app. The Cloudflare Worker
+(`../maritime-emergency-card/worker/`) is **unchanged** — do not touch it.
+Original app at `../maritime-emergency-card/` — read for reference
+(translations, card logic, field structure).
 
 ---
 
@@ -22,32 +29,48 @@ Ground-up React rewrite of an existing vanilla JS app. The Cloudflare Worker (`.
 ## Absolute Rules
 
 ### Translations
+
 Every user-facing string must exist in **all four languages: nl, en, fr, de**.
+
 - Dynamic text: `t('key')` in component
 - New keys added to ALL four language objects before task is done
 - Never hardcode English strings in JSX
-- Exceptions (do not translate): VHF channel numbers, internationally standardised signal descriptions, the brand name "MareSafe"
+- Exceptions (do not translate): VHF channel numbers, internationally
+  standardised signal descriptions, the brand name "MareSafe"
 - Use `/add-translation` for the full procedure
 
 ### Icons
-Use **Lucide React** only — `import { IconName } from 'lucide-react'`.
-No emoji in UI. No CDN icon fonts. No SVG files for UI icons.
-Size to context: `size={14}` for buttons, `size={20}` for section headers, `size={32}` for decorative.
+
+Use **Lucide React** only — `import { IconName } from 'lucide-react'`. No emoji
+in UI. No CDN icon fonts. No SVG files for UI icons. Size to context:
+`size={14}` for buttons, `size={20}` for section headers, `size={32}` for
+decorative.
 
 ### Commits
-Never commit unless the user explicitly says so. Use conventional commit format. Never push.
+
+Never commit unless the user explicitly says so. Use conventional commit format.
+Never push.
 
 ### No over-engineering
-Do not add abstractions, error handling, or features beyond what is asked.
-Three similar JSX blocks beats a premature abstraction.
-No comments unless the WHY is non-obvious.
+
+Do not add abstractions, error handling, or features beyond what is asked. Three
+similar JSX blocks beats a premature abstraction. No comments unless the WHY is
+non-obvious.
 
 ### Human-readable naming
-All variables, functions, and CSS classes must be descriptive enough to understand without context. Avoid abbreviations (`fmtDim`, `c25`, `gL`, `secHdr`), single-letter variables outside map/reduce callbacks, and terse shorthand (`storedLang`, `saveNow`). A reader should be able to understand what something does from its name alone — `formatDimension`, `sectionHeader`, `beatLong`, `savedLanguage` are all preferable to their short forms.
+
+All variables, functions, and CSS classes must be descriptive enough to
+understand without context. Avoid abbreviations (`fmtDim`, `c25`, `gL`,
+`secHdr`), single-letter variables outside map/reduce callbacks, and terse
+shorthand (`storedLang`, `saveNow`). A reader should be able to understand what
+something does from its name alone — `formatDimension`, `sectionHeader`,
+`beatLong`, `savedLanguage` are all preferable to their short forms.
 
 ### Reusable components
-Before building a new input, select, button, or modal — check `src/components/ui/` first.
-Every generic UI primitive lives there. Do not create one-off wrappers.
+
+Before building a new input, select, button, or modal — check
+`src/components/ui/` first. Every generic UI primitive lives there. Do not
+create one-off wrappers.
 
 ---
 
@@ -104,27 +127,36 @@ src/
 
 ## Card Preview — Critical Detail
 
-Card is pixel-exact A4 (794×1123px) — **no Tailwind inside the card**. Use `CardPreview.module.css` or inline styles. Tailwind's responsive utilities break fixed-dimension layout.
+Card is pixel-exact A4 (794×1123px) — **no Tailwind inside the card**. Use
+`CardPreview.module.css` or inline styles. Tailwind's responsive utilities break
+fixed-dimension layout.
 
-`PREVIEW` watermark visible until user has valid download code. Clip to card boundary (`overflow: hidden` on container).
+`PREVIEW` watermark visible until user has valid download code. Clip to card
+boundary (`overflow: hidden` on container).
 
-In render mode (PDF generation), card renders without watermark, editor, or header. See `/render-mode` for the full pattern.
+In render mode (PDF generation), card renders without watermark, editor, or
+header. See `/render-mode` for the full pattern.
 
 ---
 
 ## Worker Integration
 
-All worker calls in `src/lib/worker.ts`. Never call `fetch` directly in components.
+All worker calls in `src/lib/worker.ts`. Never call `fetch` directly in
+components.
 
 ```ts
-const WORKER_BASE = 'https://maresafe-worker.maresafe.workers.dev'
+const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
 export async function createCheckoutSession(origin: string): Promise<string>
 export async function verifyCode(code: string): Promise<CodeStatus>
-export async function generatePdf(formData: FormData, lang: Language): Promise<Blob>
+export async function generatePdf(
+  formData: FormData,
+  lang: Language,
+): Promise<Blob>
 ```
 
 Endpoints:
+
 - `POST /create-checkout-session` — `{ origin }` → `{ url }`
 - `POST /check-code` — `{ code }` → `{ valid, tokens_remaining, status }`
 - `POST /generate-pdf` — `{ cardData, lang, code }` → binary PDF
@@ -147,7 +179,8 @@ colors: {
 }
 ```
 
-Font: system-ui stack. Mono: `ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace`.
+Font: system-ui stack. Mono:
+`ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace`.
 
 ---
 

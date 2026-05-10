@@ -1,9 +1,4 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type ReactNode,
-} from "react"
+import { useState, useRef, useEffect, type ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { cn } from "../../lib/cn"
 
@@ -33,7 +28,10 @@ export function Tooltip({ content, children, className }: TooltipProps) {
   useEffect(() => {
     if (!open) return
     function handleMouseDown(e: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target as Node)
+      ) {
         setOpen(false)
       }
     }
@@ -55,16 +53,17 @@ export function Tooltip({ content, children, className }: TooltipProps) {
       const idealLeft = triggerCenter - TOOLTIP_WIDTH / 2
       const clampedLeft = Math.max(
         VIEWPORT_PADDING,
-        Math.min(idealLeft, window.innerWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING),
+        Math.min(
+          idealLeft,
+          window.innerWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING,
+        ),
       )
       const above = rect.bottom + 80 > window.innerHeight
       setPosition({
         above,
         left: clampedLeft,
         arrowLeft: triggerCenter - clampedLeft,
-        top: above
-          ? rect.top - GAP - ARROW_SIZE
-          : rect.bottom + GAP,
+        top: above ? rect.top - GAP - ARROW_SIZE : rect.bottom + GAP,
       })
     }
     setOpen((v) => !v)
@@ -77,34 +76,42 @@ export function Tooltip({ content, children, className }: TooltipProps) {
         tabIndex={0}
         aria-expanded={open}
         onClick={handleToggle}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleToggle()}
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleToggle()
+        }
         className="cursor-pointer select-none"
       >
         {children}
       </span>
-      {open && position && createPortal(
-        <span
-          role="tooltip"
-          style={{
-            position: "fixed",
-            top: position.above ? undefined : position.top,
-            bottom: position.above ? window.innerHeight - position.top : undefined,
-            left: position.left,
-            width: TOOLTIP_WIDTH,
-          }}
-          className="z-9999 px-2 py-1.5 bg-navy text-white text-xs rounded leading-snug pointer-events-none"
-        >
-          {content}
+      {open &&
+        position &&
+        createPortal(
           <span
-            style={{ left: position.arrowLeft }}
-            className={cn(
-              "absolute -translate-x-1/2 border-4 border-transparent",
-              position.above ? "top-full border-t-navy" : "bottom-full border-b-navy",
-            )}
-          />
-        </span>,
-        document.body,
-      )}
+            role="tooltip"
+            style={{
+              position: "fixed",
+              top: position.above ? undefined : position.top,
+              bottom: position.above
+                ? window.innerHeight - position.top
+                : undefined,
+              left: position.left,
+              width: TOOLTIP_WIDTH,
+            }}
+            className="z-9999 px-2 py-1.5 bg-navy text-white text-xs rounded leading-snug pointer-events-none"
+          >
+            {content}
+            <span
+              style={{ left: position.arrowLeft }}
+              className={cn(
+                "absolute -translate-x-1/2 border-4 border-transparent",
+                position.above
+                  ? "top-full border-t-navy"
+                  : "bottom-full border-b-navy",
+              )}
+            />
+          </span>,
+          document.body,
+        )}
     </span>
   )
 }

@@ -217,7 +217,8 @@ export function DownloadBar({
                   isVerified
                     ? "text-green"
                     : "text-mid hover:bg-green/15 hover:text-green",
-                )}>
+                )}
+              >
                 <Check size={12} />
               </button>
               <button
@@ -225,7 +226,8 @@ export function DownloadBar({
                 onClick={clearCode}
                 tabIndex={-1}
                 aria-label="Clear code"
-                className="flex items-center justify-center w-5 h-5 rounded border-none bg-transparent text-mid cursor-pointer p-0 hover:bg-[#d0dbe8] hover:text-dark transition-colors">
+                className="flex items-center justify-center w-5 h-5 rounded border-none bg-transparent text-mid cursor-pointer p-0 hover:bg-[#d0dbe8] hover:text-dark transition-colors"
+              >
                 <X size={12} />
               </button>
             </div>
@@ -242,7 +244,8 @@ export function DownloadBar({
           className={cn(
             "flex flex-col gap-1.5",
             !isVerified && "opacity-40 pointer-events-none",
-          )}>
+          )}
+        >
           <span className="text-xs text-mid flex items-center gap-1 whitespace-nowrap">
             <span className="text-base font-bold text-navy2">② </span>
             {t("step_languages")}
@@ -266,7 +269,8 @@ export function DownloadBar({
           className={cn(
             "flex flex-col gap-1.5",
             downloadDisabled && "opacity-40",
-          )}>
+          )}
+        >
           <span className="text-xs text-mid flex items-center gap-1 whitespace-nowrap">
             <span className="text-base font-bold text-navy2">③ </span>
             {t("step_download")}
@@ -275,7 +279,8 @@ export function DownloadBar({
             type="button"
             onClick={handleDownload}
             disabled={downloadDisabled}
-            className="inline-flex items-center justify-center gap-1.75 w-full bg-[#2a9d5c] hover:bg-[#228a4f] text-white text-xs font-bold rounded py-2 px-4 border-none cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+            className="inline-flex items-center justify-center gap-1.75 w-full bg-[#2a9d5c] hover:bg-[#228a4f] text-white text-xs font-bold rounded py-2 px-4 border-none cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
             <Download size={14} />
             {isDownloading ? "…" : t("btn_download")}
           </button>

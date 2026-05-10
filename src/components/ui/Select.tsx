@@ -228,7 +228,8 @@ export function Select(props: SelectProps) {
       {label && (
         <label
           htmlFor={id}
-          className="text-xs font-semibold tracking-wider uppercase text-navy2">
+          className="text-xs font-semibold tracking-wider uppercase text-navy2"
+        >
           {label}
         </label>
       )}
@@ -257,7 +258,8 @@ export function Select(props: SelectProps) {
               "hover:bg-white/15",
               open && "bg-white/15",
             ],
-          )}>
+          )}
+        >
           {props.multiple ? (
             showPlaceholder ? (
               <span className="flex-1 truncate text-lgray">{placeholder}</span>
@@ -267,7 +269,8 @@ export function Select(props: SelectProps) {
                   <span
                     key={opt.value}
                     title={opt.label}
-                    className="shrink-0 text-base leading-none">
+                    className="shrink-0 text-base leading-none"
+                  >
                     {opt.flag ?? opt.label.slice(0, 2)}
                   </span>
                 ))}
@@ -287,7 +290,8 @@ export function Select(props: SelectProps) {
                 className={cn(
                   "flex-1 truncate",
                   showPlaceholder && "text-lgray",
-                )}>
+                )}
+              >
                 {singleSelected?.label ?? placeholder}
               </span>
             </>
@@ -307,7 +311,8 @@ export function Select(props: SelectProps) {
             <div
               ref={dropdownRef}
               style={dropdownStyle}
-              className="bg-white border border-navy/20 rounded shadow-lg">
+              className="bg-white border border-navy/20 rounded shadow-lg"
+            >
               <div className="flex items-center gap-2 px-3 py-2 border-b border-lgray/20">
                 <Search
                   size={12}
@@ -328,7 +333,8 @@ export function Select(props: SelectProps) {
                 ref={listRef}
                 role="listbox"
                 aria-multiselectable={props.multiple}
-                className="max-h-48 overflow-y-auto py-1">
+                className="max-h-48 overflow-y-auto py-1"
+              >
                 {filteredOptions.length === 0 ? (
                   <li className="px-3 py-2 text-sm text-lgray">
                     {t("select_no_results")}
@@ -350,7 +356,8 @@ export function Select(props: SelectProps) {
                           i === focusedIndex && "bg-navy/10",
                           selected && "text-navy font-medium",
                           optDisabled && "opacity-40 cursor-not-allowed",
-                        )}>
+                        )}
+                      >
                         <OptionContent opt={opt} />
                         {selected && (
                           <Check

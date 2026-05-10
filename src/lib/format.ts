@@ -1,4 +1,8 @@
-import { parsePhoneNumber, getCountryCallingCode, type CountryCode } from "libphonenumber-js"
+import {
+  parsePhoneNumber,
+  getCountryCallingCode,
+  type CountryCode,
+} from "libphonenumber-js"
 import type { Language } from "../types"
 
 export type SignalBeat = "L" | "S" | "XS"

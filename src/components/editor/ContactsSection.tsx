@@ -59,7 +59,8 @@ export function ContactsSection({
                 type="button"
                 onClick={() => removeContact(index)}
                 className="text-lgray hover:text-red border-none bg-transparent cursor-pointer px-1 text-sm leading-none self-end pb-2.25"
-                aria-label={t("btn_remove_contact")}>
+                aria-label={t("btn_remove_contact")}
+              >
                 ✕
               </button>
             )}
@@ -71,7 +72,8 @@ export function ContactsSection({
         type="button"
         onClick={addContact}
         disabled={!canAdd}
-        className="bg-[#eef3f8] border border-[#a8c4e0] rounded text-xs font-semibold text-navy2 px-3 py-1.25 cursor-pointer hover:bg-[#d6e4f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+        className="bg-[#eef3f8] border border-[#a8c4e0] rounded text-xs font-semibold text-navy2 px-3 py-1.25 cursor-pointer hover:bg-[#d6e4f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      >
         {t("btn_add_contact")}
       </button>
     </section>

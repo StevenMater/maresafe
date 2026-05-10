@@ -3,8 +3,15 @@ import { DEFAULT_COUNTRY, LANGUAGES, SUPPORTED_COUNTRIES } from "../types"
 import { EMPTY_FORM } from "../hooks/useFormData"
 
 const DIAL_TO_COUNTRY: Record<string, CountryCode> = {
-  "+31": "NL", "+32": "BE", "+49": "DE", "+33": "FR",
-  "+44": "GB", "+1":  "US", "+45": "DK", "+47": "NO", "+46": "SE",
+  "+31": "NL",
+  "+32": "BE",
+  "+49": "DE",
+  "+33": "FR",
+  "+44": "GB",
+  "+1": "US",
+  "+45": "DK",
+  "+47": "NO",
+  "+46": "SE",
 }
 
 function toCountry(dial: unknown): CountryCode {
@@ -53,7 +60,9 @@ export function fromWorkerFormData(raw: RawData): CardData {
             .filter((c) => c.label || c.number)
             .map((c) => ({
               label: str(c.label),
-              country: isValidCountry(c.country) ? c.country : toCountry(c.dialCode),
+              country: isValidCountry(c.country)
+                ? c.country
+                : toCountry(c.dialCode),
               number: str(c.number),
             }))
         : []
@@ -64,7 +73,8 @@ export function fromWorkerFormData(raw: RawData): CardData {
 
 export function parseRenderLang(raw: RawData): Language {
   const lang = raw.lang
-  return typeof lang === "string" && (LANGUAGES as readonly string[]).includes(lang)
+  return typeof lang === "string" &&
+    (LANGUAGES as readonly string[]).includes(lang)
     ? (lang as Language)
     : "nl"
 }

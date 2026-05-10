@@ -124,7 +124,8 @@ export function ContactsSection({ data }: ContactsSectionProps) {
               <td className={s.colDescription}>{t("h_rmd")}</td>
               <td
                 className={s.colNumber}
-                style={{ color: "var(--color-green)" }}>
+                style={{ color: "var(--color-green)" }}
+              >
                 +31 88 958 4020
               </td>
             </tr>

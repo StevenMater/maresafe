@@ -84,7 +84,8 @@ function AppContent() {
       <div className="flex-1">
         <div
           ref={cardRowRef}
-          className="flex flex-wrap justify-center items-center gap-6 px-4 pt-5">
+          className="flex flex-wrap justify-center items-center gap-6 px-4 pt-5"
+        >
           <div style={cardScale < 1 ? { zoom: cardScale } : undefined}>
             <CardPreview data={cardData} showWatermark={true} />
           </div>

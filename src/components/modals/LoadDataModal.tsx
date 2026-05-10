@@ -68,7 +68,8 @@ export function LoadDataModal({
             isDragging
               ? "border-navy2 bg-navy2/5"
               : "border-[#a8c4e0] bg-[#f0f6ff] hover:border-navy2 hover:bg-navy2/5"
-          }`}>
+          }`}
+        >
           <Upload size={24} strokeWidth={1.5} className="text-navy2" />
           <span className="text-sm text-mid text-center">
             {t("modal_load_drop")}

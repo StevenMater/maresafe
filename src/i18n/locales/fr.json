@@ -13,7 +13,10 @@
   "btn_download_pdf_zero": "Sélectionnez une langue",
   "label_free": "gratuit",
   "placeholder_code": "Saisir le code",
-  "code_uses_remaining": { "one": "{n} utilisation restante", "other": "{n} utilisations restantes" },
+  "code_uses_remaining": {
+    "one": "{n} utilisation restante",
+    "other": "{n} utilisations restantes"
+  },
   "code_uses_unlimited": "utilisations illimitées",
   "code_uses_depleted": "Code entièrement utilisé",
   "code_invalid": "Code invalide",

@@ -117,7 +117,10 @@ export default {
       return handleRevokeCode(request, env)
     }
 
-    if (request.method === "POST" && url.pathname === "/create-checkout-session") {
+    if (
+      request.method === "POST" &&
+      url.pathname === "/create-checkout-session"
+    ) {
       return handleCreateCheckoutSession(request, env)
     }
 
@@ -138,7 +141,8 @@ async function handleCheckCode(request, env) {
   if (!raw) return corsResponse({ valid: false }, 200, env)
 
   const { tokens_remaining, status } = JSON.parse(raw)
-  if (status && status !== "active") return corsResponse({ valid: false }, 200, env)
+  if (status && status !== "active")
+    return corsResponse({ valid: false }, 200, env)
   return corsResponse({ valid: true, tokens: tokens_remaining }, 200, env)
 }
 
@@ -156,15 +160,18 @@ async function handleCreateCode(request, env) {
 
   const total = uses || 3
   const code = generateCode()
-  await env.BYPASS_CODES.put(code, JSON.stringify({
-    tokens_total: total,
-    tokens_remaining: total,
-    email,
-    source: "manual",
-    status: "active",
-    created_at: new Date().toISOString(),
-    uses_log: [],
-  }))
+  await env.BYPASS_CODES.put(
+    code,
+    JSON.stringify({
+      tokens_total: total,
+      tokens_remaining: total,
+      email,
+      source: "manual",
+      status: "active",
+      created_at: new Date().toISOString(),
+      uses_log: [],
+    }),
+  )
   await sendCodeEmail(email, code, "en", env)
   return corsResponse({ code }, 200, env)
 }
@@ -176,8 +183,11 @@ async function handleGeneratePdf(request, env) {
 
   const { code, formData, languages, area, lang } = body
 
-  if (!Array.isArray(languages) || languages.length === 0 ||
-      !languages.every((l) => VALID_LANGS.includes(l))) {
+  if (
+    !Array.isArray(languages) ||
+    languages.length === 0 ||
+    !languages.every((l) => VALID_LANGS.includes(l))
+  ) {
     return corsResponse({ error: "Invalid languages" }, 400, env)
   }
 
@@ -200,7 +210,8 @@ async function handleGeneratePdf(request, env) {
 
   // ── Fetch page HTML ────────────────────────────────────────────
   const pageRes = await fetch(env.CARD_URL)
-  if (!pageRes.ok) return corsResponse({ error: "Could not fetch card page" }, 503, env)
+  if (!pageRes.ok)
+    return corsResponse({ error: "Could not fetch card page" }, 503, env)
   const pageHtml = await pageRes.text()
 
   // ── Render PDFs in parallel ────────────────────────────────────
@@ -211,7 +222,7 @@ async function handleGeneratePdf(request, env) {
       pdfs.push(await renderPdf(pageHtml, { ...formData, lang: l }, env))
     }
   } catch (err) {
-return corsResponse({ error: "PDF generation failed" }, 503, env)
+    return corsResponse({ error: "PDF generation failed" }, 503, env)
   }
 
   // ── Decrement tokens + append uses_log ────────────────────────
@@ -221,34 +232,48 @@ return corsResponse({ error: "PDF generation failed" }, 503, env)
     const newEntries = languages.map((l) => ({ at: now, lang: l }))
 
     if (newRemaining <= 0) {
-      await env.BYPASS_CODES.put(code, JSON.stringify({
-        ...codeData,
-        tokens_remaining: 0,
-        status: "depleted",
-        uses_log: [...(codeData.uses_log || []), ...newEntries],
-      }))
+      await env.BYPASS_CODES.put(
+        code,
+        JSON.stringify({
+          ...codeData,
+          tokens_remaining: 0,
+          status: "depleted",
+          uses_log: [...(codeData.uses_log || []), ...newEntries],
+        }),
+      )
     } else {
-      await env.BYPASS_CODES.put(code, JSON.stringify({
-        ...codeData,
-        tokens_remaining: newRemaining,
-        uses_log: [...(codeData.uses_log || []), ...newEntries],
-      }))
+      await env.BYPASS_CODES.put(
+        code,
+        JSON.stringify({
+          ...codeData,
+          tokens_remaining: newRemaining,
+          uses_log: [...(codeData.uses_log || []), ...newEntries],
+        }),
+      )
     }
 
     if (codeData.email) {
       const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
-      await sendReceiptEmail(codeData.email, formData, languages, newRemaining, emailLang, env)
+      await sendReceiptEmail(
+        codeData.email,
+        formData,
+        languages,
+        newRemaining,
+        emailLang,
+        env,
+      )
     }
   }
 
   // ── ZIP ────────────────────────────────────────────────────────
   const vesselName = formData?.name || "card"
-  const areaLabel  = AREA_LABEL[area]
+  const areaLabel = AREA_LABEL[area]
 
   const files = {}
   for (let i = 0; i < languages.length; i++) {
     const l = languages[i]
-    files[`MareSafe - ${vesselName} - ${areaLabel} - ${LANG_LABEL[l]}.pdf`] = new Uint8Array(pdfs[i])
+    files[`MareSafe - ${vesselName} - ${areaLabel} - ${LANG_LABEL[l]}.pdf`] =
+      new Uint8Array(pdfs[i])
   }
   const zipped = zipSync(files)
 
@@ -281,7 +306,11 @@ async function handleStripeWebhook(request, env) {
     false,
     ["sign"],
   )
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))
+  const mac = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(payload),
+  )
   const expected = Array.from(new Uint8Array(mac))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("")
@@ -300,15 +329,18 @@ async function handleStripeWebhook(request, env) {
   const lang = localeToLang(session?.locale)
 
   const code = generateCode()
-  await env.BYPASS_CODES.put(code, JSON.stringify({
-    tokens_total: 3,
-    tokens_remaining: 3,
-    email,
-    source: "payment",
-    status: "active",
-    created_at: new Date().toISOString(),
-    uses_log: [],
-  }))
+  await env.BYPASS_CODES.put(
+    code,
+    JSON.stringify({
+      tokens_total: 3,
+      tokens_remaining: 3,
+      email,
+      source: "payment",
+      status: "active",
+      created_at: new Date().toISOString(),
+      uses_log: [],
+    }),
+  )
 
   if (email) await sendCodeEmail(email, code, lang, env)
 
@@ -318,14 +350,11 @@ async function handleStripeWebhook(request, env) {
 // ── Browserless PDF render ─────────────────────────────────────────
 async function renderPdf(pageHtml, cardData, env) {
   const injected = pageHtml
-    .replace(
-      "<head>",
-      `<head><base href="${env.CARD_URL}">`,
-    )
+    .replace("<head>", `<head><base href="${env.CARD_URL}">`)
     .replace(
       "</head>",
       `<script>window.__CARD_DATA__=${JSON.stringify(cardData)};window.__RENDER_MODE__=true;</script>` +
-      `<style>.watermark-overlay{display:none!important}</style></head>`,
+        `<style>.watermark-overlay{display:none!important}</style></head>`,
     )
 
   const res = await fetch(
@@ -335,9 +364,7 @@ async function renderPdf(pageHtml, cardData, env) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         html: injected,
-        addStyleTag: [
-          { content: "@page { size: 210mm 297mm; margin: 0; }" },
-        ],
+        addStyleTag: [{ content: "@page { size: 210mm 297mm; margin: 0; }" }],
         options: {
           printBackground: true,
           preferCSSPageSize: true,
@@ -369,22 +396,33 @@ async function handleListCodes(request, env) {
       const raw = await env.BYPASS_CODES.get(name)
       const data = raw
         ? JSON.parse(raw)
-        : { tokens_total: 0, tokens_remaining: 0, source: "unknown", uses_log: [] }
+        : {
+            tokens_total: 0,
+            tokens_remaining: 0,
+            source: "unknown",
+            uses_log: [],
+          }
       return { code: name, ...data }
     }),
   )
-  codes.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+  codes.sort(
+    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0),
+  )
   return corsResponse({ codes }, 200, env)
 }
 
 // ── /revoke-code ───────────────────────────────────────────────────
 async function handleRevokeCode(request, env) {
   const { masterCode, code } = await request.json().catch(() => ({}))
-  if (masterCode !== env.MASTER_CODE) return corsResponse({ error: "Forbidden" }, 403, env)
+  if (masterCode !== env.MASTER_CODE)
+    return corsResponse({ error: "Forbidden" }, 403, env)
   const raw = await env.BYPASS_CODES.get(code)
   if (!raw) return corsResponse({ error: "Code not found" }, 404, env)
   const data = JSON.parse(raw)
-  await env.BYPASS_CODES.put(code, JSON.stringify({ ...data, status: "revoked" }))
+  await env.BYPASS_CODES.put(
+    code,
+    JSON.stringify({ ...data, status: "revoked" }),
+  )
   return corsResponse({ ok: true }, 200, env)
 }
 
@@ -392,7 +430,8 @@ async function handleRevokeCode(request, env) {
 async function handleCreateCheckoutSession(request, env) {
   const { origin } = await request.json().catch(() => ({}))
   if (!origin) return corsResponse({ error: "Missing origin" }, 400, env)
-  if (!env.STRIPE_PRICE_ID) return corsResponse({ error: "STRIPE_PRICE_ID not configured" }, 500, env)
+  if (!env.STRIPE_PRICE_ID)
+    return corsResponse({ error: "STRIPE_PRICE_ID not configured" }, 500, env)
 
   const params = new URLSearchParams({
     mode: "payment",
@@ -412,7 +451,12 @@ async function handleCreateCheckoutSession(request, env) {
   })
 
   const session = await res.json()
-  if (!res.ok) return corsResponse({ error: session.error?.message || "Stripe error" }, 502, env)
+  if (!res.ok)
+    return corsResponse(
+      { error: session.error?.message || "Stripe error" },
+      502,
+      env,
+    )
   return corsResponse({ url: session.url }, 200, env)
 }
 
@@ -435,7 +479,14 @@ async function sendCodeEmail(email, code, lang, env) {
 }
 
 // ── Email: download receipt + JSON backup ─────────────────────────
-async function sendReceiptEmail(email, formData, languages, tokensRemaining, lang, env) {
+async function sendReceiptEmail(
+  email,
+  formData,
+  languages,
+  tokensRemaining,
+  lang,
+  env,
+) {
   const t = EMAIL_T[lang] || EMAIL_T.en
   const vesselName = formData?.name || "your vessel"
   const langList = languages.map((l) => LANG_LABEL[l]).join(", ")
@@ -453,7 +504,12 @@ async function sendReceiptEmail(email, formData, languages, tokensRemaining, lan
       from: "MareSafe <noreply@contact.maresafe.eu>",
       to: email,
       subject: t.receipt_subject(vesselName),
-      html: t.receipt_body(languages.length, langList, vesselName, tokensRemaining),
+      html: t.receipt_body(
+        languages.length,
+        langList,
+        vesselName,
+        tokensRemaining,
+      ),
       attachments: [{ filename, content: base64 }],
     }),
   }).catch(() => {})

@@ -11,7 +11,8 @@ export function CheckoutWidget() {
       </div>
       <button
         type="button"
-        className="w-full bg-mob-blue hover:bg-navy2 text-white text-base font-semibold rounded-lg py-3 px-5 cursor-pointer transition-colors border-none">
+        className="w-full bg-mob-blue hover:bg-navy2 text-white text-base font-semibold rounded-lg py-3 px-5 cursor-pointer transition-colors border-none"
+      >
         {t("btn_buy")}
       </button>
       <p className="text-xs text-mid m-0">{t("payment_methods")}</p>
@@ -20,7 +21,8 @@ export function CheckoutWidget() {
           width="38"
           height="24"
           viewBox="0 0 38 24"
-          aria-label="American Express">
+          aria-label="American Express"
+        >
           <rect width="38" height="24" rx="4" fill="#2E77BC" />
           <text
             x="19"
@@ -30,7 +32,8 @@ export function CheckoutWidget() {
             fontSize="9"
             fontWeight="700"
             fill="white"
-            letterSpacing="0.5">
+            letterSpacing="0.5"
+          >
             AMEX
           </text>
         </svg>
@@ -49,7 +52,8 @@ export function CheckoutWidget() {
             fontSize="11"
             fontWeight="700"
             fontStyle="italic"
-            fill="white">
+            fill="white"
+          >
             VISA
           </text>
         </svg>
@@ -61,7 +65,8 @@ export function CheckoutWidget() {
             textAnchor="middle"
             fontFamily="-apple-system,Arial,sans-serif"
             fontSize="9"
-            fill="white">
+            fill="white"
+          >
             Apple Pay
           </text>
         </svg>
@@ -81,7 +86,8 @@ export function CheckoutWidget() {
             fontFamily="Arial,sans-serif"
             fontSize="10"
             fontWeight="700"
-            fill="#CC0000">
+            fill="#CC0000"
+          >
             iDEAL
           </text>
         </svg>

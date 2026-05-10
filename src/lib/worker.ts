@@ -3,8 +3,15 @@ import type { CardData, CodeStatus, CountryCode, Language } from "../types"
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
 const COUNTRY_TO_DIAL: Partial<Record<CountryCode, string>> = {
-  NL: "+31", BE: "+32", DE: "+49", FR: "+33",
-  GB: "+44", US: "+1",  DK: "+45", NO: "+47", SE: "+46",
+  NL: "+31",
+  BE: "+32",
+  DE: "+49",
+  FR: "+33",
+  GB: "+44",
+  US: "+1",
+  DK: "+45",
+  NO: "+47",
+  SE: "+46",
 }
 const DEFAULT_DIAL = "+31"
 
@@ -37,7 +44,11 @@ function toWorkerFormData(data: CardData, lang: Language) {
     insurerOfficeNumber: data.insurerOfficeNumber,
     contacts: data.contacts
       .filter((c) => c.label || c.number)
-      .map((c) => ({ label: c.label, dialCode: dial(c.country), number: c.number })),
+      .map((c) => ({
+        label: c.label,
+        dialCode: dial(c.country),
+        number: c.number,
+      })),
   }
 }
 
