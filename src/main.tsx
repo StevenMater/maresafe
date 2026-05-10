@@ -17,15 +17,12 @@ declare global {
 function CardRenderView({ data, lang }: { data: CardData; lang: Language }) {
   useEffect(() => {
     document.body.style.cssText = "margin:0;padding:0;background:white;"
-    const ready = document.createElement("div")
-    ready.id = "render-ready"
-    ready.style.display = "none"
-    document.body.appendChild(ready)
   }, [])
 
   return (
     <TranslationProvider initialLang={lang}>
       <CardPreview data={data} showWatermark={false} />
+      <div id="render-ready" style={{ display: "none" }} />
     </TranslationProvider>
   )
 }
