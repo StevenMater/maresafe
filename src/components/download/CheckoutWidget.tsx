@@ -4,7 +4,7 @@ export function CheckoutWidget() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl min-w-60 max-w-72 self-start">
+    <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl min-w-60 max-w-72">
       <div className="flex flex-col items-center gap-0.5">
         <span className="text-sm text-mid">MareSafe</span>
         <span className="text-4xl font-bold text-dark">€2</span>
@@ -20,7 +20,6 @@ export function CheckoutWidget() {
           width="38"
           height="24"
           viewBox="0 0 38 24"
-          xmlns="http://www.w3.org/2000/svg"
           aria-label="American Express">
           <rect width="38" height="24" rx="4" fill="#2E77BC" />
           <text
@@ -35,22 +34,12 @@ export function CheckoutWidget() {
             AMEX
           </text>
         </svg>
-        <svg
-          width="38"
-          height="24"
-          viewBox="0 0 38 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="Mastercard">
+        <svg width="38" height="24" viewBox="0 0 38 24" aria-label="Mastercard">
           <rect width="38" height="24" rx="4" fill="#1a1a1a" />
           <circle cx="15" cy="12" r="7" fill="#EB001B" />
           <circle cx="23" cy="12" r="7" fill="#F79E1B" opacity="0.9" />
         </svg>
-        <svg
-          width="38"
-          height="24"
-          viewBox="0 0 38 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="Visa">
+        <svg width="38" height="24" viewBox="0 0 38 24" aria-label="Visa">
           <rect width="38" height="24" rx="4" fill="#1A1F71" />
           <text
             x="19"
@@ -64,12 +53,7 @@ export function CheckoutWidget() {
             VISA
           </text>
         </svg>
-        <svg
-          width="52"
-          height="24"
-          viewBox="0 0 52 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="Apple Pay">
+        <svg width="52" height="24" viewBox="0 0 52 24" aria-label="Apple Pay">
           <rect width="52" height="24" rx="4" fill="#000" />
           <text
             x="26"
@@ -81,12 +65,7 @@ export function CheckoutWidget() {
             Apple Pay
           </text>
         </svg>
-        <svg
-          width="38"
-          height="24"
-          viewBox="0 0 38 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-label="iDEAL">
+        <svg width="38" height="24" viewBox="0 0 38 24" aria-label="iDEAL">
           <rect
             width="38"
             height="24"
