@@ -23,7 +23,7 @@ export function Header({ seenInfo, markSeen }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center gap-4 py-2.5 px-6 bg-navy shrink-0">
+      <header className="flex items-center gap-4 py-2.5 px-6 bg-navy shrink-0">
         <BrandTitle />
         <div className="flex items-center gap-2 ml-auto">
           <Select
