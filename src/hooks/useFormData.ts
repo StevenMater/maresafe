@@ -119,7 +119,7 @@ function loadFromStorage(): FormState {
       const { data, lang } = parseStoredData(parsed.formData as RawData)
       return {
         data,
-        outdated: false,
+        outdated: (parsed.formData as RawData)?.version !== CURRENT_VERSION,
         savedLanguage: lang,
         formCollapsed: parsed.formCollapsed !== false,
         seenInfo: parsed.seenInfo === true,
@@ -266,7 +266,7 @@ export function useFormData(): UseFormDataReturn {
           setState((s) => ({
             ...s,
             data,
-            outdated: false,
+            outdated: raw.version !== CURRENT_VERSION,
             savedLanguage: null,
           }))
           resolve({ success: true, lang })
