@@ -16,6 +16,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
         {t("sec_ship")}
       </h2>
 
+      {/* Vessel identity — 5 inputs */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label={t("f_name")}
@@ -28,6 +29,12 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           tooltip={t("tip_f_type")}
           value={data.type}
           onChange={(e) => setField("type", e.target.value)}
+        />
+        <Input
+          label={t("f_homeport")}
+          tooltip={t("tip_f_homeport")}
+          value={data.homePort}
+          onChange={(e) => setField("homePort", e.target.value)}
         />
         <Input
           label={t("f_eni")}
@@ -44,6 +51,12 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("callSign", e.target.value)}
           maxLength={6}
         />
+      </div>
+
+      <hr className="my-3 border-t border-navy2 border-0" />
+
+      {/* Registration numbers — 2–4 inputs (country profile, see TODO in ShipSection) */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label="ATIS"
           tooltip={t("tip_atis")}
@@ -64,6 +77,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
 
       <hr className="my-3 border-t border-navy2 border-0" />
 
+      {/* Dimensions — 8 inputs */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label={t("f_length")}
@@ -90,6 +104,14 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           suffix="m"
         />
         <Input
+          label={t("f_alt_width")}
+          tooltip={t("tip_f_alt_width")}
+          value={data.altWidth}
+          onChange={(e) => setField("altWidth", e.target.value)}
+          decimal
+          suffix="m"
+        />
+        <Input
           label={t("f_draft")}
           tooltip={t("tip_f_draft")}
           value={data.draft}
@@ -98,18 +120,26 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           suffix="m"
         />
         <Input
-          label={t("f_airdraft")}
-          tooltip={t("tip_f_airdraft")}
-          value={data.airDraft}
-          onChange={(e) => setField("airDraft", e.target.value)}
+          label={t("f_alt_draft")}
+          tooltip={t("tip_f_alt_draft")}
+          value={data.altDraft}
+          onChange={(e) => setField("altDraft", e.target.value)}
           decimal
           suffix="m"
         />
         <Input
-          label={t("f_alt_airdraft")}
-          tooltip={t("tip_f_alt_airdraft")}
-          value={data.altAirDraft}
-          onChange={(e) => setField("altAirDraft", e.target.value)}
+          label={t("f_headway")}
+          tooltip={t("tip_f_headway")}
+          value={data.headway}
+          onChange={(e) => setField("headway", e.target.value)}
+          decimal
+          suffix="m"
+        />
+        <Input
+          label={t("f_alt_headway")}
+          tooltip={t("tip_f_alt_headway")}
+          value={data.altHeadway}
+          onChange={(e) => setField("altHeadway", e.target.value)}
           decimal
           suffix="m"
         />

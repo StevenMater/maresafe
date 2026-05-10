@@ -9,10 +9,11 @@ function formatDimension(v: string): string {
   return isNaN(n) ? "0,00" : n.toFixed(2).replace(".", ",")
 }
 
-function formatDimensionIfSet(v: string): string | null {
+function formatDimensionIfSet(v: string | undefined): string | null {
+  if (!v) return null
   const n = parseFloat(v.replace(",", "."))
 
-  return v && v.trim() && !isNaN(n) && n > 0
+  return v.trim() && !isNaN(n) && n > 0
     ? n.toFixed(2).replace(".", ",")
     : null
 }
@@ -25,7 +26,9 @@ export function ShipSection({ data }: ShipSectionProps) {
   const { t } = useTranslation()
 
   const altLen = formatDimensionIfSet(data.altLength)
-  const altAir = formatDimensionIfSet(data.altAirDraft)
+  const altWidth = formatDimensionIfSet(data.altWidth)
+  const altDraft = formatDimensionIfSet(data.altDraft)
+  const altAir = formatDimensionIfSet(data.altHeadway)
 
   return (
     <>
@@ -43,6 +46,10 @@ export function ShipSection({ data }: ShipSectionProps) {
               <td className={s.colValue}>{data.type || "—"}</td>
             </tr>
             <tr>
+              <td className={s.colLabel}>{t("f_homeport")}</td>
+              <td className={s.colValue}>{data.homePort || "—"}</td>
+            </tr>
+            <tr>
               <td className={s.colLabel}>{t("f_eni")}</td>
               <td className={s.colValue}>{formatENI(data.eni)}</td>
             </tr>
@@ -50,7 +57,7 @@ export function ShipSection({ data }: ShipSectionProps) {
               <td className={s.colLabel}>{t("f_callsign")}</td>
               <td className={s.colValue}>{data.callSign || "—"}</td>
             </tr>
-            <tr>
+            <tr className={s.separatorRow}>
               <td className={s.colLabel}>ATIS</td>
               <td className={s.colValue}>{formatATIS(data.atis)}</td>
             </tr>
@@ -58,49 +65,54 @@ export function ShipSection({ data }: ShipSectionProps) {
               <td className={s.colLabel}>MMSI</td>
               <td className={s.colValue}>{formatMMSI(data.mmsi)}</td>
             </tr>
-            <tr className={s.spacerRow}>
-              <td colSpan={2} />
-            </tr>
+            {/* TODO: Sailing area / country profile feature
+                Replace hardcoded `atis` + `mmsi` with 4 generic identifier slots (id1–id4).
+                A country profile defines which slots are active (2–4 max), their labels,
+                input type (numeric/text), and maxLength. Card renders only active slots.
+                Form shows only active inputs. Everything else on the card is unchanged.
+                Example profiles:
+                  NL inland:   id1=ATIS(10), id2=MMSI(9)
+                  BE inland:   id1=Vlootregistratie, id2=MMSI(9)
+                  FR coastal:  id1=Immatriculation, id2=MMSI(9), id3=Indicatif VHF
+                If a 5th slot ever becomes needed, tackle it then. */}
             <tr className={s.separatorRow}>
               <td className={s.colLabel}>
                 {t("f_length")}
-                {altLen && (
-                  <span className={s.altValueSeparator}>
-                    {" "}
-                    | {t("f_alt_length")}
-                  </span>
-                )}
+                {altLen && <span className={s.altValueSeparator}> | alt.</span>}
               </td>
               <td className={s.colValue}>
                 {formatDimension(data.length)} m
-                {altLen && (
-                  <span className={s.altValueSeparator}> | {altLen} m</span>
-                )}
+                {altLen && <span className={s.altValueSeparator}> | {altLen} m</span>}
               </td>
-            </tr>
-            <tr>
-              <td className={s.colLabel}>{t("f_width")}</td>
-              <td className={s.colValue}>{formatDimension(data.width)} m</td>
-            </tr>
-            <tr>
-              <td className={s.colLabel}>{t("f_draft")}</td>
-              <td className={s.colValue}>{formatDimension(data.draft)} m</td>
             </tr>
             <tr>
               <td className={s.colLabel}>
-                {t("f_airdraft")}
-                {altAir && (
-                  <span className={s.altValueSeparator}>
-                    {" "}
-                    | {t("f_alt_airdraft")}
-                  </span>
-                )}
+                {t("f_width")}
+                {altWidth && <span className={s.altValueSeparator}> | alt.</span>}
               </td>
               <td className={s.colValue}>
-                {formatDimension(data.airDraft)} m
-                {altAir && (
-                  <span className={s.altValueSeparator}> | {altAir} m</span>
-                )}
+                {formatDimension(data.width)} m
+                {altWidth && <span className={s.altValueSeparator}> | {altWidth} m</span>}
+              </td>
+            </tr>
+            <tr>
+              <td className={s.colLabel}>
+                {t("f_draft")}
+                {altDraft && <span className={s.altValueSeparator}> | alt.</span>}
+              </td>
+              <td className={s.colValue}>
+                {formatDimension(data.draft)} m
+                {altDraft && <span className={s.altValueSeparator}> | {altDraft} m</span>}
+              </td>
+            </tr>
+            <tr>
+              <td className={s.colLabel}>
+                {t("f_headway")}
+                {altAir && <span className={s.altValueSeparator}> | alt.</span>}
+              </td>
+              <td className={s.colValue}>
+                {formatDimension(data.headway)} m
+                {altAir && <span className={s.altValueSeparator}> | {altAir} m</span>}
               </td>
             </tr>
           </tbody>
