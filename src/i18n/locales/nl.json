@@ -1,4 +1,5 @@
 {
+  "btn_save": "Gegevens opslaan",
   "btn_load": "Gegevens laden",
   "btn_clear": "Formulier wissen",
   "tip_info_btn": "Informatie & uitleg",
@@ -155,12 +156,15 @@
   "load_invalid_title": "Ongeldig bestand",
   "load_invalid_body": "Het bestand kon niet worden ingeladen. Controleer of je het juiste back-upbestand hebt geselecteerd en probeer het opnieuw.",
   "buy_secured": "Beveiligd door Stripe",
-  "download_tagline": "Kies je talen, betaal eenmalig — download direct.",
+  "download_tagline": "Koop een code - Voeg je gegevens toe - Download direct",
+  "download_subtagline": "Na het invoeren van een geldige code verschijnen je persoonlijke gegevens in de kaartpreview, zodat je alles kunt controleren voor het downloaden.",
   "step_languages": "Talen",
   "step_code": "Downloadcode",
   "step_download": "Download",
   "payment_success_body": "Betaling ontvangen — check je e-mail voor je downloadcode.",
   "btn_download": "Downloaden",
+  "select_search": "Zoeken…",
+  "select_no_results": "Geen resultaten",
   "form_toggle_label": "Voeg je persoonlijke gegevens toe",
   "fire": [
     "Motor uit — brandstoftoevoer afsluiten",

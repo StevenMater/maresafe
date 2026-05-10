@@ -1,4 +1,5 @@
 {
+  "btn_save": "Sauvegarder",
   "btn_load": "Charger",
   "btn_clear": "Effacer le formulaire",
   "tip_info_btn": "Informations & aide",
@@ -155,12 +156,15 @@
   "load_invalid_title": "Fichier invalide",
   "load_invalid_body": "Le fichier n'a pas pu être chargé. Vérifiez que vous avez sélectionné le bon fichier de sauvegarde et réessayez.",
   "buy_secured": "Sécurisé par Stripe",
-  "download_tagline": "Choisissez vos langues, payez une fois — téléchargez instantanément.",
+  "download_tagline": "Achetez un code - Ajoutez vos données - Téléchargez instantanément",
+  "download_subtagline": "Après avoir saisi un code valide, vos données personnelles apparaissent dans l'aperçu de la carte pour que vous puissiez les vérifier avant de télécharger.",
   "step_languages": "Langues",
   "step_code": "Code de téléchargement",
   "step_download": "Télécharger",
   "payment_success_body": "Paiement reçu — vérifiez votre e-mail pour votre code de téléchargement.",
   "btn_download": "Télécharger",
+  "select_search": "Rechercher…",
+  "select_no_results": "Aucun résultat",
   "form_toggle_label": "Ajoutez vos données personnelles",
   "fire": [
     "Couper le moteur — couper l'alimentation en carburant",

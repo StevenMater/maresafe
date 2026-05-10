@@ -1,4 +1,5 @@
 {
+  "btn_save": "Daten speichern",
   "btn_load": "Daten laden",
   "btn_clear": "Formular löschen",
   "tip_info_btn": "Informationen & Hilfe",
@@ -155,12 +156,15 @@
   "load_invalid_title": "Ungültige Datei",
   "load_invalid_body": "Die Datei konnte nicht geladen werden. Stellen Sie sicher, dass Sie die richtige Sicherungsdatei ausgewählt haben, und versuchen Sie es erneut.",
   "buy_secured": "Gesichert durch Stripe",
-  "download_tagline": "Sprachen wählen, einmal zahlen — sofort herunterladen.",
+  "download_tagline": "Einen Code kaufen - Persönliche Daten hinzufügen - Sofort herunterladen",
+  "download_subtagline": "Nach Eingabe eines gültigen Codes erscheinen Ihre persönlichen Daten in der Kartenvorschau, damit Sie alles vor dem Herunterladen überprüfen können.",
   "step_languages": "Sprachen",
   "step_code": "Download-Code",
   "step_download": "Herunterladen",
   "payment_success_body": "Zahlung erhalten — prüfen Sie Ihre E-Mail für Ihren Download-Code.",
   "btn_download": "Herunterladen",
+  "select_search": "Suchen…",
+  "select_no_results": "Keine Ergebnisse",
   "form_toggle_label": "Persönliche Daten hinzufügen",
   "fire": [
     "Motor abstellen — Kraftstoffzufuhr absperren",
