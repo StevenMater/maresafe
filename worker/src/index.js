@@ -367,9 +367,54 @@ async function handleStripeWebhook(request, env) {
   return new Response("OK", { status: 200 })
 }
 
+// ── Inline JS/CSS assets into HTML ────────────────────────────────
+// type="module" scripts fetched from a null/opaque origin (how Browserless
+// loads injected HTML) require CORS headers that GitHub Pages does not
+// send for JS files. Inlining avoids the cross-origin fetch entirely —
+// inline module scripts are always treated as same-origin.
+async function inlineAssetsIntoHtml(html, baseUrl) {
+  const origin = new URL(baseUrl).origin
+
+  const scriptMatch = html.match(/<script[^>]+src="(\/assets\/[^"]+\.js)"[^>]*><\/script>/)
+  if (scriptMatch) {
+    const url = `${origin}${scriptMatch[1]}`
+    try {
+      const res = await fetch(url)
+      if (res.ok) {
+        // Escape </script> occurrences so the HTML parser doesn't exit early
+        const js = (await res.text()).replace(/<\/script>/gi, "<\\/script>")
+        html = html.replace(scriptMatch[0], `<script type="module">${js}</script>`)
+      } else {
+        console.error("JS inline fetch failed:", url, res.status)
+      }
+    } catch (err) {
+      console.error("JS inline fetch error:", err?.message)
+    }
+  }
+
+  const linkMatch = html.match(/<link[^>]+href="(\/assets\/[^"]+\.css)"[^>]*>/)
+  if (linkMatch) {
+    const url = `${origin}${linkMatch[1]}`
+    try {
+      const res = await fetch(url)
+      if (res.ok) {
+        html = html.replace(linkMatch[0], `<style>${await res.text()}</style>`)
+      } else {
+        console.error("CSS inline fetch failed:", url, res.status)
+      }
+    } catch (err) {
+      console.error("CSS inline fetch error:", err?.message)
+    }
+  }
+
+  return html
+}
+
 // ── Browserless PDF render ─────────────────────────────────────────
 async function renderPdf(pageHtml, cardData, env) {
-  const injected = pageHtml
+  const inlined = await inlineAssetsIntoHtml(pageHtml, env.CARD_URL)
+
+  const injected = inlined
     .replace("<head>", `<head><base href="${env.CARD_URL}">`)
     .replace(
       "</head>",
