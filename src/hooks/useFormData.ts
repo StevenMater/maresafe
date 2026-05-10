@@ -16,10 +16,13 @@ export const EMPTY_FORM: CardData = {
   length: "",
   width: "",
   draft: "",
-  airDraft: "",
+  headway: "",
   altLength: "",
-  altAirDraft: "",
+  altWidth: "",
+  altDraft: "",
+  altHeadway: "",
   callSign: "",
+  homePort: "",
   atis: "",
   mmsi: "",
   insurerName: "",
@@ -60,6 +63,7 @@ function parseStoredData(raw: RawData): {
   if (raw._maresafe !== true) throw new Error("invalid")
 
   const str = (v: unknown): string => (typeof v === "string" ? v : "")
+  const dim = (v: unknown): string => str(v).replace(/,/g, ".")
   const rawLang = raw.lang
   const lang: Language | null =
     typeof rawLang === "string" &&
@@ -73,13 +77,16 @@ function parseStoredData(raw: RawData): {
       vesselName: str(raw.vesselName),
       type: str(raw.type),
       eni: str(raw.eni),
-      length: str(raw.length),
-      width: str(raw.width),
-      draft: str(raw.draft),
-      airDraft: str(raw.airDraft),
-      altLength: str(raw.altLength),
-      altAirDraft: str(raw.altAirDraft),
+      length: dim(raw.length),
+      width: dim(raw.width),
+      draft: dim(raw.draft),
+      headway: dim(raw.headway ?? raw.airDraft),
+      altLength: dim(raw.altLength),
+      altWidth: dim(raw.altWidth),
+      altDraft: dim(raw.altDraft),
+      altHeadway: dim(raw.altHeadway ?? raw.altAirDraft),
       callSign: str(raw.callSign),
+      homePort: str(raw.homePort),
       atis: str(raw.atis),
       mmsi: str(raw.mmsi),
       insurerName: str(raw.insurerName),

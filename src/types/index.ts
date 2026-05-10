@@ -17,10 +17,13 @@ export interface CardData {
   length: string
   width: string
   draft: string
-  airDraft: string
+  headway: string
   altLength: string
-  altAirDraft: string
+  altWidth: string
+  altDraft: string
+  altHeadway: string
   callSign: string
+  homePort: string
   atis: string
   mmsi: string
   insurerName: string
