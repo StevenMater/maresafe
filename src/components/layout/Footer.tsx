@@ -1,6 +1,6 @@
 import { useTranslation } from "../../i18n/useTranslation"
 
-const APP_VERSION = "1.0"
+const APP_VERSION = "1.1"
 
 export function Footer() {
   const { t } = useTranslation()
