@@ -1,7 +1,7 @@
 import type { CardData } from "../types"
 
 export const DEMO_DATA: CardData = {
-  vesselName: "Boaty McBoatface",
+  vesselName: "Aurora",
   type: "Motor Cruiser",
   eni: "02331847",
   length: "12.4",
@@ -28,4 +28,6 @@ export const DEMO_DATA: CardData = {
     { label: "Jordan Lee", country: "NL", number: "0104567890" },
     { label: "Chris Morgan", country: "GB", number: "07911123456" },
   ],
+  notes:
+    "Fire extinguisher: forward cabin, port side. Life jackets: under V-berth seats. EPIRB: helm station, registered 2024. First aid kit: chart table drawer. Flares expire Jun 2026. Engine cut-off lanyard attached at all times. Fuel capacity 180L, range approx 280nm. Berths: 4. VHF DSC MMSI programmed.",
 }
