@@ -38,6 +38,20 @@ export function ContactsSection({ data }: ContactsSectionProps) {
         </table>
       </div>
 
+      {/* Notes */}
+      <div>
+        <div className={s.sectionHeader}>{t("card_notes")}</div>
+        <table className={s.dataTable}>
+          <tbody>
+            <tr>
+              <td colSpan={2} className={s.notesCell}>
+                {data.notes}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
       {/* Insurer */}
       <div>
         <div className={`${s.sectionHeader} ${s.sectionHeaderInsurer}`}>

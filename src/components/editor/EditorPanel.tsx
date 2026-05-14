@@ -94,6 +94,7 @@ export function EditorPanel({
               addContact={addContact}
               removeContact={removeContact}
               updateContact={updateContact}
+              setNotes={(v) => setField("notes", v)}
             />
             <InsurerSection data={data} setField={setField} />
           </div>

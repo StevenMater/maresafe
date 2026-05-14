@@ -9,6 +9,7 @@ interface ContactsSectionProps {
   addContact: () => void
   removeContact: (index: number) => void
   updateContact: (index: number, patch: Partial<Contact>) => void
+  setNotes: (value: string) => void
 }
 
 export function ContactsSection({
@@ -16,6 +17,7 @@ export function ContactsSection({
   addContact,
   removeContact,
   updateContact,
+  setNotes,
 }: ContactsSectionProps) {
   const { t } = useTranslation()
 
@@ -76,6 +78,14 @@ export function ContactsSection({
       >
         {t("btn_add_contact")}
       </button>
+
+      <textarea
+        className="mt-3 w-full resize-none rounded border border-[#d0dbe8] bg-white px-3 py-2 text-sm text-dark placeholder:text-lgray focus:border-mob-blue focus:outline-none"
+        rows={4}
+        placeholder={t("notes_placeholder")}
+        value={data.notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
     </section>
   )
 }

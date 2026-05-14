@@ -187,6 +187,14 @@
   font-size: 10.5px;
   vertical-align: middle;
 }
+.notesCell {
+  height: 52px;
+  vertical-align: top;
+  padding: 5px 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.3;
+}
 .colLabel {
   width: 42%;
 }

@@ -32,6 +32,7 @@ export const EMPTY_FORM: CardData = {
   insurerOfficeCountry: DEFAULT_COUNTRY,
   insurerOfficeNumber: "",
   contacts: [{ label: "", country: DEFAULT_COUNTRY, number: "" }],
+  notes: "",
 }
 
 interface FormState {
@@ -107,6 +108,7 @@ function parseStoredData(raw: RawData): {
           : []
         return parsed.length > 0 ? parsed : EMPTY_FORM.contacts
       })(),
+      notes: str(raw.notes),
     },
   }
 }

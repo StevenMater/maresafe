@@ -68,6 +68,7 @@ export function fromWorkerFormData(raw: RawData): CardData {
         : []
       return parsed.length > 0 ? parsed : EMPTY_FORM.contacts
     })(),
+    notes: str(raw.notes),
   }
 }
 
