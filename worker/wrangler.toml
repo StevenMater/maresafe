@@ -12,7 +12,6 @@ database_id   = "2ec22b61-8912-4850-aed1-e89808ff839b"
 [vars]
 ALLOWED_ORIGIN = "*"
 CARD_URL       = "https://maresafe.eu/"
-STRIPE_MODE    = "live"
 ADMIN_EMAIL    = "stevenmater@gmail.com"
 
 [observability.logs]

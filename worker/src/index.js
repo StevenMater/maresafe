@@ -283,36 +283,32 @@ async function handleGeneratePdf(request, env) {
 async function handleStripeWebhook(request, env) {
   const rawBody = await request.text()
   const sig = request.headers.get("Stripe-Signature")
+  if (!sig) return new Response("Forbidden", { status: 403 })
 
-  const webhookSecret =
-    env.STRIPE_MODE === "test"
-      ? env.STRIPE_WEBHOOK_SECRET_TEST
-      : env.STRIPE_WEBHOOK_SECRET_LIVE
-
-  if (!sig || !webhookSecret) {
-    return new Response("Forbidden", { status: 403 })
-  }
-
-  // Verify HMAC-SHA256 signature
   const sigParts = Object.fromEntries(sig.split(",").map((p) => p.split("=")))
   const payload = `${sigParts.t}.${rawBody}`
-  const key = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(webhookSecret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  )
-  const mac = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    new TextEncoder().encode(payload),
-  )
-  const expected = Array.from(new Uint8Array(mac))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
 
-  if (expected !== sigParts.v1) {
+  async function verifySecret(secret) {
+    if (!secret) return false
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"],
+    )
+    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))
+    const expected = Array.from(new Uint8Array(mac))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+    return expected === sigParts.v1
+  }
+
+  const verified =
+    (await verifySecret(env.STRIPE_WEBHOOK_SECRET_LIVE)) ||
+    (await verifySecret(env.STRIPE_WEBHOOK_SECRET_TEST))
+
+  if (!verified) {
     return new Response("Forbidden", { status: 403 })
   }
 
