@@ -39,12 +39,12 @@ export function ContactsSection({ data }: ContactsSectionProps) {
       </div>
 
       {/* Notes */}
-      <div>
+      <div className={s.notesSection}>
         <div className={s.sectionHeader}>{t("card_notes")}</div>
-        <table className={s.dataTable}>
+        <table className={s.notesTable}>
           <tbody>
             <tr>
-              <td colSpan={2} className={s.notesCell}>
+              <td className={s.notesCell}>
                 {data.notes}
               </td>
             </tr>

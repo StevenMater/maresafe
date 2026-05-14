@@ -54,6 +54,6 @@ export const SUPPORTED_COUNTRIES: CountryCode[] = [
 ]
 
 export const DEFAULT_COUNTRY: CountryCode = "NL"
-export const MAX_CONTACTS = 6
+export const MAX_CONTACTS = 5
 export const STORAGE_KEY = "maresafe_card"
 export const CURRENT_VERSION = "1.1"
