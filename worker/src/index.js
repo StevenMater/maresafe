@@ -662,8 +662,9 @@ function adminPage() {
         const emailBadge = c.email_failed
           ? \`<span class="badge badge-red">Failed</span>\`
           : \`<span class="badge badge-green">Sent</span>\`
+        const fmt = (iso) => iso ? iso.slice(0,16).replace("T"," ") : "—"
         const log = (c.uses_log || []).map(e =>
-          \`<span class="log-entry">\${e.at?.slice(0,10) || "?"}: \${(e.lang || "?").toUpperCase()}</span>\`
+          \`<span class="log-entry">\${fmt(e.at)}: \${(e.lang || "?").toUpperCase()}</span>\`
         ).join("") || "—"
         const revokeBtn = st === "active"
           ? \`<button class="revoke" onclick="revokeCode('\${c.code}')">Revoke</button>\`
@@ -672,7 +673,7 @@ function adminPage() {
           <td style="font-family:monospace;font-weight:700">\${c.code}</td>
           <td>\${c.email || "—"}</td>
           <td><span class="badge \${srcClass}">\${c.source || "?"}</span></td>
-          <td>\${c.created_at?.slice(0,10) || "—"}</td>
+          <td>\${fmt(c.created_at)}</td>
           <td>\${statusBadge(st)}</td>
           <td><span class="badge \${tokenClass}">\${tr} / \${tt}</span></td>
           <td>\${emailBadge}</td>
