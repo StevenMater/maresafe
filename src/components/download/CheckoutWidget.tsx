@@ -6,8 +6,11 @@ export function CheckoutWidget() {
 
   return (
     <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl min-w-60 max-w-72">
-      <div className="flex flex-col items-center gap-0.5">
-        <span className="text-sm text-mid">MareSafe</span>
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-0">
+          <span className="text-base font-bold text-dark">MareSafe {t("checkout_download_code")}</span>
+          <span className="text-xs text-mid">{t("product_name")}</span>
+        </div>
         <span className="text-4xl font-bold text-dark">€2</span>
       </div>
       <button
