@@ -42,6 +42,7 @@ function toWorkerFormData(data: CardData, lang: Language) {
     altLength: data.altLength,
     altHeadway: data.altHeadway,
     callSign: data.callSign,
+    homePort: data.homePort,
     atis: data.atis,
     mmsi: data.mmsi,
     insurerName: data.insurerName,
