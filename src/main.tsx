@@ -7,13 +7,6 @@ import { CardPreview } from "./components/card/CardPreview.tsx"
 import { fromWorkerFormData, parseRenderLang } from "./lib/renderMode.ts"
 import type { CardData, Language } from "./types/index.ts"
 
-declare global {
-  interface Window {
-    __RENDER_MODE__?: boolean
-    __CARD_DATA__?: Record<string, unknown>
-  }
-}
-
 function CardRenderView({ data, lang }: { data: CardData; lang: Language }) {
   useEffect(() => {
     document.body.style.cssText = "margin:0;padding:0;background:white;"
@@ -27,14 +20,25 @@ function CardRenderView({ data, lang }: { data: CardData; lang: Language }) {
   )
 }
 
-if (window.__RENDER_MODE__ && window.__CARD_DATA__) {
-  const raw = window.__CARD_DATA__
-  const cardData = fromWorkerFormData(raw)
-  const lang = parseRenderLang(raw)
+function getRenderData(): { data: CardData; lang: Language } | null {
+  const hash = window.location.hash
+  if (!hash.startsWith("#__render__=")) return null
+  try {
+    const raw = JSON.parse(
+      decodeURIComponent(hash.slice("#__render__=".length)),
+    ) as Record<string, unknown>
+    return { data: fromWorkerFormData(raw), lang: parseRenderLang(raw) }
+  } catch {
+    return null
+  }
+}
 
+const renderData = getRenderData()
+
+if (renderData) {
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <CardRenderView data={cardData} lang={lang} />
+      <CardRenderView data={renderData.data} lang={renderData.lang} />
     </StrictMode>,
   )
 } else {
