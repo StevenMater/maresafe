@@ -658,7 +658,7 @@ function adminPage() {
         const emailBadge = c.email_failed
           ? \`<span class="badge badge-red">Failed</span>\`
           : \`<span class="badge badge-green">Sent</span>\`
-        const fmt = (iso) => iso ? iso.slice(0,16).replace("T"," ") : "—"
+        const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—"
         const log = (c.uses_log || []).map(e =>
           \`<span class="log-entry">\${fmt(e.at)}: \${(e.lang || "?").toUpperCase()}</span>\`
         ).join("") || "—"
