@@ -40,10 +40,8 @@ export function CallsSection({ vesselName, callSign }: CallsSectionProps) {
               <span>MAYDAY</span>
             </div>
             <div className={`${s.callLine} ${s.callWords}`}>
-              <span>This is</span>
-              <span>{name}</span>
-              <span>{name}</span>
-              <span>{name}</span>
+              <span>This is {name}</span>
+              <span className={s.callHint}>{t("call_repeat_3")}</span>
             </div>
             <div className={s.callLine}>{phonetic}</div>
             <div className={`${s.callLineBoldRed} ${s.callWords}`}>
@@ -80,10 +78,8 @@ export function CallsSection({ vesselName, callSign }: CallsSectionProps) {
               <span>PAN PAN</span>
             </div>
             <div className={`${s.callLine} ${s.callWords}`}>
-              <span>This is</span>
-              <span>{name}</span>
-              <span>{name}</span>
-              <span>{name}</span>
+              <span>This is {name}</span>
+              <span className={s.callHint}>{t("call_repeat_3")}</span>
             </div>
             <div className={s.callLine}>{phonetic}</div>
             <div className={`${s.callLineBoldOrange} ${s.callWords}`}>

@@ -138,6 +138,7 @@
   "call_mayday_sit": "[sinking / fire / man overboard]",
   "call_panpan_sit": "[engine failure / medical situation]",
   "call_pob": "[persons + animals on board]",
+  "call_repeat_3": "[repeat 3 times]",
   "call_help": "Require assistance",
   "call_assist": "Require assistance",
   "call_over": "Over",
