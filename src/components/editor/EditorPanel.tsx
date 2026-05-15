@@ -41,7 +41,7 @@ export function EditorPanel({
   const isLocked = !verifiedCode
 
   return (
-    <div className="w-full pb-2">
+    <div className="w-full">
       <div className="relative">
         <div
           className={cn(
