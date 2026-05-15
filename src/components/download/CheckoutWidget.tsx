@@ -5,13 +5,16 @@ export function CheckoutWidget() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl min-w-60 max-w-72">
+    <div className="flex flex-col items-center justify-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl w-full sm:min-w-60 sm:max-w-72">
       <div className="flex flex-col items-center gap-1">
+        <span className="text-xs text-mid flex items-center gap-1">
+          <span className="text-base font-bold text-navy2">① </span>
+          {t("step_buy")}
+        </span>
         <div className="flex flex-col items-center gap-0">
-          <span className="text-base font-bold text-dark">MareSafe {t("checkout_download_code")}</span>
+          <span className="text-base font-bold text-dark text-center">MareSafe {t("checkout_download_code")}</span>
           <span className="text-xs text-mid">{t("product_name")}</span>
         </div>
-        <span className="text-4xl font-bold text-dark">€2</span>
       </div>
       <button
         type="button"
@@ -20,7 +23,7 @@ export function CheckoutWidget() {
         }}
         className="w-full bg-mob-blue hover:bg-navy2 text-white text-base font-semibold rounded-lg py-3 px-5 cursor-pointer transition-colors border-none"
       >
-        {t("btn_buy")}
+        {t("btn_buy")} — €2
       </button>
       <p className="text-xs text-mid m-0">{t("payment_methods")}</p>
       <div className="flex gap-1.5 items-center flex-wrap justify-center">
