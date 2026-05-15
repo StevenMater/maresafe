@@ -82,6 +82,7 @@
   flex-direction: row;
   align-items: center;
   gap: 8px;
+  max-width: 50%;
 }
 .cardLogo {
   height: 28px;
@@ -112,8 +113,8 @@
   align-items: flex-end;
   gap: 2px;
   text-align: right;
-  flex-shrink: 0;
-  max-width: 260px;
+  flex-shrink: 1;
+  max-width: 50%;
 }
 .titleRight small {
   font-size: 8.5px;
