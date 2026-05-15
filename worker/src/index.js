@@ -124,7 +124,7 @@ export default {
 // ── /check-code ────────────────────────────────────────────────────
 async function handleCheckCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
-  if (!await checkRateLimit(env, ip, "check-code", 15)) {
+  if (!(await checkRateLimit(env, ip, "check-code", 15))) {
     return corsResponse({ valid: false, error: "Too many requests" }, 429, env)
   }
 
@@ -146,34 +146,52 @@ async function handleCheckCode(request, env) {
   if (!row || row.status !== "active") {
     return corsResponse({ valid: false }, 200, env)
   }
-  return corsResponse({ valid: true, tokens: row.unlimited ? "unlimited" : row.tokens_remaining }, 200, env)
+  return corsResponse(
+    { valid: true, tokens: row.unlimited ? "unlimited" : row.tokens_remaining },
+    200,
+    env,
+  )
 }
 
 // ── /create-code ───────────────────────────────────────────────────
 async function handleCreateCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
-  if (!await checkRateLimit(env, ip, "admin", 10)) {
+  if (!(await checkRateLimit(env, ip, "admin", 10))) {
     return corsResponse({ error: "Too many requests" }, 429, env)
   }
 
-  const { masterCode, uses, email, unlimited } = await request.json().catch(() => ({}))
+  const { masterCode, uses, email, unlimited } = await request
+    .json()
+    .catch(() => ({}))
 
-  if (!await timingSafeEqual(masterCode, env.MASTER_CODE)) {
+  if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
-  if (!email || typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (
+    !email ||
+    typeof email !== "string" ||
+    email.length > 254 ||
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  ) {
     return corsResponse({ error: "Email required" }, 400, env)
   }
 
   const isUnlimited = !!unlimited
-  const total = isUnlimited ? 0 : (uses || 3)
+  const total = isUnlimited ? 0 : uses || 3
   const code = generateCode()
   await env.DB.prepare(
     `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, unlimited, email_failed, created_at)
      VALUES (?, ?, 'manual', 'active', ?, ?, ?, 0, ?)`,
   )
-    .bind(code, email, total, total, isUnlimited ? 1 : 0, new Date().toISOString())
+    .bind(
+      code,
+      email,
+      total,
+      total,
+      isUnlimited ? 1 : 0,
+      new Date().toISOString(),
+    )
     .run()
 
   await sendCodeEmail(email, code, "en", env)
@@ -183,7 +201,7 @@ async function handleCreateCode(request, env) {
 // ── /generate-pdf ──────────────────────────────────────────────────
 async function handleGeneratePdf(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
-  if (!await checkRateLimit(env, ip, "generate-pdf", 6)) {
+  if (!(await checkRateLimit(env, ip, "generate-pdf", 6))) {
     return corsResponse({ error: "Too many requests" }, 429, env)
   }
 
@@ -247,7 +265,14 @@ async function handleGeneratePdf(request, env) {
     }
     if (codeData.unlimited) {
       if (codeData.email) {
-        await sendReceiptEmail(codeData.email, backupData || formData, languages, "unlimited", emailLang, env)
+        await sendReceiptEmail(
+          codeData.email,
+          backupData || formData,
+          languages,
+          "unlimited",
+          emailLang,
+          env,
+        )
       }
     } else {
       const newRemaining = codeData.tokens_remaining - languages.length
@@ -257,7 +282,14 @@ async function handleGeneratePdf(request, env) {
         .bind(newRemaining, newRemaining <= 0 ? "depleted" : "active", code)
         .run()
       if (codeData.email) {
-        await sendReceiptEmail(codeData.email, backupData || formData, languages, newRemaining, emailLang, env)
+        await sendReceiptEmail(
+          codeData.email,
+          backupData || formData,
+          languages,
+          newRemaining,
+          emailLang,
+          env,
+        )
       }
     }
   } else {
@@ -314,7 +346,11 @@ async function handleStripeWebhook(request, env) {
       false,
       ["sign"],
     )
-    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))
+    const mac = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(payload),
+    )
     const expected = Array.from(new Uint8Array(mac))
       .map((b) => b.toString(16).padStart(2, "0"))
       .join("")
@@ -404,12 +440,12 @@ async function renderPdf(cardData, env) {
 // ── /admin/codes ───────────────────────────────────────────────────
 async function handleListCodes(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
-  if (!await checkRateLimit(env, ip, "admin", 10)) {
+  if (!(await checkRateLimit(env, ip, "admin", 10))) {
     return corsResponse({ error: "Too many requests" }, 429, env)
   }
 
   const { masterCode } = await request.json().catch(() => ({}))
-  if (!await timingSafeEqual(masterCode, env.MASTER_CODE)) {
+  if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
@@ -438,12 +474,12 @@ async function handleListCodes(request, env) {
 // ── /revoke-code ───────────────────────────────────────────────────
 async function handleRevokeCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
-  if (!await checkRateLimit(env, ip, "admin", 10)) {
+  if (!(await checkRateLimit(env, ip, "admin", 10))) {
     return corsResponse({ error: "Too many requests" }, 429, env)
   }
 
   const { masterCode, code } = await request.json().catch(() => ({}))
-  if (!await timingSafeEqual(masterCode, env.MASTER_CODE))
+  if (!(await timingSafeEqual(masterCode, env.MASTER_CODE)))
     return corsResponse({ error: "Forbidden" }, 403, env)
   const row = await env.DB.prepare(
     "SELECT code FROM download_codes WHERE code = ?",
@@ -763,7 +799,8 @@ function adminPage() {
       "Content-Type": "text/html; charset=UTF-8",
       "X-Frame-Options": "DENY",
       "X-Content-Type-Options": "nosniff",
-      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'",
+      "Content-Security-Policy":
+        "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'",
       "Referrer-Policy": "no-referrer",
       "Cache-Control": "no-store",
     },
@@ -773,15 +810,21 @@ function adminPage() {
 // ── Rate limiting (D1-backed, atomic per 60s window) ─────────────
 async function checkRateLimit(env, ip, endpoint, limit) {
   const key = `${endpoint}:${ip}`
-  const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString()
+  const windowStart = new Date(
+    Math.floor(Date.now() / 60000) * 60000,
+  ).toISOString()
   try {
-    const row = await env.DB.prepare(`
+    const row = await env.DB.prepare(
+      `
       INSERT INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)
       ON CONFLICT(key) DO UPDATE SET
         count = CASE WHEN window_start = excluded.window_start THEN count + 1 ELSE 1 END,
         window_start = CASE WHEN window_start = excluded.window_start THEN window_start ELSE excluded.window_start END
       RETURNING count
-    `).bind(key, windowStart).first()
+    `,
+    )
+      .bind(key, windowStart)
+      .first()
     return row.count <= limit
   } catch {
     return true
@@ -791,7 +834,11 @@ async function checkRateLimit(env, ip, endpoint, limit) {
 // ── Timing-safe comparison (HMAC — Web Crypto safe) ───────────────
 async function timingSafeEqual(a, b) {
   const enc = new TextEncoder()
-  const key = await crypto.subtle.generateKey({ name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+  const key = await crypto.subtle.generateKey(
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  )
   const [macA, macB] = await Promise.all([
     crypto.subtle.sign("HMAC", key, enc.encode(String(a ?? ""))),
     crypto.subtle.sign("HMAC", key, enc.encode(String(b ?? ""))),
