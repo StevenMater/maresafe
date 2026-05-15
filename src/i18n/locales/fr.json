@@ -46,6 +46,8 @@
   "tip_f_policy": "Numéro de police de votre assurance.",
   "tip_f_insurer_emergency": "Numéro d'urgence 24h/24 de votre assureur.",
   "tip_f_insurer_office": "Numéro de bureau pour les questions non urgentes.",
+  "input_warning_numeric": "Chiffres uniquement",
+  "input_warning_decimal": "Nombres uniquement",
   "clear_confirm": "Effacer toutes les données ? Cette action est irréversible.",
   "btn_add_contact": "+ Ajouter un contact",
   "btn_remove_contact": "Supprimer",

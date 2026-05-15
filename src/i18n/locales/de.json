@@ -46,6 +46,8 @@
   "tip_f_policy": "Ihre Versicherungspolice-Nummer.",
   "tip_f_insurer_emergency": "24/7-Notrufnummer Ihrer Versicherung.",
   "tip_f_insurer_office": "Büronummer für nicht dringende Angelegenheiten.",
+  "input_warning_numeric": "Nur Ziffern erlaubt",
+  "input_warning_decimal": "Nur Zahlen erlaubt",
   "clear_confirm": "Alle Daten löschen? Dies kann nicht rückgängig gemacht werden.",
   "btn_add_contact": "+ Kontakt hinzufügen",
   "btn_remove_contact": "Entfernen",

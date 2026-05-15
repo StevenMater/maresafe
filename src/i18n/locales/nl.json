@@ -46,6 +46,8 @@
   "tip_f_policy": "Polisnummer van je verzekering.",
   "tip_f_insurer_emergency": "24/7 noodnummer van je verzekeraar.",
   "tip_f_insurer_office": "Kantoornummer voor niet-spoedeisende zaken.",
+  "input_warning_numeric": "Alleen cijfers toegestaan",
+  "input_warning_decimal": "Alleen getallen toegestaan",
   "clear_confirm": "Alle gegevens wissen? Dit kan niet ongedaan worden gemaakt.",
   "btn_add_contact": "+ Contact toevoegen",
   "btn_remove_contact": "Verwijder",

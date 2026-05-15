@@ -46,6 +46,8 @@
   "tip_f_policy": "Your insurance policy number.",
   "tip_f_insurer_emergency": "24/7 emergency number of your insurer.",
   "tip_f_insurer_office": "Office number for non-urgent matters.",
+  "input_warning_numeric": "Only digits allowed",
+  "input_warning_decimal": "Only numbers allowed",
   "clear_confirm": "Clear all data? This cannot be undone.",
   "btn_add_contact": "+ Add contact",
   "btn_remove_contact": "Remove",
