@@ -145,7 +145,7 @@ export function DownloadSection({
               remainingDownloads > 0 && (
                 <span className="text-mid">{costText}</span>
               )}
-            <span className="text-lgray mt-0.5">{t("download_backup_note")}</span>
+            <span className="text-lgray mt-0.5 text-center">{t("download_backup_note")}</span>
           </div>
         )}
 
