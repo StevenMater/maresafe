@@ -41,12 +41,17 @@ export function EditorPanel({
   const isLocked = !verifiedCode
 
   return (
-    <div className='w-full pb-2'>
-      <div className='relative'>
-        <div className={cn('bg-white border border-[#d0dbe8] rounded-lg overflow-hidden', isLocked && 'blur-sm')}>
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-6 py-3 border-b border-[#eef3f8]'>
-            <div className='flex items-center gap-1 text-xs text-mid'>
-              <span className='text-base font-bold text-navy2'>③ </span>
+    <div className="w-full pb-2">
+      <div className="relative">
+        <div
+          className={cn(
+            "bg-white border border-[#d0dbe8] rounded-lg overflow-hidden",
+            isLocked && "blur-sm",
+          )}
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-6 py-3 border-b border-[#eef3f8]">
+            <div className="flex items-center gap-1 text-xs text-mid">
+              <span className="text-base font-bold text-navy2">③ </span>
               <span>{t("step_form")}</span>
             </div>
             <SaveLoadBar importJSON={importJSON} clearAll={clearAll} />
@@ -69,9 +74,9 @@ export function EditorPanel({
           />
         </div>
         {isLocked && (
-          <div className='absolute inset-0 z-10 flex flex-col items-center justify-start pt-35 gap-2 cursor-not-allowed'>
-            <Lock size={24} className='text-navy2' />
-            <p className='text-base font-bold text-navy2 text-center px-6'>
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-start pt-35 gap-2 cursor-not-allowed">
+            <Lock size={24} className="text-navy2" />
+            <p className="text-base font-bold text-navy2 text-center px-6">
               {t("form_locked_hint")}
             </p>
           </div>

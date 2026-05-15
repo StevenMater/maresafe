@@ -12,7 +12,9 @@ export function CheckoutWidget() {
           {t("step_buy")}
         </span>
         <div className="flex flex-col items-center gap-0">
-          <span className="text-base font-bold text-dark text-center">MareSafe {t("checkout_download_code")}</span>
+          <span className="text-base font-bold text-dark text-center">
+            MareSafe {t("checkout_download_code")}
+          </span>
           <span className="text-xs text-mid">{t("product_name")}</span>
         </div>
       </div>

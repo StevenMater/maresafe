@@ -35,7 +35,10 @@ export function ContactsSection({
 
       <div className="flex flex-col gap-3 mb-2">
         {contacts.map((contact, index) => (
-          <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div
+            key={index}
+            className="flex flex-col sm:flex-row sm:items-center gap-2"
+          >
             <div className="flex-1 min-w-0">
               <Input
                 placeholder={t("contact_label_placeholder")}

@@ -14,7 +14,8 @@ export function useCardScale(
 
     const observer = new ResizeObserver(() => {
       const availableWidth = element.clientWidth
-      const scaleFromWidth = availableWidth >= CARD_WIDTH ? 1 : availableWidth / CARD_WIDTH
+      const scaleFromWidth =
+        availableWidth >= CARD_WIDTH ? 1 : availableWidth / CARD_WIDTH
       const scaleFromHeight = (window.innerHeight * 0.9) / CARD_HEIGHT
       setScale(Math.min(scaleFromWidth, scaleFromHeight, 1))
     })

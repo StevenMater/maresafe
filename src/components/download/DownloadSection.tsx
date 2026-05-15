@@ -52,7 +52,9 @@ export function DownloadSection({
   }, [tokensRemaining])
 
   const maxLanguages =
-    remainingDownloads === "unlimited" ? undefined : (remainingDownloads as number)
+    remainingDownloads === "unlimited"
+      ? undefined
+      : (remainingDownloads as number)
 
   async function handleDownload() {
     if (selectedLanguages.length === 0 || isDownloading) return
@@ -93,7 +95,8 @@ export function DownloadSection({
   }
 
   const tokensEmpty = remainingDownloads === 0
-  const downloadDisabled = !code || tokensEmpty || selectedLanguages.length === 0 || isDownloading
+  const downloadDisabled =
+    !code || tokensEmpty || selectedLanguages.length === 0 || isDownloading
 
   const remainingText =
     remainingDownloads === "unlimited"
@@ -128,12 +131,20 @@ export function DownloadSection({
         {/* Info */}
         {code && (
           <div className="flex flex-col items-center gap-0.5 text-xs text-center">
-            <span className={remainingDownloads === 0 ? "text-red font-medium" : "text-green font-medium"}>
+            <span
+              className={
+                remainingDownloads === 0
+                  ? "text-red font-medium"
+                  : "text-green font-medium"
+              }
+            >
               {remainingDownloads === 0 ? "✗" : "✓"} {remainingText}
             </span>
-            {selectedLanguages.length > 0 && remainingDownloads !== "unlimited" && remainingDownloads > 0 && (
-              <span className="text-mid">{costText}</span>
-            )}
+            {selectedLanguages.length > 0 &&
+              remainingDownloads !== "unlimited" &&
+              remainingDownloads > 0 && (
+                <span className="text-mid">{costText}</span>
+              )}
           </div>
         )}
 

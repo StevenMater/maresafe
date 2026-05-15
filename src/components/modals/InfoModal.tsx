@@ -72,7 +72,9 @@ export function InfoModal({ open, onClose }: InfoModalProps) {
           </ol>
         </div>
         <p className="text-xs text-mid">{t("info_ambition")}</p>
-        <p className="text-sm font-bold text-navy2 italic">{t("info_slogan")}</p>
+        <p className="text-sm font-bold text-navy2 italic">
+          {t("info_slogan")}
+        </p>
       </div>
     </Modal>
   )

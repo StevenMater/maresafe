@@ -182,7 +182,10 @@
   "form_locked_hint": "Geben Sie Ihren Download-Code oben ein, um das Formular zu entsperren",
   "step_buy": "Kaufen Sie Ihren Download-Code",
   "step_form": "Geben Sie Ihre Schiffsdetails ein",
-  "download_will_use": {"one": "Download wird {n} Token verbrauchen", "other": "Download wird {n} Token verbrauchen"},
+  "download_will_use": {
+    "one": "Download wird {n} Token verbrauchen",
+    "other": "Download wird {n} Token verbrauchen"
+  },
   "info_title": "Ihre persönliche maritime Notfallkarte",
   "info_tagline": "Im Notfall können Informationen Leben retten.",
   "info_body": "Eine MareSafe-Karte enthält alles, was Rettungskräfte und Ihre Besatzung benötigen, auf einem laminierten A4-Blatt. Schiffsdaten, Notfallkontakte, VHF-Kanäle, Versicherungsinfo — alles auf einen Blick. Kein Suchen. Keine Verzögerung.",

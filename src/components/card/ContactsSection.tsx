@@ -44,9 +44,7 @@ export function ContactsSection({ data }: ContactsSectionProps) {
         <table className={s.notesTable}>
           <tbody>
             <tr>
-              <td className={s.notesCell}>
-                {data.notes}
-              </td>
+              <td className={s.notesCell}>{data.notes}</td>
             </tr>
           </tbody>
         </table>

@@ -182,7 +182,10 @@
   "form_locked_hint": "Voer je downloadcode hierboven in om het formulier te ontgrendelen",
   "step_buy": "Koop je downloadcode",
   "step_form": "Vul je scheepsgegevens in",
-  "download_will_use": {"one": "download verbruikt {n} token", "other": "download verbruikt {n} tokens"},
+  "download_will_use": {
+    "one": "download verbruikt {n} token",
+    "other": "download verbruikt {n} tokens"
+  },
   "info_title": "Jouw persoonlijke maritieme noodkaart",
   "info_tagline": "In een noodsituatie kan informatie levens redden.",
   "info_body": "Een MareSafe-kaart bevat alles wat hulpdiensten en je bemanning nodig hebben op één gelamineerd A4-vel. Scheepsgegevens, noodcontacten, VHF-kanalen, verzekeringsinfo — alles op één plek. Geen zoekwerk. Geen vertraging.",

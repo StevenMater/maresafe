@@ -100,7 +100,12 @@ export async function generatePdf(params: GeneratePdfParams): Promise<Blob> {
       area: "netherlands",
       lang: params.lang,
       formData: toWorkerFormData(params.formData, params.lang),
-      backupData: { _maresafe: true, version: CURRENT_VERSION, lang: params.lang, ...params.formData },
+      backupData: {
+        _maresafe: true,
+        version: CURRENT_VERSION,
+        lang: params.lang,
+        ...params.formData,
+      },
     }),
   })
   if (!res.ok) {
