@@ -5,7 +5,7 @@ export function Footer() {
   const { t } = useTranslation()
 
   return (
-    <footer className="font-mono text-xs text-lgray text-center py-2 px-6 border-t border-[#d0dbe8] bg-[#f4f7fa] tracking-wide leading-relaxed flex flex-col items-center gap-0.5">
+    <footer className="font-mono text-xs text-lgray text-center py-2 px-6 border-t border-[#d0dbe8] bg-white tracking-wide leading-relaxed flex flex-col items-center gap-0.5">
       <span className="inline-flex flex-wrap justify-center items-center gap-2">
         <span>
           {t("footer_made")}{" "}
