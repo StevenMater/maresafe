@@ -39,7 +39,6 @@ interface FormState {
   data: CardData
   outdated: boolean
   savedLanguage: Language | null
-  formCollapsed: boolean
   seenInfo: boolean
 }
 
@@ -123,7 +122,6 @@ function loadFromStorage(): FormState {
         data,
         outdated: (parsed.formData as RawData)?.version !== CURRENT_VERSION,
         savedLanguage: lang,
-        formCollapsed: parsed.formCollapsed !== false,
         seenInfo: parsed.seenInfo === true,
       }
     }
@@ -134,7 +132,6 @@ function loadFromStorage(): FormState {
     data: EMPTY_FORM,
     outdated: false,
     savedLanguage: null,
-    formCollapsed: true,
     seenInfo: false,
   }
 }
@@ -145,7 +142,6 @@ function saveToStorage(state: FormState, lang: Language): void {
       STORAGE_KEY,
       JSON.stringify({
         seenInfo: state.seenInfo,
-        formCollapsed: state.formCollapsed,
         formData: {
           _maresafe: true,
           version: CURRENT_VERSION,
@@ -174,8 +170,6 @@ export interface UseFormDataReturn {
   outdated: boolean
   dismissOutdated: () => void
   save: (lang: Language) => void
-  formCollapsed: boolean
-  setFormCollapsed: (collapsed: boolean) => void
   seenInfo: boolean
   markSeen: () => void
 }
@@ -249,7 +243,7 @@ export function useFormData(): UseFormDataReturn {
     const a = document.createElement("a")
 
     a.href = URL.createObjectURL(blob)
-    a.download = `MareSafe - ${state.data.vesselName || "emergency-card"} - ${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `MareSafe - ${state.data.vesselName || "emergency-card"} - Backup ${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(a.href)
   }
@@ -292,10 +286,6 @@ export function useFormData(): UseFormDataReturn {
     [state],
   )
 
-  function setFormCollapsed(collapsed: boolean) {
-    setState((s) => ({ ...s, formCollapsed: collapsed }))
-  }
-
   function markSeen() {
     setState((s) => ({ ...s, seenInfo: true }))
   }
@@ -321,8 +311,6 @@ export function useFormData(): UseFormDataReturn {
     outdated: state.outdated,
     dismissOutdated,
     save,
-    formCollapsed: state.formCollapsed,
-    setFormCollapsed,
     seenInfo: state.seenInfo,
     markSeen,
   }

@@ -1,4 +1,5 @@
 import type { CardData, CodeStatus, CountryCode, Language } from "../types"
+import { CURRENT_VERSION } from "../types"
 
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
@@ -30,7 +31,7 @@ function dial(country: CountryCode): string {
 function toWorkerFormData(data: CardData, lang: Language) {
   return {
     _maresafe: true,
-    version: "1.0",
+    version: CURRENT_VERSION,
     lang,
     name: data.vesselName,
     type: data.type,
@@ -99,6 +100,7 @@ export async function generatePdf(params: GeneratePdfParams): Promise<Blob> {
       area: "netherlands",
       lang: params.lang,
       formData: toWorkerFormData(params.formData, params.lang),
+      backupData: { _maresafe: true, version: CURRENT_VERSION, lang: params.lang, ...params.formData },
     }),
   })
   if (!res.ok) {
