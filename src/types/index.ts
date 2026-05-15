@@ -1,7 +1,7 @@
 import type { CountryCode } from "libphonenumber-js"
 export type { CountryCode }
 
-export const LANGUAGES = ["nl", "en", "fr", "de"] as const
+export const LANGUAGES = ["en", "de", "fr", "nl"] as const
 export type Language = (typeof LANGUAGES)[number]
 
 export interface Contact {

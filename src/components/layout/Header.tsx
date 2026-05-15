@@ -6,10 +6,10 @@ import { InfoModal } from "../modals/InfoModal"
 import type { Language } from "../../types"
 
 const LANG_OPTIONS = [
-  { value: "nl", label: "Nederlands", flag: "🇳🇱" },
   { value: "en", label: "English", flag: "🇬🇧" },
-  { value: "fr", label: "Français", flag: "🇫🇷" },
   { value: "de", label: "Deutsch", flag: "🇩🇪" },
+  { value: "fr", label: "Français", flag: "🇫🇷" },
+  { value: "nl", label: "Nederlands", flag: "🇳🇱" },
 ]
 
 interface HeaderProps {
