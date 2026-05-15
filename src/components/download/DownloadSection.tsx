@@ -130,7 +130,7 @@ export function DownloadSection({
 
         {/* Info */}
         {code && (
-          <div className="flex flex-col items-center gap-0.5 text-xs text-center">
+          <div className="flex flex-col items-center gap-0.5 text-xs text-center self-center">
             <span
               className={
                 remainingDownloads === 0
@@ -145,7 +145,7 @@ export function DownloadSection({
               remainingDownloads > 0 && (
                 <span className="text-mid">{costText}</span>
               )}
-            <span className="text-lgray mt-0.5 text-center">{t("download_backup_note")}</span>
+            <span className="text-lgray">{t("download_backup_note")}</span>
           </div>
         )}
 
