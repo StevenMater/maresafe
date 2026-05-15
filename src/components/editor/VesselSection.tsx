@@ -17,7 +17,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
       </h2>
 
       {/* Vessel identity — 5 inputs */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label={t("f_name")}
           tooltip={t("tip_f_name")}
@@ -56,7 +56,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
       <hr className="my-3 border-t border-navy2 border-0" />
 
       {/* Registration numbers — 2–4 inputs (country profile, see TODO in ShipSection) */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label="ATIS"
           tooltip={t("tip_atis")}
@@ -78,7 +78,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
       <hr className="my-3 border-t border-navy2 border-0" />
 
       {/* Dimensions — 8 inputs */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label={t("f_length")}
           tooltip={t("tip_f_length")}

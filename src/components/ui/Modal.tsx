@@ -97,7 +97,7 @@ export function Modal({
         aria-labelledby={title ? titleId : undefined}
         className={cn(
           "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-          "w-full max-w-md mx-4 bg-white rounded-lg shadow-xl",
+          "w-[calc(100vw-2rem)] max-w-md bg-white rounded-lg shadow-xl",
           "flex flex-col max-h-[90vh]",
           className,
         )}

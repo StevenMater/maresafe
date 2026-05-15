@@ -18,7 +18,7 @@ export function InsurerSection({ data, setField }: InsurerSectionProps) {
         {t("sec_insurer")}
       </h2>
 
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
         <Input
           label={t("f_insurer_name")}
           tooltip={t("tip_f_insurer_name")}
