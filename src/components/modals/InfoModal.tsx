@@ -5,11 +5,19 @@ import { BrandTitle } from "../layout/BrandTitle"
 import { useTranslation } from "../../i18n/useTranslation"
 import type { Language } from "../../types"
 
+const STEPS = [
+  "info_step_1",
+  "info_step_2",
+  "info_step_3",
+  "info_step_4",
+  "info_step_5",
+] as const
+
 const LANG_OPTIONS = [
-  { value: "nl", label: "Nederlands", flag: "🇳🇱" },
   { value: "en", label: "English", flag: "🇬🇧" },
-  { value: "fr", label: "Français", flag: "🇫🇷" },
   { value: "de", label: "Deutsch", flag: "🇩🇪" },
+  { value: "fr", label: "Français", flag: "🇫🇷" },
+  { value: "nl", label: "Nederlands", flag: "🇳🇱" },
 ]
 
 interface InfoModalProps {
@@ -18,7 +26,7 @@ interface InfoModalProps {
 }
 
 export function InfoModal({ open, onClose }: InfoModalProps) {
-  const { lang, setLang } = useTranslation()
+  const { t, lang, setLang } = useTranslation()
 
   return (
     <Modal open={open} onClose={onClose} className="max-w-xl w-[90vw]">
@@ -42,13 +50,30 @@ export function InfoModal({ open, onClose }: InfoModalProps) {
         </div>
       </div>
 
-      <p className="text-sm text-mid leading-relaxed">
-        {/* TODO: replace text */}
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
-        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-        veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-        commodo consequat.
-      </p>
+      <div className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-base font-bold text-navy">{t("info_title")}</h2>
+          <p className="text-sm text-mid italic mt-0.5">{t("info_tagline")}</p>
+        </div>
+        <p className="text-sm text-mid leading-relaxed">{t("info_body")}</p>
+        <div>
+          <p className="text-xs font-bold text-navy2 uppercase tracking-wider mb-2">
+            {t("info_how_title")}
+          </p>
+          <ol className="flex flex-col gap-1.5 list-none p-0 m-0">
+            {STEPS.map((key, i) => (
+              <li key={key} className="flex items-start gap-2 text-sm text-mid">
+                <span className="text-base font-bold text-navy2 leading-tight shrink-0">
+                  {"①②③④⑤"[i]}
+                </span>
+                <span>{t(key)}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <p className="text-xs text-mid">{t("info_ambition")}</p>
+        <p className="text-sm font-bold text-navy2 italic">{t("info_slogan")}</p>
+      </div>
     </Modal>
   )
 }
