@@ -28,6 +28,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Emma Thompson", country: "GB", number: "07700987654" },
       { label: "Robert Clarke", country: "GB", number: "02012345678" },
       { label: "Sarah Mitchell", country: "US", number: "2025550173" },
+      { label: "Harbour Master Southampton", country: "GB", number: "02380339733" },
     ],
     notes:
       "Fire extinguisher: forward cabin, port side. Life jackets: under V-berth seats. EPIRB: helm station, registered 2024. First aid kit: chart table drawer. Flares expire Jun 2026. Engine cut-off lanyard attached at all times. Fuel capacity 180L, range approx 280nm. Berths: 4. VHF DSC MMSI programmed.",
@@ -59,6 +60,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Anna van den Berg", country: "NL", number: "0687654321" },
       { label: "Jan Bakker", country: "NL", number: "0104567890" },
       { label: "Marie Dubois", country: "BE", number: "0470123456" },
+      { label: "Havenmeester Rotterdam", country: "NL", number: "0102522080" },
     ],
     notes:
       "Brandblusser: voorste hut, bakboord. Reddingsvesten: onder V-berth kussens. EPIRB: stuurstand, geregistreerd 2024. EHBO-kit: kaartentafellade. Noodsignalen vervallen jun 2026. Noodstopkoord altijd bevestigd. Brandstof 180L, bereik ca. 280nm. Slaapplaatsen: 4. VHF DSC MMSI geprogrammeerd.",
@@ -90,6 +92,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Sophie Laurent", country: "FR", number: "0687654321" },
       { label: "Michel Dubois", country: "FR", number: "0412345678" },
       { label: "Claire Martin", country: "BE", number: "0470123456" },
+      { label: "Capitainerie La Rochelle", country: "FR", number: "0546348492" },
     ],
     notes:
       "Extincteur : cabine avant, bâbord. Gilets : sous couchette en V. EPIRB : barre, enregistré 2024. Trousse secours : table à cartes. Fusées juin 2026. Coupe-circuit moteur permanent. Carburant 180L, autonomie env. 280nm. Couchettes : 4. MMSI VHF DSC programmé.",
@@ -121,6 +124,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Ingrid Schmidt", country: "DE", number: "01687654321" },
       { label: "Hans Weber", country: "DE", number: "04012345678" },
       { label: "Maria Hoffmann", country: "NL", number: "0612345678" },
+      { label: "Hafenmeister Hamburg", country: "DE", number: "04030701200" },
     ],
     notes:
       "Feuerlöscher: vordere Kabine, Backbord. Rettungswesten: unter V-Koje. EPIRB: Steuerstand, registriert 2024. Erste-Hilfe: Kartentischlade. Signalmittel verfallen Jun 2026. Notabschalter stets befestigt. Kraftstoff 180L, Reichweite ca. 280nm. Schlafplätze: 4. VHF DSC MMSI programmiert.",
