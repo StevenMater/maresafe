@@ -23,3 +23,10 @@ CREATE TABLE IF NOT EXISTS download_uses (
   used_at  TEXT NOT NULL,
   lang     TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS email_export_log (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  email       TEXT NOT NULL,
+  exported_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_email_export_log_email ON email_export_log(email);

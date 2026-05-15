@@ -117,6 +117,14 @@ export default {
       return handleRevokeCode(request, env)
     }
 
+    if (request.method === "POST" && url.pathname === "/admin/emails") {
+      return handleListEmails(request, env)
+    }
+
+    if (request.method === "POST" && url.pathname === "/admin/export-emails") {
+      return handleExportEmails(request, env)
+    }
+
     return corsResponse({ error: "Not found" }, 404, env)
   },
 }
@@ -495,6 +503,75 @@ async function handleRevokeCode(request, env) {
   return corsResponse({ ok: true }, 200, env)
 }
 
+// ── /admin/emails ──────────────────────────────────────────────────
+async function handleListEmails(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!(await checkRateLimit(env, ip, "admin", 10))) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
+
+  const { masterCode } = await request.json().catch(() => ({}))
+  if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
+    return corsResponse({ error: "Forbidden" }, 403, env)
+  }
+
+  await env.DB.prepare(`
+    CREATE TABLE IF NOT EXISTS email_export_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      exported_at TEXT NOT NULL
+    )
+  `).run().catch(() => {})
+
+  const { results } = await env.DB.prepare(`
+    SELECT
+      dc.email,
+      MIN(dc.created_at) AS first_purchase,
+      COUNT(DISTINCT dc.code) AS purchase_count,
+      COALESCE(el.export_count, 0) AS export_count,
+      el.last_exported
+    FROM download_codes dc
+    LEFT JOIN (
+      SELECT email, COUNT(*) AS export_count, MAX(exported_at) AS last_exported
+      FROM email_export_log
+      GROUP BY email
+    ) el ON dc.email = el.email
+    WHERE dc.email IS NOT NULL AND dc.email != ''
+    GROUP BY dc.email
+    ORDER BY first_purchase DESC
+  `).all()
+
+  return corsResponse({ emails: results }, 200, env)
+}
+
+// ── /admin/export-emails ───────────────────────────────────────────
+async function handleExportEmails(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!(await checkRateLimit(env, ip, "admin", 10))) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
+
+  const { masterCode, emails } = await request.json().catch(() => ({}))
+  if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
+    return corsResponse({ error: "Forbidden" }, 403, env)
+  }
+
+  if (!Array.isArray(emails) || emails.length === 0) {
+    return corsResponse({ error: "No emails provided" }, 400, env)
+  }
+
+  const now = new Date().toISOString()
+  for (const email of emails) {
+    await env.DB.prepare(
+      "INSERT INTO email_export_log (email, exported_at) VALUES (?, ?)",
+    )
+      .bind(email, now)
+      .run()
+  }
+
+  return corsResponse({ ok: true, count: emails.length }, 200, env)
+}
+
 // ── Email: code delivery ───────────────────────────────────────────
 async function sendCodeEmail(email, code, lang, env) {
   const t = EMAIL_T[lang] || EMAIL_T.en
@@ -619,6 +696,7 @@ function adminPage() {
     <div class="tabs">
       <button class="tab active" onclick="showTab('issued')">Download codes</button>
       <button class="tab" onclick="showTab('generate')">Generate code</button>
+      <button class="tab" onclick="showTab('emails')">Email list</button>
     </div>
 
     <div id="panel-generate" class="panel active">
@@ -660,10 +738,33 @@ function adminPage() {
       </table>
       <div id="codes-error"></div>
     </div>
+
+    <div id="panel-emails" class="panel">
+      <div class="toolbar">
+        <button class="action sm" onclick="selectEmails('all')">Select all</button>
+        <button class="action sm" onclick="selectEmails('none')">Select none</button>
+        <button class="action sm" onclick="selectEmails('new')">Not yet exported</button>
+        <button class="action sm" id="export-btn" onclick="exportEmails()" disabled>Export CSV</button>
+        <span id="email-selection-count" style="font-size:13px;color:#555;margin-left:4px"></span>
+      </div>
+      <div id="emails-meta" style="font-size:13px;color:#555;margin-bottom:4px"></div>
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="email-check-all" onchange="toggleAllEmails(this)" /></th>
+            <th>Email</th><th>First purchase</th><th>Purchases</th>
+            <th>Times exported</th><th>Last exported</th>
+          </tr>
+        </thead>
+        <tbody id="emails-rows"></tbody>
+      </table>
+      <div id="emails-error" style="font-size:13px;color:#a93226;margin-top:8px"></div>
+    </div>
   </div>
 
   <script>
     let _allCodes = []
+    let _allEmails = []
     let _mc = ""
 
     document.getElementById("gate-mc").addEventListener("keydown", e => {
@@ -692,10 +793,11 @@ function adminPage() {
     }
 
     function showTab(name) {
-      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", ["issued","generate"][i] === name))
+      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", ["issued","generate","emails"][i] === name))
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"))
       document.getElementById("panel-" + name).classList.add("active")
       if (name === "issued") loadCodes()
+      if (name === "emails") loadEmails()
     }
 
     function toggleUnlimited() {
@@ -789,6 +891,89 @@ function adminPage() {
       const data = await res.json()
       if (!res.ok) { alert(data.error || "Failed to revoke."); return }
       await loadCodes()
+    }
+
+    async function loadEmails() {
+      document.getElementById("emails-error").textContent = ""
+      const res = await fetch("/admin/emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ masterCode: _mc }),
+      })
+      const data = await res.json()
+      if (!res.ok) { document.getElementById("emails-error").textContent = data.error || "Failed."; return }
+      _allEmails = data.emails
+      renderEmailTable()
+    }
+
+    function renderEmailTable() {
+      const fmtDate = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0, 10) : "—"
+      document.getElementById("emails-rows").innerHTML = _allEmails.map(e => {
+        const exportBadge = e.export_count > 0
+          ? \`<span class="badge badge-orange">\${e.export_count}×</span>\`
+          : \`<span class="badge badge-grey">Never</span>\`
+        return \`<tr>
+          <td><input type="checkbox" class="email-check" value="\${e.email}" onchange="updateEmailSelection()" /></td>
+          <td>\${e.email}</td>
+          <td>\${fmtDate(e.first_purchase)}</td>
+          <td>\${e.purchase_count}</td>
+          <td>\${exportBadge}</td>
+          <td>\${fmtDate(e.last_exported)}</td>
+        </tr>\`
+      }).join("")
+      updateEmailSelection()
+      document.getElementById("emails-meta").textContent =
+        _allEmails.length + " customer email" + (_allEmails.length !== 1 ? "s" : "")
+    }
+
+    function updateEmailSelection() {
+      const checked = document.querySelectorAll(".email-check:checked")
+      const total = document.querySelectorAll(".email-check")
+      document.getElementById("email-selection-count").textContent =
+        checked.length + " of " + total.length + " selected"
+      document.getElementById("export-btn").disabled = checked.length === 0
+      const allCb = document.getElementById("email-check-all")
+      if (allCb) {
+        allCb.indeterminate = checked.length > 0 && checked.length < total.length
+        allCb.checked = total.length > 0 && checked.length === total.length
+      }
+    }
+
+    function toggleAllEmails(cb) {
+      document.querySelectorAll(".email-check").forEach(c => c.checked = cb.checked)
+      updateEmailSelection()
+    }
+
+    function selectEmails(mode) {
+      document.querySelectorAll(".email-check").forEach(c => {
+        const row = _allEmails.find(e => e.email === c.value)
+        if (mode === "all") c.checked = true
+        else if (mode === "none") c.checked = false
+        else if (mode === "new") c.checked = !!(row && row.export_count === 0)
+      })
+      updateEmailSelection()
+    }
+
+    async function exportEmails() {
+      const selected = [...document.querySelectorAll(".email-check:checked")].map(c => c.value)
+      if (selected.length === 0) return
+      const res = await fetch("/admin/export-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ masterCode: _mc, emails: selected }),
+      })
+      if (!res.ok) { alert("Failed to log export."); return }
+      const csv = "Email\\n" + selected.map(e => \`"\${e.replace(/"/g, '""')}"\`).join("\\n")
+      const blob = new Blob([csv], { type: "text/csv" })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = \`maresafe-emails-\${new Date().toISOString().slice(0, 10)}.csv\`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      await loadEmails()
     }
   </script>
 </body>
