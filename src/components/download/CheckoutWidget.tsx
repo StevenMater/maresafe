@@ -5,7 +5,7 @@ export function CheckoutWidget() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl w-full sm:min-w-60 sm:max-w-72">
+    <div className="flex flex-col items-center justify-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl w-full sm:min-w-60 sm:max-w-96">
       <div className="flex flex-col items-center gap-1">
         <span className="text-xs text-mid flex items-center gap-1">
           <span className="text-base font-bold text-navy2">① </span>
@@ -15,7 +15,7 @@ export function CheckoutWidget() {
           <span className="text-base font-bold text-dark text-center">
             MareSafe {t("checkout_download_code")}
           </span>
-          <span className="text-xs text-mid">{t("product_name")}</span>
+          <span className="text-xs text-mid">{t("token_explanation")}</span>
         </div>
       </div>
       <button
@@ -29,15 +29,11 @@ export function CheckoutWidget() {
       </button>
       <p className="text-xs text-mid m-0">{t("payment_methods")}</p>
       <div className="flex gap-1.5 items-center flex-wrap justify-center">
-        <svg
-          width="38"
-          height="24"
-          viewBox="0 0 38 24"
-          aria-label="American Express"
-        >
-          <rect width="38" height="24" rx="4" fill="#2E77BC" />
+        {/* PayPal */}
+        <svg width="46" height="24" viewBox="0 0 46 24" aria-label="PayPal">
+          <rect width="46" height="24" rx="4" fill="#003087" />
           <text
-            x="19"
+            x="23"
             y="16"
             textAnchor="middle"
             fontFamily="Arial,sans-serif"
@@ -46,14 +42,16 @@ export function CheckoutWidget() {
             fill="white"
             letterSpacing="0.5"
           >
-            AMEX
+            PayPal
           </text>
         </svg>
+        {/* Mastercard */}
         <svg width="38" height="24" viewBox="0 0 38 24" aria-label="Mastercard">
           <rect width="38" height="24" rx="4" fill="#1a1a1a" />
           <circle cx="15" cy="12" r="7" fill="#EB001B" />
           <circle cx="23" cy="12" r="7" fill="#F79E1B" opacity="0.9" />
         </svg>
+        {/* Visa */}
         <svg width="38" height="24" viewBox="0 0 38 24" aria-label="Visa">
           <rect width="38" height="24" rx="4" fill="#1A1F71" />
           <text
@@ -69,6 +67,7 @@ export function CheckoutWidget() {
             VISA
           </text>
         </svg>
+        {/* Apple Pay */}
         <svg width="52" height="24" viewBox="0 0 52 24" aria-label="Apple Pay">
           <rect width="52" height="24" rx="4" fill="#000" />
           <text
@@ -82,6 +81,7 @@ export function CheckoutWidget() {
             Apple Pay
           </text>
         </svg>
+        {/* iDEAL */}
         <svg width="38" height="24" viewBox="0 0 38 24" aria-label="iDEAL">
           <rect
             width="38"
@@ -103,6 +103,7 @@ export function CheckoutWidget() {
             iDEAL
           </text>
         </svg>
+        <span className="text-xs text-mid">{t("payment_more")}</span>
       </div>
     </div>
   )
