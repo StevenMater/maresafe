@@ -132,11 +132,15 @@ export function Select(props: SelectProps) {
     if (!open && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
       const openAbove = rect.bottom + 260 > window.innerHeight
+      const anchorLeft = rect.left < window.innerWidth / 2
       setDropdownStyle({
         position: "fixed",
         zIndex: 9999,
         minWidth: rect.width,
-        right: window.innerWidth - rect.right,
+        maxWidth: window.innerWidth - 16,
+        ...(anchorLeft
+          ? { left: Math.max(8, rect.left) }
+          : { right: Math.max(8, window.innerWidth - rect.right) }),
         ...(openAbove
           ? { bottom: window.innerHeight - rect.top + 4 }
           : { top: rect.bottom + 4 }),
@@ -247,7 +251,7 @@ export function Select(props: SelectProps) {
             "flex items-center gap-2 text-left transition-colors",
             "focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed",
             variant === "field" && [
-              "w-full px-2 py-1.75 rounded-sm border border-[#a8c4e0] bg-[#f0f6ff]",
+              "w-full h-9 px-2.5 py-1.75 rounded border border-[#a8c4e0] bg-[#f0f6ff]",
               "font-mono text-sm text-dark",
               "focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)]",
               error && "border-red",

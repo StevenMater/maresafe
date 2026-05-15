@@ -44,7 +44,7 @@ export function PhoneInput({
           {label}
         </label>
       )}
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <Select
           options={COUNTRY_OPTIONS}
           value={value.country}
