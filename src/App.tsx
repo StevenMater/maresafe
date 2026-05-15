@@ -77,7 +77,7 @@ function AppContent() {
   const cardData = hasValidCode ? data : getDemoData(lang)
 
   return (
-    <div className='flex flex-col min-h-screen bg-[#f4f7fa]'>
+    <div className='flex flex-col min-h-dvh bg-[#f4f7fa]'>
       <div className='sticky top-0 z-40'>
         <Header seenInfo={seenInfo} markSeen={markSeen} />
         {notification === "payment_success" && (
