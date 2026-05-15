@@ -462,7 +462,7 @@ async function handleListCodes(request, env) {
     ...row,
     uses_log: row.uses_raw
       ? row.uses_raw.split(",").map((e) => {
-          const colonIdx = e.indexOf(":")
+          const colonIdx = e.lastIndexOf(":")
           return { at: e.slice(0, colonIdx), lang: e.slice(colonIdx + 1) }
         })
       : [],
