@@ -161,6 +161,9 @@ export function CodeCheckWidget({
           </span>
         )}
       </div>
+      <p className="text-xs text-lgray text-center leading-relaxed">
+        {t("activate_data_note")}
+      </p>
     </div>
   )
 }
