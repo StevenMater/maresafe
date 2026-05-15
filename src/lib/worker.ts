@@ -3,7 +3,7 @@ import { CURRENT_VERSION } from "../types"
 
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
-const PAYMENT_LINK_LIVE = "https://buy.stripe.com/cNi4gzachcuR5vN0Ao97G00"
+const PAYMENT_LINK_LIVE = "https://buy.stripe.com/dRmdR9fwBbqNaQ796U97G03"
 const PAYMENT_LINK_TEST = "https://buy.stripe.com/test_cNi4gzachcuR5vN0Ao97G00"
 
 export const PAYMENT_LINK_URL =
