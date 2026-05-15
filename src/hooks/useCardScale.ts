@@ -1,7 +1,7 @@
 import { useState, useEffect, type RefObject } from "react"
 
-const CARD_WIDTH = 794
-const CARD_HEIGHT = 1123
+export const CARD_WIDTH = 794
+export const CARD_HEIGHT = 1123
 
 export function useCardScale(
   containerRef: RefObject<HTMLElement | null>,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { TranslationProvider, useTranslation } from "./i18n/useTranslation"
 import { useFormData } from "./hooks/useFormData"
-import { useCardScale } from "./hooks/useCardScale"
+import { useCardScale, CARD_WIDTH, CARD_HEIGHT } from "./hooks/useCardScale"
 import { getDemoData } from "./lib/demoData"
 import { Header } from "./components/layout/Header"
 import { Footer } from "./components/layout/Footer"
@@ -124,8 +124,10 @@ function AppContent() {
             ref={previewColRef}
             className='flex justify-center w-full xl:w-auto'
           >
-            <div style={cardScale < 1 ? { zoom: cardScale } : undefined}>
-              <CardPreview data={cardData} showWatermark={true} />
+            <div style={{ width: CARD_WIDTH * cardScale, height: CARD_HEIGHT * cardScale, overflow: 'hidden', flexShrink: 0 }}>
+              <div style={cardScale < 1 ? { transform: `scale(${cardScale})`, transformOrigin: 'top left', width: CARD_WIDTH, height: CARD_HEIGHT } : undefined}>
+                <CardPreview data={cardData} showWatermark={true} />
+              </div>
             </div>
           </div>
           <div className='flex-1 min-w-0 max-w-216'>
