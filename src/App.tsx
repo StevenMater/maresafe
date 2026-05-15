@@ -77,19 +77,19 @@ function AppContent() {
   const cardData = hasValidCode ? data : getDemoData(lang)
 
   return (
-    <div className='flex flex-col min-h-dvh bg-[#f4f7fa]'>
-      <div className='sticky top-0 z-40'>
+    <div className="flex flex-col min-h-dvh bg-[#f4f7fa]">
+      <div className="sticky top-0 z-40">
         <Header seenInfo={seenInfo} markSeen={markSeen} />
         {notification === "payment_success" && (
           <NotificationBanner
-            variant='success'
+            variant="success"
             message={t("payment_success_body")}
             onDismiss={() => setNotification(null)}
           />
         )}
         {notification === "outdated" && (
           <NotificationBanner
-            variant='warning'
+            variant="warning"
             title={t("vw_title")}
             message={t("vw_body")}
             onDismiss={() => {
@@ -100,15 +100,15 @@ function AppContent() {
         )}
       </div>
 
-      <div className='flex-1 px-4 pt-5 pb-2 flex flex-col gap-4'>
+      <div className="flex-1 px-4 pt-5 pb-2 flex flex-col gap-4">
         {/* Hero */}
-        <div className='text-center py-2'>
-          <h1 className='text-2xl font-bold text-navy'>{t("info_title")}</h1>
-          <p className='text-sm text-mid italic mt-1'>{t("info_slogan")}</p>
+        <div className="text-center py-2">
+          <h1 className="text-2xl font-bold text-navy">{t("info_title")}</h1>
+          <p className="text-sm text-mid italic mt-1">{t("info_slogan")}</p>
         </div>
 
         {/* Row 1: [① Buy] [② Activate] */}
-        <div className='flex flex-col sm:flex-row gap-4 items-stretch justify-center'>
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch justify-center">
           <CheckoutWidget />
 
           <CodeCheckWidget
@@ -119,18 +119,36 @@ function AppContent() {
         </div>
 
         {/* Row 2: [Preview] [③④⑤ Form + Download] */}
-        <div className='flex flex-wrap gap-4 items-start justify-center mt-4'>
+        <div className="flex flex-wrap gap-4 items-start justify-center mt-4">
           <div
             ref={previewColRef}
-            className='flex justify-center w-full xl:w-auto'
+            className="flex justify-center w-full xl:w-auto xl:sticky xl:top-20"
           >
-            <div style={{ width: CARD_WIDTH * cardScale, height: CARD_HEIGHT * cardScale, overflow: 'hidden', flexShrink: 0 }}>
-              <div style={cardScale < 1 ? { transform: `scale(${cardScale})`, transformOrigin: 'top left', width: CARD_WIDTH, height: CARD_HEIGHT } : undefined}>
+            <div
+              style={{
+                width: CARD_WIDTH * cardScale,
+                height: CARD_HEIGHT * cardScale,
+                overflow: "hidden",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={
+                  cardScale < 1
+                    ? {
+                        transform: `scale(${cardScale})`,
+                        transformOrigin: "top left",
+                        width: CARD_WIDTH,
+                        height: CARD_HEIGHT,
+                      }
+                    : undefined
+                }
+              >
                 <CardPreview data={cardData} showWatermark={true} />
               </div>
             </div>
           </div>
-          <div className='flex-1 min-w-0 max-w-216'>
+          <div className="flex-1 min-w-0 max-w-216">
             <EditorPanel
               data={data}
               lang={lang}
