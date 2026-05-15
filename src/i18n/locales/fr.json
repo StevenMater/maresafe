@@ -201,20 +201,20 @@
   "info_ambition": "Actuellement disponible aux Pays-Bas — toute l'Europe est la prochaine étape.",
   "info_slogan": "Toujours prêt. Toujours à bord.",
   "fire": [
-    "Couper le moteur — couper l'alimentation en carburant",
-    "Fermer la ventilation (écoutilles, hublots, aérations)",
-    "Radio: PAN PAN — ou MAYDAY si des vies sont en danger",
-    "Gilets de sauvetage pour tous à bord",
-    "Prendre l'extincteur — ne pas ouvrir la porte côté feu",
-    "Préparer le radeau / annexe si la situation s'aggrave"
+    "Stopper moteur — couper carburant et gaz",
+    "Fermer tous les panneaux, hublots et aérations",
+    "Gilets de sauvetage — tout le monde sur le pont",
+    "MAYDAY à la radio VHF — canal 16",
+    "Extincteur — ne pas ouvrir le panneau vers le feu",
+    "Préparer le radeau ou l'annexe — évacuation"
   ],
   "mob": [
-    "Crier \"HOMME À LA MER\" — ne pas perdre la personne de vue et continuer à indiquer sa position",
-    "Viser la tête de la personne avec une bouée de sauvetage — jeter aussi une ligne ou un jerrican",
-    "Noter ou mémoriser la position GPS",
-    "MAYDAY à la radio — signaler la position et le nombre de personnes à bord",
-    "Revenir vers la personne — approche sous le vent, garder le moteur allumé, désengager l'hélice près de la personne",
-    "Récupérer la personne — chaleur, vêtements secs, contrôle médical"
+    "Crier \"HOMME À LA MER\" — garder le doigt pointé",
+    "Lancer bouée, ligne ou tout ce qui flotte",
+    "MOB sur GPS — noter ou mémoriser la position",
+    "MAYDAY à la radio — position et nb de personnes",
+    "Approcher sous le vent — moteur au point mort",
+    "Hisser à bord — chaleur, vêtements secs, bilan"
   ],
   "signal_attention": "Signal d'attention (\"attention\")",
   "signal_distress": "Signal de détresse (navire en détresse) — min. 6 sons",

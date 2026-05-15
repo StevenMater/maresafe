@@ -201,20 +201,20 @@
   "info_ambition": "Momenteel beschikbaar voor Nederland — heel Europa volgt.",
   "info_slogan": "Altijd voorbereid. Altijd aan boord.",
   "fire": [
-    "Motor uit — brandstoftoevoer afsluiten",
-    "Ventilatie dicht (luiken, patrijspoorten, ventilatieopeningen)",
-    "Marifoon: PAN PAN — of MAYDAY bij levensgevaar",
-    "Reddingsvesten aan voor iedereen aan boord",
-    "Blusmiddel pakken — deur niet openen naar vuurzijde",
-    "Reddingsvlot / -sloep klaarmaken als situatie escaleert"
+    "Motor stoppen — brandstof en gas afsluiten",
+    "Sluit alle luiken, ventielen en patrijspoorten",
+    "Reddingsvesten aan — iedereen aan dek",
+    "MAYDAY via marifoon — kanaal 16",
+    "Brandblus — open luik niet naar de brand toe",
+    "Reddingsvlot of bijboot klaarmaken"
   ],
   "mob": [
-    "Roep \"MAN OVERBOORD\" — verlies de drenkeling niet uit het oog en blijf wijzen",
-    "Mik een reddingsboei op het hoofd van de drenkeling — gooi ook lijn of jerrycan",
-    "Noteer of onthoud de GPS-positie",
-    "MAYDAY via marifoon — geef positie en aantal opvarenden door",
-    "Vaar terug — benadering met de wind mee, motor aan laten, schroef uit werk bij de persoon",
-    "Persoon aan boord krijgen — warmte, droge kleding, medische check"
+    "Roep \"MAN OVERBOORD\" — blijf wijzen, hou niet op",
+    "Gooi reddingsboei, lijn of iets wat drijft",
+    "Druk MOB op GPS — onthoud of noteer positie",
+    "MAYDAY via marifoon — positie en aantal personen",
+    "Nader van lijzijde — motor in vrijloop bij persoon",
+    "Persoon aan boord — warmte, droge kleding, check"
   ],
   "signal_attention": "Attentiesein (\"let op\")",
   "signal_distress": "Noodsein (schip in nood) — min. 6 stoten",

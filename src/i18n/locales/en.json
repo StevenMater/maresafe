@@ -201,20 +201,20 @@
   "info_ambition": "Currently covering the Netherlands — with the whole of Europe next.",
   "info_slogan": "Always prepared. Always on board.",
   "fire": [
-    "Stop engine — turn off fuel supply",
-    "Close ventilation (hatches, portholes, air vents)",
-    "Radio: PAN PAN — or MAYDAY if lives are at risk",
-    "Life jackets on for everyone on board",
-    "Grab fire extinguisher — do not open door towards the fire",
-    "Prepare liferaft / dinghy if situation escalates"
+    "Stop engine — cut fuel and gas supply",
+    "Close all hatches, vents and portholes",
+    "Life jackets on — all crew up on deck",
+    "MAYDAY on radio — channel 16",
+    "Use extinguisher — don't open hatch towards fire",
+    "Ready liferaft or dinghy to abandon ship"
   ],
   "mob": [
-    "Shout \"MAN OVERBOARD\" — keep eyes on the person and keep pointing",
-    "Aim a lifebuoy at the head of the person in the water — also throw a line or jerrycan",
-    "Note or memorise GPS position",
-    "MAYDAY on radio — report position and number of persons on board",
-    "Return to person — approach downwind, keep engine running, put propeller out of gear near person",
-    "Get person on board — warmth, dry clothes, medical check"
+    "Shout \"MAN OVERBOARD\" — one person keeps pointing",
+    "Throw lifebuoy, line or anything that floats",
+    "Press MOB on GPS — note or memorise position",
+    "MAYDAY on radio — position and souls on board",
+    "Approach from downwind — engine neutral near person",
+    "Get person aboard — warmth, dry clothes, check"
   ],
   "signal_attention": "Attention signal (\"watch out\")",
   "signal_distress": "Distress signal (vessel in distress) — min. 6 blasts",

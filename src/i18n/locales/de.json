@@ -201,20 +201,20 @@
   "info_ambition": "Derzeit für die Niederlande verfügbar — ganz Europa folgt.",
   "info_slogan": "Immer vorbereitet. Immer an Bord.",
   "fire": [
-    "Motor abstellen — Kraftstoffzufuhr absperren",
-    "Belüftung schließen (Luken, Bullaugen, Lüftungsöffnungen)",
-    "Funk: PAN PAN — oder MAYDAY bei Lebensgefahr",
-    "Rettungswesten für alle an Bord anlegen",
-    "Feuerlöscher nehmen — Tür zur Brandseite nicht öffnen",
-    "Rettungsinsel / Beiboot vorbereiten, falls Lage eskaliert"
+    "Motor stoppen — Kraftstoff und Gas abdrehen",
+    "Alle Luken, Lüftungen und Bullaugen schließen",
+    "Rettungswesten an — alle Mann an Deck",
+    "MAYDAY per Seefunk — Kanal 16",
+    "Feuerlöscher — Luke nicht zur Brandseite öffnen",
+    "Rettungsinsel oder Beiboot zum Verlassen bereit"
   ],
   "mob": [
-    "Ruf \"MANN ÜBER BORD\" — Person nicht aus den Augen verlieren und weiter zeigen",
-    "Rettungsring auf den Kopf der Person zielen — auch Leine oder Kanister zuwerfen",
-    "GPS-Position notieren oder merken",
-    "MAYDAY über Funk — Position und Personenzahl durchgeben",
-    "Zur Person zurückfahren — Ansteuerung mit dem Wind, Motor laufen lassen, Schraube außer Eingriff setzen",
-    "Person an Bord holen — Wärme, trockene Kleidung, medizinische Versorgung"
+    "\"MANN ÜBER BORD\" rufen — immer auf Person zeigen",
+    "Rettungsring, Leine oder Schwimmendes werfen",
+    "MOB-Taste am GPS drücken — Position merken",
+    "MAYDAY per Seefunk — Position und Personenzahl",
+    "Von Lee annähern — Motor in Leerlauf bei Person",
+    "An Bord holen — Wärme, trockene Kleidung, Check"
   ],
   "signal_attention": "Aufmerksamkeitssignal (\"Achtung\")",
   "signal_distress": "Notsignal (Schiff in Not) — mind. 6 Töne",
