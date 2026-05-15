@@ -63,17 +63,6 @@ function toWorkerFormData(data: CardData, lang: Language) {
   }
 }
 
-export async function createCheckoutSession(origin: string): Promise<string> {
-  const res = await fetch(`${WORKER_BASE}/create-checkout-session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ origin }),
-  })
-  const { url, error } = (await res.json()) as { url?: string; error?: string }
-  if (!url) throw new Error(error ?? "No checkout URL")
-  return url
-}
-
 export async function verifyCode(code: string): Promise<CodeStatus> {
   const res = await fetch(`${WORKER_BASE}/check-code`, {
     method: "POST",
