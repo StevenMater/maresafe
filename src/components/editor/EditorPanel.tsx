@@ -1,7 +1,7 @@
-import { ChevronDown } from "lucide-react"
-import { useTranslation } from "../../i18n/useTranslation"
+import { Lock } from "lucide-react"
 import { cn } from "../../lib/cn"
-import { DownloadBar } from "../download/DownloadBar"
+import { useTranslation } from "../../i18n/useTranslation"
+import { DownloadSection } from "../download/DownloadSection"
 import { SaveLoadBar } from "../download/SaveLoadBar"
 import { VesselSection } from "./VesselSection"
 import { ContactsSection } from "./ContactsSection"
@@ -19,12 +19,10 @@ interface EditorPanelProps {
     file: File,
   ) => Promise<{ success: boolean; lang: Language | null }>
   clearAll: () => void
-  formCollapsed: boolean
-  setFormCollapsed: (collapsed: boolean) => void
-  onValidCodeChange: (valid: boolean) => void
+  verifiedCode: string | null
+  tokensRemaining: number | "unlimited" | null
+  onTokensConsumed: (remaining: number) => void
 }
-
-const MAX_FORM_WIDTH = "calc(794px * 1.5)"
 
 export function EditorPanel({
   data,
@@ -35,71 +33,49 @@ export function EditorPanel({
   updateContact,
   importJSON,
   clearAll,
-  formCollapsed,
-  setFormCollapsed,
-  onValidCodeChange,
+  verifiedCode,
+  tokensRemaining,
+  onTokensConsumed,
 }: EditorPanelProps) {
   const { t } = useTranslation()
+  const isLocked = !verifiedCode
 
   return (
-    <div
-      className="w-full flex flex-col items-center gap-2 pb-2"
-      style={{ maxWidth: MAX_FORM_WIDTH }}
-    >
-      {/* Download action bar */}
-      <div className="w-full bg-white border border-[#d0dbe8] rounded-lg">
-        <DownloadBar
-          formData={data}
-          lang={lang}
-          onValidCodeChange={onValidCodeChange}
-        />
-      </div>
-
-      {/* Form toggle — centered pill button */}
-      <button
-        type="button"
-        onClick={() => setFormCollapsed(!formCollapsed)}
-        aria-expanded={!formCollapsed}
-        className="flex items-center gap-2 bg-navy2 hover:bg-navy text-white text-xs font-semibold rounded-md px-4 py-1.75 border-none cursor-pointer transition-colors"
-      >
-        <ChevronDown
-          size={14}
-          className={cn(
-            "transition-transform duration-200",
-            formCollapsed && "rotate-180",
-          )}
-        />
-        {t("form_toggle_label")}
-        <ChevronDown
-          size={14}
-          className={cn(
-            "transition-transform duration-200",
-            formCollapsed && "rotate-180",
-          )}
-        />
-      </button>
-
-      {/* Collapsible form sections */}
-      <div
-        className={cn(
-          "w-full overflow-hidden transition-[max-height] ease-in-out duration-400",
-          formCollapsed ? "max-h-0" : "max-h-1250",
-        )}
-      >
-        <div className="flex flex-col gap-2">
-          <div className="bg-white border border-[#d0dbe8] rounded-lg overflow-hidden">
-            <VesselSection data={data} setField={setField} />
-            <ContactsSection
-              data={data}
-              addContact={addContact}
-              removeContact={removeContact}
-              updateContact={updateContact}
-              setNotes={(v) => setField("notes", v)}
-            />
-            <InsurerSection data={data} setField={setField} />
+    <div className='w-full pb-2'>
+      <div className='relative'>
+        <div className={cn('bg-white border border-[#d0dbe8] rounded-lg overflow-hidden', isLocked && 'blur-sm')}>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-6 py-3 border-b border-[#eef3f8]'>
+            <div className='flex items-center gap-1 text-xs text-mid'>
+              <span className='text-base font-bold text-navy2'>③ </span>
+              <span>{t("step_form")}</span>
+            </div>
+            <SaveLoadBar importJSON={importJSON} clearAll={clearAll} />
           </div>
-          <SaveLoadBar importJSON={importJSON} clearAll={clearAll} />
+          <VesselSection data={data} setField={setField} />
+          <ContactsSection
+            data={data}
+            addContact={addContact}
+            removeContact={removeContact}
+            updateContact={updateContact}
+            setNotes={(v) => setField("notes", v)}
+          />
+          <InsurerSection data={data} setField={setField} />
+          <DownloadSection
+            code={verifiedCode ?? ""}
+            tokensRemaining={tokensRemaining ?? 0}
+            formData={data}
+            lang={lang}
+            onTokensConsumed={onTokensConsumed}
+          />
         </div>
+        {isLocked && (
+          <div className='absolute inset-0 z-10 flex flex-col items-center justify-start pt-35 gap-2 cursor-not-allowed'>
+            <Lock size={24} className='text-navy2' />
+            <p className='text-base font-bold text-navy2 text-center px-6'>
+              {t("form_locked_hint")}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
