@@ -8,10 +8,14 @@ PDF. SPA deployed to GitHub Pages. Cloudflare Worker handles Stripe checkout,
 webhook fulfillment (code generation + email), and PDF rendering via
 Browserless.
 
-Ground-up React rewrite of an existing vanilla JS app. The Cloudflare Worker
-(`../maritime-emergency-card/worker/`) is **unchanged** — do not touch it.
-Original app at `../maritime-emergency-card/` — read for reference
-(translations, card logic, field structure).
+**Worker lives at `worker/` inside this repo** — D1 database, no KV.
+Schema at `worker/schema.sql`. Deploy with `wrangler deploy` from `worker/`.
+
+### ABSOLUTE OFF-LIMITS
+
+`../maritime-emergency-card/` — the old app and its worker — must **never be
+read, referenced, or modified**. It is dead code. Treat it as if it does not
+exist. All work happens inside `/Users/steven/Development/maresafe/` only.
 
 ---
 
@@ -79,48 +83,48 @@ create one-off wrappers.
 ```
 src/
 ├── main.tsx                  # React root, render gate check
-├── App.tsx                   # Root layout, providers
+├── App.tsx                   # Root layout, state: verifiedCode + tokensRemaining
 ├── i18n/
-│   ├── translations.ts       # All 4 language objects, typed
-│   └── useTranslation.ts     # Hook: t(key), currentLang, setLang
+│   ├── locales/              # en.json, nl.json, fr.json, de.json
+│   └── useTranslation.ts     # Hook: t(key), tPlural(key, n), currentLang
 ├── components/
 │   ├── ui/                   # Reusable primitives — use these everywhere
-│   │   ├── Button.tsx        # variant: primary|secondary|ghost, size: sm|md|lg
-│   │   ├── Input.tsx         # text, tel, number — label, error, maxLength
 │   │   ├── Select.tsx        # single AND multi via `multiple` prop
-│   │   ├── Modal.tsx         # headless, handles backdrop + focus trap
-│   │   ├── Badge.tsx
+│   │   ├── Modal.tsx
 │   │   └── Tooltip.tsx
 │   ├── layout/
-│   │   ├── Header.tsx        # lang selector, save/load buttons
-│   │   └── PaymentSuccessBanner.tsx
-│   ├── card/                 # A4 card preview — pixel-exact, not Tailwind
-│   │   ├── CardPreview.tsx   # 794×1123px container, PREVIEW watermark
-│   │   ├── TitleBar.tsx
-│   │   ├── ContactsGrid.tsx
-│   │   ├── SignalsSection.tsx # VHF signal chart (generated, not static)
-│   │   └── CardFooter.tsx
-│   ├── editor/               # Right panel — the form
-│   │   ├── EditorPanel.tsx
+│   │   ├── Header.tsx        # lang selector
+│   │   ├── SaveLoadBar.tsx   # save/load/clear action buttons
+│   │   └── Footer.tsx
+│   ├── card/                 # A4 card preview — pixel-exact, NO Tailwind inside
+│   │   ├── CardPreview.tsx   # 794×1123px, zoom-scaled, PREVIEW watermark
+│   │   └── ...               # TitleBar, ContactsGrid, SignalsSection, etc.
+│   ├── editor/               # Form panel
+│   │   ├── EditorPanel.tsx   # lock overlay when no valid code
 │   │   ├── VesselSection.tsx
 │   │   ├── ContactsSection.tsx
-│   │   └── EmergencySection.tsx
+│   │   └── InsurerSection.tsx
 │   ├── download/
-│   │   ├── DownloadBar.tsx   # Code entry + verify + download button
-│   │   └── CheckoutWidget.tsx # €2 price, Buy button, payment icons
+│   │   ├── CheckoutWidget.tsx  # ① Buy — €2 price + Stripe button
+│   │   ├── CodeCheckWidget.tsx # ② Activate — code input + verify
+│   │   └── DownloadSection.tsx # ④⑤ Language select + download (inside EditorPanel)
 │   └── modals/
-│       ├── LoadDataModal.tsx
-│       └── TipModal.tsx
+│       ├── InfoModal.tsx
+│       └── LoadDataModal.tsx
 ├── hooks/
 │   ├── useFormData.ts        # All card data state, localStorage persistence
-│   ├── useCodeVerification.ts
+│   ├── useCardScale.ts       # ResizeObserver zoom scale for card preview
 │   └── useCheckout.ts        # startCheckout() — POST to worker, redirect
 ├── lib/
-│   ├── worker.ts             # WORKER_BASE constant + all fetch calls
-│   ├── pdf.ts                # Trigger PDF download via worker
-│   └── signals.ts            # VHF signal generation logic (port from old app)
+│   ├── worker.ts             # WORKER_BASE + all fetch calls (never fetch directly)
+│   └── cn.ts                 # clsx + tailwind-merge helper
 └── types/
-    └── index.ts              # FormData, Language, Contact, etc.
+    └── index.ts              # CardData, Language, Contact, etc.
+
+worker/                       # Cloudflare Worker — D1, no KV
+├── src/index.js
+├── schema.sql                # D1 schema: download_codes, download_uses, rate_limits
+└── wrangler.toml
 ```
 
 ---
@@ -142,24 +146,24 @@ header. See `/render-mode` for the full pattern.
 ## Worker Integration
 
 All worker calls in `src/lib/worker.ts`. Never call `fetch` directly in
-components.
+components. Worker source at `worker/src/index.js`.
 
 ```ts
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
 export async function createCheckoutSession(origin: string): Promise<string>
-export async function verifyCode(code: string): Promise<CodeStatus>
-export async function generatePdf(
-  formData: FormData,
-  lang: Language,
-): Promise<Blob>
+export async function verifyCode(code: string): Promise<{ valid: boolean, tokens: number | "unlimited" }>
+export async function generatePdf(params: { code, formData, languages, lang }): Promise<Blob>
 ```
 
 Endpoints:
 
 - `POST /create-checkout-session` — `{ origin }` → `{ url }`
-- `POST /check-code` — `{ code }` → `{ valid, tokens_remaining, status }`
-- `POST /generate-pdf` — `{ cardData, lang, code }` → binary PDF
+- `POST /check-code` — `{ code }` → `{ valid, tokens: number | "unlimited" }`
+- `POST /generate-pdf` — `{ code, formData, languages, area, lang }` → ZIP blob
+- `POST /admin/codes` — `{ masterCode }` → `{ codes[] }` (admin only)
+- `POST /create-code` — `{ masterCode, email, uses?, unlimited? }` → `{ code }` (admin only)
+- `POST /revoke-code` — `{ masterCode, code }` → `{ ok }` (admin only)
 
 ---
 
