@@ -3,6 +3,7 @@
 /* TODO: i want proper colour names, e.g. primary, secondary etc*/
 
 @theme {
+  --font-sans: 'Inter', system-ui, sans-serif;
   --color-navy: #1b3a5c;
   --color-navy2: #2c5282;
   --color-red: #a93226;
