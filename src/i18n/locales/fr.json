@@ -216,20 +216,18 @@
     "Revenir vers la personne — approche sous le vent, garder le moteur allumé, désengager l'hélice près de la personne",
     "Récupérer la personne — chaleur, vêtements secs, contrôle médical"
   ],
-  "signals": [
-    "Signal d'attention (\"attention\")",
-    "Signal de détresse (navire en détresse) — min. 6 sons",
-    "Danger de collision",
-    "Signal \"restez à l'écart\" (feu/explosion) — répété ≥ 15 min",
-    "Je vire à tribord",
-    "Je vire à bâbord",
-    "Je bats en arrière",
-    "Je traverse",
-    "Je vire en passant par tribord",
-    "Je vire en passant par bâbord",
-    "Je veux vous doubler par tribord",
-    "Je veux vous doubler par bâbord",
-    "J'entre au port par tribord",
-    "J'entre au port par bâbord"
-  ]
+  "signal_attention": "Signal d'attention (\"attention\")",
+  "signal_distress": "Signal de détresse (navire en détresse) — min. 6 sons",
+  "signal_collision": "Danger de collision",
+  "signal_keep_clear": "Signal \"restez à l'écart\" (feu/explosion) — répété ≥ 15 min",
+  "signal_turn_stbd": "Je vire à tribord",
+  "signal_turn_port": "Je vire à bâbord",
+  "signal_astern": "Je bats en arrière",
+  "signal_crossing": "Je traverse",
+  "signal_around_stbd": "Je vire en passant par tribord",
+  "signal_around_port": "Je vire en passant par bâbord",
+  "signal_overtake_stbd": "Je veux vous doubler par tribord",
+  "signal_overtake_port": "Je veux vous doubler par bâbord",
+  "signal_enter_stbd": "J'entre au port par tribord",
+  "signal_enter_port": "J'entre au port par bâbord"
 }

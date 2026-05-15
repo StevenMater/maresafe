@@ -216,20 +216,18 @@
     "Vaar terug — benadering met de wind mee, motor aan laten, schroef uit werk bij de persoon",
     "Persoon aan boord krijgen — warmte, droge kleding, medische check"
   ],
-  "signals": [
-    "Attentiesein (\"let op\")",
-    "Noodsein (schip in nood) — min. 6 stoten",
-    "Gevaar voor aanvaring",
-    "Blijf-weg sein (brand/explosie) — herhaald ≥ 15 min",
-    "Ik ga stuurboordszijde uit",
-    "Ik ga bakboordszijde uit",
-    "Ik sla achteruit",
-    "Ik ga oversteken",
-    "Ik keer via stuurboord",
-    "Ik keer via bakboord",
-    "Ik wil je aan stuurboord oplopen",
-    "Ik wil je aan bakboord oplopen",
-    "Ik ga een haven in over stuurboord",
-    "Ik ga een haven in over bakboord"
-  ]
+  "signal_attention": "Attentiesein (\"let op\")",
+  "signal_distress": "Noodsein (schip in nood) — min. 6 stoten",
+  "signal_collision": "Gevaar voor aanvaring",
+  "signal_keep_clear": "Blijf-weg sein (brand/explosie) — herhaald ≥ 15 min",
+  "signal_turn_stbd": "Ik ga stuurboordszijde uit",
+  "signal_turn_port": "Ik ga bakboordszijde uit",
+  "signal_astern": "Ik sla achteruit",
+  "signal_crossing": "Ik ga oversteken",
+  "signal_around_stbd": "Ik keer via stuurboord",
+  "signal_around_port": "Ik keer via bakboord",
+  "signal_overtake_stbd": "Ik wil je aan stuurboord oplopen",
+  "signal_overtake_port": "Ik wil je aan bakboord oplopen",
+  "signal_enter_stbd": "Ik ga een haven in over stuurboord",
+  "signal_enter_port": "Ik ga een haven in over bakboord"
 }

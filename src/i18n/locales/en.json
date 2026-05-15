@@ -216,20 +216,18 @@
     "Return to person — approach downwind, keep engine running, put propeller out of gear near person",
     "Get person on board — warmth, dry clothes, medical check"
   ],
-  "signals": [
-    "Attention signal (\"watch out\")",
-    "Distress signal (vessel in distress) — min. 6 blasts",
-    "Danger of collision",
-    "Keep-clear signal (fire/explosion) — repeated ≥ 15 min",
-    "I am turning to starboard",
-    "I am turning to port",
-    "I am going astern",
-    "I am crossing",
-    "I am turning around via starboard",
-    "I am turning around via port",
-    "I intend to overtake you on your starboard side",
-    "I intend to overtake you on your port side",
-    "I am entering harbour via starboard",
-    "I am entering harbour via port"
-  ]
+  "signal_attention": "Attention signal (\"watch out\")",
+  "signal_distress": "Distress signal (vessel in distress) — min. 6 blasts",
+  "signal_collision": "Danger of collision",
+  "signal_keep_clear": "Keep-clear signal (fire/explosion) — repeated ≥ 15 min",
+  "signal_turn_stbd": "I am turning to starboard",
+  "signal_turn_port": "I am turning to port",
+  "signal_astern": "I am going astern",
+  "signal_crossing": "I am crossing",
+  "signal_around_stbd": "I am turning around via starboard",
+  "signal_around_port": "I am turning around via port",
+  "signal_overtake_stbd": "I intend to overtake you on your starboard side",
+  "signal_overtake_port": "I intend to overtake you on your port side",
+  "signal_enter_stbd": "I am entering harbour via starboard",
+  "signal_enter_port": "I am entering harbour via port"
 }

@@ -216,20 +216,18 @@
     "Zur Person zurückfahren — Ansteuerung mit dem Wind, Motor laufen lassen, Schraube außer Eingriff setzen",
     "Person an Bord holen — Wärme, trockene Kleidung, medizinische Versorgung"
   ],
-  "signals": [
-    "Aufmerksamkeitssignal (\"Achtung\")",
-    "Notsignal (Schiff in Not) — mind. 6 Töne",
-    "Kollisionsgefahr",
-    "Freihaltezeichen (Feuer/Explosion) — wiederholt ≥ 15 min",
-    "Ich weiche nach Steuerbord aus",
-    "Ich weiche nach Backbord aus",
-    "Ich fahre rückwärts",
-    "Ich quere",
-    "Ich wende über Steuerbord",
-    "Ich wende über Backbord",
-    "Ich will Sie von Steuerbord überholen",
-    "Ich will Sie von Backbord überholen",
-    "Ich laufe einen Hafen über Steuerbord an",
-    "Ich laufe einen Hafen über Backbord an"
-  ]
+  "signal_attention": "Aufmerksamkeitssignal (\"Achtung\")",
+  "signal_distress": "Notsignal (Schiff in Not) — mind. 6 Töne",
+  "signal_collision": "Kollisionsgefahr",
+  "signal_keep_clear": "Freihaltezeichen (Feuer/Explosion) — wiederholt ≥ 15 min",
+  "signal_turn_stbd": "Ich weiche nach Steuerbord aus",
+  "signal_turn_port": "Ich weiche nach Backbord aus",
+  "signal_astern": "Ich fahre rückwärts",
+  "signal_crossing": "Ich quere",
+  "signal_around_stbd": "Ich wende über Steuerbord",
+  "signal_around_port": "Ich wende über Backbord",
+  "signal_overtake_stbd": "Ich will Sie von Steuerbord überholen",
+  "signal_overtake_port": "Ich will Sie von Backbord überholen",
+  "signal_enter_stbd": "Ich laufe einen Hafen über Steuerbord an",
+  "signal_enter_port": "Ich laufe einen Hafen über Backbord an"
 }

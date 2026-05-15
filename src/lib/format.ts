@@ -5,25 +5,6 @@ import {
 } from "libphonenumber-js"
 import type { Language } from "../types"
 
-export type SignalBeat = "L" | "S" | "XS"
-
-export const SIGNAL_PATTERNS: SignalBeat[][] = [
-  ["L"],
-  ["L", "L", "L", "L", "L", "L"],
-  ["XS", "XS", "XS", "XS", "XS", "XS"],
-  ["S", "L"],
-  ["S"],
-  ["S", "S"],
-  ["S", "S", "S"],
-  ["L", "L", "L"],
-  ["L", "S"],
-  ["L", "S", "S"],
-  ["L", "L", "S"],
-  ["L", "L", "S", "S"],
-  ["L", "L", "L", "S"],
-  ["L", "L", "L", "S", "S"],
-]
-
 const NATO: Record<string, string> = {
   A: "Alfa",
   B: "Bravo",

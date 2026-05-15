@@ -1,6 +1,25 @@
+import type { StringTranslationKey } from "../../i18n/locales/index"
 import { useTranslation } from "../../i18n/useTranslation"
-import { SIGNAL_PATTERNS, type SignalBeat } from "../../lib/format"
 import s from "./CardPreview.module.css"
+
+type SignalBeat = "L" | "S" | "XS"
+
+const SIGNALS: { key: StringTranslationKey; pattern: SignalBeat[] }[] = [
+  { key: "signal_attention", pattern: ["L"] },
+  { key: "signal_distress", pattern: ["L", "L", "L", "L", "L", "L"] },
+  { key: "signal_collision", pattern: ["XS", "XS", "XS", "XS", "XS", "XS"] },
+  { key: "signal_keep_clear", pattern: ["S", "L"] },
+  { key: "signal_astern", pattern: ["S", "S", "S"] },
+  { key: "signal_crossing", pattern: ["L", "L", "L"] },
+  { key: "signal_turn_port", pattern: ["S", "S"] },
+  { key: "signal_turn_stbd", pattern: ["S"] },
+  { key: "signal_around_port", pattern: ["L", "S", "S"] },
+  { key: "signal_around_stbd", pattern: ["L", "S"] },
+  { key: "signal_overtake_port", pattern: ["L", "L", "S", "S"] },
+  { key: "signal_overtake_stbd", pattern: ["L", "L", "S"] },
+  { key: "signal_enter_port", pattern: ["L", "L", "L", "S", "S"] },
+  { key: "signal_enter_stbd", pattern: ["L", "L", "L", "S"] },
+]
 
 function SignalShape({ beat }: { beat: SignalBeat }) {
   if (beat === "L") return <span className={s.gL} />
@@ -10,8 +29,7 @@ function SignalShape({ beat }: { beat: SignalBeat }) {
 }
 
 export function SignalsSection() {
-  const { t, tArr } = useTranslation()
-  const signals = tArr("signals")
+  const { t } = useTranslation()
 
   return (
     <div>
@@ -34,21 +52,23 @@ export function SignalsSection() {
         </span>
       </div>
       <div className={s.signalGrid}>
-        {signals.map((desc, i) => {
+        {SIGNALS.map(({ key, pattern }, i) => {
           const rowIndex = Math.floor(i / 2)
           const isAlt = rowIndex % 2 === 0
 
           return (
             <div
-              key={i}
+              key={key}
               className={`${s.signalRow} ${isAlt ? s.signalRowAlt : s.signalRowDefault}`}
             >
               <div className={s.signalPattern}>
-                {SIGNAL_PATTERNS[i]?.map((beat, j) => (
+                {pattern.map((beat, j) => (
                   <SignalShape key={j} beat={beat} />
                 ))}
               </div>
-              <span className={s.signalDescription}>{desc}</span>
+              <span className={s.signalDescription}>
+                {t(key as StringTranslationKey)}
+              </span>
             </div>
           )
         })}
