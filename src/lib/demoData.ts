@@ -61,7 +61,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Marie Dubois", country: "BE", number: "0470123456" },
     ],
     notes:
-      "Brandblusser: voorste hut, bakboordszijde. Reddingsvesten: onder de V-berth kussens. EPIRB: stuurstand, geregistreerd 2024. EHBO-kit: kaartentafellade. Noodsignalen vervallen jun 2026. Motor-noodstopkoord altijd bevestigd. Brandstofcapaciteit 180L, bereik ca. 280nm. Slaapplaatsen: 4. VHF DSC MMSI geprogrammeerd.",
+      "Brandblusser: voorste hut, bakboord. Reddingsvesten: onder V-berth kussens. EPIRB: stuurstand, geregistreerd 2024. EHBO-kit: kaartentafellade. Noodsignalen vervallen jun 2026. Noodstopkoord altijd bevestigd. Brandstof 180L, bereik ca. 280nm. Slaapplaatsen: 4. VHF DSC MMSI geprogrammeerd.",
   },
   fr: {
     vesselName: "Nom de Navire Exemple",
@@ -92,7 +92,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Claire Martin", country: "BE", number: "0470123456" },
     ],
     notes:
-      "Extincteur : cabine avant, côté bâbord. Gilets de sauvetage : sous les sièges de la couchette en V. EPIRB : poste de barre, enregistré 2024. Trousse premiers secours : tiroir table à cartes. Fusées éclairantes expirent juin 2026. Coupe-circuit moteur attaché en permanence. Capacité carburant 180L, autonomie env. 280nm. Couchettes : 4. MMSI VHF DSC programmé.",
+      "Extincteur : cabine avant, bâbord. Gilets : sous couchette en V. EPIRB : barre, enregistré 2024. Trousse secours : table à cartes. Fusées juin 2026. Coupe-circuit moteur permanent. Carburant 180L, autonomie env. 280nm. Couchettes : 4. MMSI VHF DSC programmé.",
   },
   de: {
     vesselName: "Beispiel Schiffsname",
@@ -123,7 +123,7 @@ const DEMO: Record<Language, CardData> = {
       { label: "Maria Hoffmann", country: "NL", number: "0612345678" },
     ],
     notes:
-      "Feuerlöscher: vordere Kabine, Backbordseite. Rettungswesten: unter den V-Koje-Sitzen. EPIRB: Steuerstand, registriert 2024. Erste-Hilfe-Kasten: Kartentischlade. Signalmittel verfallen Jun 2026. Motor-Notabschalter stets befestigt. Kraftstoffkapazität 180L, Reichweite ca. 280nm. Schlafplätze: 4. VHF DSC MMSI programmiert.",
+      "Feuerlöscher: vordere Kabine, Backbord. Rettungswesten: unter V-Koje. EPIRB: Steuerstand, registriert 2024. Erste-Hilfe: Kartentischlade. Signalmittel verfallen Jun 2026. Notabschalter stets befestigt. Kraftstoff 180L, Reichweite ca. 280nm. Schlafplätze: 4. VHF DSC MMSI programmiert.",
   },
 }
 
