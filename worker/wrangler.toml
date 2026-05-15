@@ -21,6 +21,8 @@ invocation_logs = true
 # Secrets — set via `wrangler secret put`:
 #   STRIPE_WEBHOOK_SECRET_LIVE   ← rename of existing STRIPE_WEBHOOK_SECRET
 #   STRIPE_WEBHOOK_SECRET_TEST   ← test webhook signing secret (Stripe dashboard)
+#   STRIPE_SECRET_KEY            ← already set — used as live key fallback for API calls
+#   STRIPE_SECRET_KEY_TEST       ← optional: Stripe test secret key (sk_test_...) for test webhook quantity
 #   BROWSERLESS_TOKEN
 #   MASTER_CODE
 #   RESEND_API_KEY
