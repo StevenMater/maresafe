@@ -4,7 +4,7 @@ const VALID_AREAS = ["netherlands"]
 const VALID_LANGS = ["nl", "en", "fr", "de"]
 
 const AREA_LABEL = {
-  netherlands: "Netherlands",
+  netherlands: { nl: "Nederland", en: "Netherlands", fr: "Pays-Bas", de: "Niederlande" },
 }
 
 const LANG_LABEL = {
@@ -316,22 +316,24 @@ async function handleGeneratePdf(request, env) {
 
   // ── ZIP ────────────────────────────────────────────────────────
   const vesselName = formData?.name || "card"
-  const areaLabel = AREA_LABEL[area]
+  const areaLabels = AREA_LABEL[area]
 
   const files = {}
   for (let i = 0; i < languages.length; i++) {
     const l = languages[i]
-    files[`MareSafe - ${vesselName} - ${areaLabel} - ${LANG_LABEL[l]}.pdf`] =
+    const label = areaLabels[l] || areaLabels.en
+    files[`MareSafe - ${vesselName} - ${label} - ${LANG_LABEL[l]}.pdf`] =
       new Uint8Array(pdfs[i])
   }
   const zipped = zipSync(files)
 
+  const zipLabel = areaLabels[lang] || areaLabels.en
   return new Response(zipped, {
     status: 200,
     headers: {
       ...corsHeaders(env),
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="MareSafe - ${vesselName} - ${areaLabel}.zip"`,
+      "Content-Disposition": `attachment; filename="MareSafe - ${vesselName} - ${zipLabel}.zip"`,
     },
   })
 }
