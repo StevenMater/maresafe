@@ -12,13 +12,14 @@ import { CardFooter } from "./CardFooter"
 interface CardPreviewProps {
   data: CardData
   showWatermark: boolean
+  hideBorder?: boolean
 }
 
-export function CardPreview({ data, showWatermark }: CardPreviewProps) {
+export function CardPreview({ data, showWatermark, hideBorder }: CardPreviewProps) {
   const { t } = useTranslation()
 
   return (
-    <div className={s.card}>
+    <div className={s.card} style={hideBorder ? { border: "none", borderRadius: 0 } : undefined}>
       {showWatermark && (
         <div className={s.watermark} aria-hidden="true">
           PREVIEW

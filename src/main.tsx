@@ -14,7 +14,7 @@ function CardRenderView({ data, lang }: { data: CardData; lang: Language }) {
 
   return (
     <TranslationProvider initialLang={lang}>
-      <CardPreview data={data} showWatermark={false} />
+      <CardPreview data={data} showWatermark={false} hideBorder />
       <div id="render-ready" style={{ display: "none" }} />
     </TranslationProvider>
   )
