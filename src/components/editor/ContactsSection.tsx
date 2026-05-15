@@ -46,6 +46,7 @@ export function ContactsSection({
                 onChange={(e) =>
                   updateContact(index, { label: e.target.value })
                 }
+                maxLength={35}
               />
             </div>
             <div className="flex-1 min-w-0">

@@ -23,18 +23,21 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           tooltip={t("tip_f_name")}
           value={data.vesselName}
           onChange={(e) => setField("vesselName", e.target.value)}
+          maxLength={30}
         />
         <Input
           label={t("f_type")}
           tooltip={t("tip_f_type")}
           value={data.type}
           onChange={(e) => setField("type", e.target.value)}
+          maxLength={30}
         />
         <Input
           label={t("f_homeport")}
           tooltip={t("tip_f_homeport")}
           value={data.homePort}
           onChange={(e) => setField("homePort", e.target.value)}
+          maxLength={30}
         />
         <Input
           label={t("f_eni")}
@@ -86,6 +89,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("length", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_alt_length")}
@@ -94,6 +98,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("altLength", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_width")}
@@ -102,6 +107,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("width", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_alt_width")}
@@ -110,6 +116,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("altWidth", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_draft")}
@@ -118,6 +125,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("draft", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_alt_draft")}
@@ -126,6 +134,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("altDraft", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_headway")}
@@ -134,6 +143,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("headway", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
         <Input
           label={t("f_alt_headway")}
@@ -142,6 +152,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           onChange={(e) => setField("altHeadway", e.target.value)}
           decimal
           suffix="m"
+          maxLength={6}
         />
       </div>
     </section>
