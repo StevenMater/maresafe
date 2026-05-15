@@ -144,7 +144,7 @@
   "call_help": "Besoin d'aide",
   "call_assist": "Besoin d'assistance",
   "call_over": "Terminé",
-  "call_note": "Attention: seul le capitaine peut ordonner un appel MAYDAY ou PAN PAN — ou demander à quelqu'un de le faire — sauf si le capitaine n'est plus en mesure de donner des ordres.",
+  "call_note": "Attention: seul le capitaine peut déclencher un MAYDAY ou PAN PAN — ou en donner l'ordre — sauf s'il n'est plus en mesure de commander.",
   "sig_xs": "très court",
   "sig_s": "court",
   "sig_l": "long",

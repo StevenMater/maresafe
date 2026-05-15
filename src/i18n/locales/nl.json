@@ -144,7 +144,7 @@
   "call_help": "Hulp nodig",
   "call_assist": "Assistentie",
   "call_over": "Over",
-  "call_note": "Let op: alleen de schipper mag opdracht geven tot MAYDAY of PAN PAN — of dat laten doen — tenzij de schipper zelf niet meer in staat is om opdracht te geven.",
+  "call_note": "Let op: alleen de schipper mag een MAYDAY of PAN PAN uitsturen — of dit opdragen — tenzij de schipper hiertoe niet meer in staat is.",
   "sig_xs": "zeer kort",
   "sig_s": "kort",
   "sig_l": "lang",
