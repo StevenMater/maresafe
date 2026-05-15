@@ -1,6 +1,6 @@
 {
   "btn_save": "Daten speichern",
-  "btn_load": "Daten laden",
+  "btn_load": "Backup laden",
   "btn_clear": "Formular löschen",
   "tip_info_btn": "Informationen & Hilfe",
   "tip_save": "Lädt Ihre Daten als JSON-Datei herunter. So können Sie die Karte auf jedem Gerät wiederherstellen.",
@@ -176,6 +176,8 @@
   "download_tagline": "Aktivieren Sie Ihren Karten-Editor",
   "activate_title": "Ihr Code wurde nach dem Kauf per E-Mail gesendet",
   "activate_subtitle": "Geben Sie ihn hier ein, um das Formular freizuschalten und Ihre Schiffsdaten einzutragen.",
+  "activate_data_note": "Ihre Daten werden lokal in diesem Browser gespeichert. Beim Herunterladen wird eine Sicherungskopie per E-Mail gesendet.",
+  "download_backup_note": "Beim Herunterladen wird eine Sicherungskopie per E-Mail gesendet.",
   "step_languages": "Sprachen wählen",
   "step_code": "Code eingeben — E-Mail prüfen",
   "step_download": "Ihr PDF erhalten",

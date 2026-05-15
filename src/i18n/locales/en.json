@@ -1,6 +1,6 @@
 {
   "btn_save": "Save data",
-  "btn_load": "Load data",
+  "btn_load": "Load backup",
   "btn_clear": "Clear form",
   "tip_info_btn": "Information & help",
   "tip_save": "Downloads your data as a JSON file. Use it to restore your card on any device.",
@@ -176,6 +176,8 @@
   "download_tagline": "Activate your card editor",
   "activate_title": "Your code was sent by email after purchase",
   "activate_subtitle": "Enter it here to unlock the form and fill in your vessel details.",
+  "activate_data_note": "Your data is stored locally in this browser. A backup copy is sent to your email when you download.",
+  "download_backup_note": "A backup copy is sent to your email on download.",
   "step_languages": "Choose languages",
   "step_code": "Enter code — check your email",
   "step_download": "Get your PDF",

@@ -1,6 +1,6 @@
 {
   "btn_save": "Sauvegarder",
-  "btn_load": "Charger",
+  "btn_load": "Charger la sauvegarde",
   "btn_clear": "Effacer le formulaire",
   "tip_info_btn": "Informations & aide",
   "tip_save": "Télécharge vos données en fichier JSON. Permet de restaurer la carte sur n'importe quel appareil.",
@@ -176,6 +176,8 @@
   "download_tagline": "Activez votre éditeur de carte",
   "activate_title": "Votre code a été envoyé par e-mail après l'achat",
   "activate_subtitle": "Entrez-le ici pour déverrouiller le formulaire et saisir les détails de votre bateau.",
+  "activate_data_note": "Vos données sont stockées localement dans ce navigateur. Une copie de sauvegarde est envoyée par e-mail lors du téléchargement.",
+  "download_backup_note": "Une copie de sauvegarde est envoyée par e-mail lors du téléchargement.",
   "step_languages": "Choisir les langues",
   "step_code": "Entrez le code — vérifiez votre e-mail",
   "step_download": "Obtenir votre PDF",

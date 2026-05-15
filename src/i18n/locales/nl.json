@@ -1,6 +1,6 @@
 {
   "btn_save": "Gegevens opslaan",
-  "btn_load": "Gegevens laden",
+  "btn_load": "Back-up laden",
   "btn_clear": "Formulier wissen",
   "tip_info_btn": "Informatie & uitleg",
   "tip_save": "Download je gegevens als JSON-bestand. Zo herstel je de kaart op elk apparaat.",
@@ -176,6 +176,8 @@
   "download_tagline": "Activeer je kaarteditor",
   "activate_title": "Je code is na aankoop per e-mail verstuurd",
   "activate_subtitle": "Voer hem hier in om het formulier te ontgrendelen en je scheepsgegevens in te vullen.",
+  "activate_data_note": "Je gegevens worden lokaal opgeslagen in deze browser. Bij het downloaden ontvang je een back-up per e-mail.",
+  "download_backup_note": "Bij het downloaden ontvang je een back-up per e-mail.",
   "step_languages": "Kies talen",
   "step_code": "Code invoeren — check je e-mail",
   "step_download": "Ontvang uw PDF",
