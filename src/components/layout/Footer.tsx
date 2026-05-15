@@ -20,7 +20,7 @@ export function Footer() {
         <span>{t("footer_feedback")} </span>
         <a
           href="mailto:stevenmater@gmail.com"
-          className="text-mid no-underline hover:underline"
+          className="text-mid no-underline hover:underline select-text"
         >
           stevenmater@gmail.com
         </a>
