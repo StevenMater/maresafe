@@ -8,8 +8,8 @@ PDF. SPA deployed to GitHub Pages. Cloudflare Worker handles Stripe checkout,
 webhook fulfillment (code generation + email), and PDF rendering via
 Browserless.
 
-**Worker lives at `worker/` inside this repo** — D1 database, no KV.
-Schema at `worker/schema.sql`. Deploy with `wrangler deploy` from `worker/`.
+**Worker lives at `worker/` inside this repo** — D1 database, no KV. Schema at
+`worker/schema.sql`. Deploy with `wrangler deploy` from `worker/`.
 
 ### ABSOLUTE OFF-LIMITS
 
@@ -152,8 +152,15 @@ components. Worker source at `worker/src/index.js`.
 const WORKER_BASE = "https://maresafe-worker.maresafe.workers.dev"
 
 export async function createCheckoutSession(origin: string): Promise<string>
-export async function verifyCode(code: string): Promise<{ valid: boolean, tokens: number | "unlimited" }>
-export async function generatePdf(params: { code, formData, languages, lang }): Promise<Blob>
+export async function verifyCode(
+  code: string,
+): Promise<{ valid: boolean; tokens: number | "unlimited" }>
+export async function generatePdf(params: {
+  code
+  formData
+  languages
+  lang
+}): Promise<Blob>
 ```
 
 Endpoints:
@@ -162,7 +169,8 @@ Endpoints:
 - `POST /check-code` — `{ code }` → `{ valid, tokens: number | "unlimited" }`
 - `POST /generate-pdf` — `{ code, formData, languages, area, lang }` → ZIP blob
 - `POST /admin/codes` — `{ masterCode }` → `{ codes[] }` (admin only)
-- `POST /create-code` — `{ masterCode, email, uses?, unlimited? }` → `{ code }` (admin only)
+- `POST /create-code` — `{ masterCode, email, uses?, unlimited? }` → `{ code }`
+  (admin only)
 - `POST /revoke-code` — `{ masterCode, code }` → `{ ok }` (admin only)
 
 ---
