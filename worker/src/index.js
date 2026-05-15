@@ -17,11 +17,11 @@ const LANG_LABEL = {
 const EMAIL_T = {
   nl: {
     code_subject: "Jouw MareSafe downloadcode",
-    code_body: (code) =>
+    code_body: (code, tokens) =>
       `<p>Bedankt voor je aankoop.</p>
        <p>Jouw downloadcode is:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Deze code geeft je <strong>3 tokens</strong> (1 per taal per download).</p>
+       <p>Deze code geeft je <strong>${tokens} tokens</strong> (1 per taal per download).</p>
        <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, voer je code in en download je noodkaart.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — downloadbevestiging voor ${v}`,
@@ -33,11 +33,11 @@ const EMAIL_T = {
   },
   en: {
     code_subject: "Your MareSafe download code",
-    code_body: (code) =>
+    code_body: (code, tokens) =>
       `<p>Thank you for your purchase.</p>
        <p>Your download code is:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>This code gives you <strong>3 tokens</strong> (1 per language per download).</p>
+       <p>This code gives you <strong>${tokens} tokens</strong> (1 per language per download).</p>
        <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, enter your code, and download your emergency card.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — download receipt for ${v}`,
@@ -49,11 +49,11 @@ const EMAIL_T = {
   },
   fr: {
     code_subject: "Votre code de téléchargement MareSafe",
-    code_body: (code) =>
+    code_body: (code, tokens) =>
       `<p>Merci pour votre achat.</p>
        <p>Votre code de téléchargement est :</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Ce code vous donne <strong>3 tokens</strong> (1 par langue par téléchargement).</p>
+       <p>Ce code vous donne <strong>${tokens} tokens</strong> (1 par langue par téléchargement).</p>
        <p>Ouvrez <a href="https://www.maresafe.eu">maresafe.eu</a>, entrez votre code et téléchargez votre carte d'urgence.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — reçu de téléchargement pour ${v}`,
@@ -65,11 +65,11 @@ const EMAIL_T = {
   },
   de: {
     code_subject: "Ihr MareSafe Download-Code",
-    code_body: (code) =>
+    code_body: (code, tokens) =>
       `<p>Vielen Dank für Ihren Kauf.</p>
        <p>Ihr Download-Code lautet:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Dieser Code gibt Ihnen <strong>3 Tokens</strong> (1 pro Sprache pro Download).</p>
+       <p>Dieser Code gibt Ihnen <strong>${tokens} Tokens</strong> (1 pro Sprache pro Download).</p>
        <p>Öffnen Sie <a href="https://www.maresafe.eu">maresafe.eu</a>, geben Sie Ihren Code ein und laden Sie Ihre Notfallkarte herunter.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — Download-Beleg für ${v}`,
@@ -365,11 +365,10 @@ async function handleStripeWebhook(request, env) {
     return expected === sigParts.v1
   }
 
-  const verified =
-    (await verifySecret(env.STRIPE_WEBHOOK_SECRET_LIVE)) ||
-    (await verifySecret(env.STRIPE_WEBHOOK_SECRET_TEST))
+  const isLive = await verifySecret(env.STRIPE_WEBHOOK_SECRET_LIVE)
+  const isTest = !isLive && await verifySecret(env.STRIPE_WEBHOOK_SECRET_TEST)
 
-  if (!verified) {
+  if (!isLive && !isTest) {
     return new Response("Forbidden", { status: 403 })
   }
 
@@ -383,14 +382,25 @@ async function handleStripeWebhook(request, env) {
   const email = session?.customer_details?.email || null
   const lang = localeToLang(session?.locale)
 
+  const stripeKey = isLive
+    ? (env.STRIPE_SECRET_KEY_LIVE ?? env.STRIPE_SECRET_KEY)
+    : (env.STRIPE_SECRET_KEY_TEST ?? env.STRIPE_SECRET_KEY)
+  const itemsRes = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${sessionId}/line_items`,
+    { headers: { Authorization: `Bearer ${stripeKey}` } },
+  )
+  const itemsData = await itemsRes.json()
+  const quantity = itemsData.data?.[0]?.quantity ?? 1
+  const tokens = 3 * quantity
+
   const code = generateCode()
 
   try {
     await env.DB.prepare(
       `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, email_failed, created_at, stripe_session_id)
-       VALUES (?, ?, 'payment', 'active', 3, 3, 0, ?, ?)`,
+       VALUES (?, ?, 'payment', 'active', ?, ?, 0, ?, ?)`,
     )
-      .bind(code, email, new Date().toISOString(), sessionId)
+      .bind(code, email, tokens, tokens, new Date().toISOString(), sessionId)
       .run()
   } catch {
     // UNIQUE constraint on stripe_session_id — duplicate webhook, already processed
@@ -399,7 +409,7 @@ async function handleStripeWebhook(request, env) {
 
   if (email) {
     try {
-      await sendCodeEmail(email, code, lang, env)
+      await sendCodeEmail(email, code, lang, env, tokens)
     } catch {
       await env.DB.prepare(
         "UPDATE download_codes SET email_failed = 1 WHERE code = ?",
@@ -573,7 +583,7 @@ async function handleExportEmails(request, env) {
 }
 
 // ── Email: code delivery ───────────────────────────────────────────
-async function sendCodeEmail(email, code, lang, env) {
+async function sendCodeEmail(email, code, lang, env, tokens) {
   const t = EMAIL_T[lang] || EMAIL_T.en
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -585,7 +595,7 @@ async function sendCodeEmail(email, code, lang, env) {
       from: "MareSafe <noreply@contact.maresafe.eu>",
       to: email,
       subject: t.code_subject,
-      html: t.code_body(code),
+      html: t.code_body(code, tokens),
     }),
   })
   if (!res.ok) throw new Error(`Resend ${res.status}`)
@@ -859,9 +869,10 @@ function adminPage() {
         const emailBadge = c.email_failed
           ? \`<span class="badge badge-red">Failed</span>\`
           : \`<span class="badge badge-green">Sent</span>\`
-        const log = (c.uses_log || []).map(e =>
-          \`<span class="log-entry">\${fmt(e.at)}: \${(e.lang || "?").toUpperCase()}</span>\`
-        ).join("") || "—"
+        const useCount = (c.uses_log || []).length
+        const logCell = useCount === 0
+          ? "—"
+          : \`<button class="revoke" style="background:#1b3a5c" onclick="showUsageModal('\${c.code}')">\${useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
         const revokeBtn = st === "active"
           ? \`<button class="revoke" onclick="revokeCode('\${c.code}')">Revoke</button>\`
           : ""
@@ -873,7 +884,7 @@ function adminPage() {
           <td>\${statusBadge(st)}</td>
           <td><span class="badge \${tokenClass}">\${tokenLabel}</span></td>
           <td>\${emailBadge}</td>
-          <td>\${log}</td>
+          <td>\${logCell}</td>
           <td>\${revokeBtn}</td>
         </tr>\`
       }).join("")
@@ -891,6 +902,26 @@ function adminPage() {
       const data = await res.json()
       if (!res.ok) { alert(data.error || "Failed to revoke."); return }
       await loadCodes()
+    }
+
+    function showUsageModal(code) {
+      const c = _allCodes.find(x => x.code === code)
+      const log = c ? c.uses_log || [] : []
+      const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0, 16) : "—"
+      document.getElementById("usage-modal-body").innerHTML = log.length === 0
+        ? "<p style='color:#999;margin:0'>No uses yet.</p>"
+        : log.map(e =>
+            \`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee">
+              <span style="color:#555">\${fmt(e.at)}</span>
+              <span style="font-weight:700">\${(e.lang || "?").toUpperCase()}</span>
+            </div>\`
+          ).join("")
+      const modal = document.getElementById("usage-modal")
+      modal.style.display = "flex"
+    }
+
+    function closeUsageModal() {
+      document.getElementById("usage-modal").style.display = "none"
     }
 
     async function loadEmails() {
@@ -976,6 +1007,16 @@ function adminPage() {
       await loadEmails()
     }
   </script>
+
+  <div id="usage-modal" onclick="if(event.target===this)closeUsageModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center">
+    <div style="background:white;border-radius:8px;padding:24px;min-width:280px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <strong>Usage log</strong>
+        <button onclick="closeUsageModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#555;line-height:1">✕</button>
+      </div>
+      <div id="usage-modal-body"></div>
+    </div>
+  </div>
 </body>
 </html>`
 
