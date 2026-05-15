@@ -123,15 +123,22 @@ export default {
 
 // ── /check-code ────────────────────────────────────────────────────
 async function handleCheckCode(request, env) {
-  const { code } = await request.json().catch(() => ({}))
-  if (!code) return corsResponse({ valid: false }, 200, env)
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!await checkRateLimit(env, ip, "check-code", 15)) {
+    return corsResponse({ valid: false, error: "Too many requests" }, 429, env)
+  }
 
-  if (code === env.MASTER_CODE) {
+  const { code } = await request.json().catch(() => ({}))
+  if (!code || typeof code !== "string" || code.length > 32) {
+    return corsResponse({ valid: false }, 200, env)
+  }
+
+  if (await timingSafeEqual(code, env.MASTER_CODE)) {
     return corsResponse({ valid: true, tokens: "unlimited" }, 200, env)
   }
 
   const row = await env.DB.prepare(
-    "SELECT tokens_remaining, status FROM download_codes WHERE code = ?",
+    "SELECT tokens_remaining, unlimited, status FROM download_codes WHERE code = ?",
   )
     .bind(code)
     .first()
@@ -139,28 +146,34 @@ async function handleCheckCode(request, env) {
   if (!row || row.status !== "active") {
     return corsResponse({ valid: false }, 200, env)
   }
-  return corsResponse({ valid: true, tokens: row.tokens_remaining }, 200, env)
+  return corsResponse({ valid: true, tokens: row.unlimited ? "unlimited" : row.tokens_remaining }, 200, env)
 }
 
 // ── /create-code ───────────────────────────────────────────────────
 async function handleCreateCode(request, env) {
-  const { masterCode, uses, email } = await request.json().catch(() => ({}))
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!await checkRateLimit(env, ip, "admin", 10)) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
 
-  if (masterCode !== env.MASTER_CODE) {
+  const { masterCode, uses, email, unlimited } = await request.json().catch(() => ({}))
+
+  if (!await timingSafeEqual(masterCode, env.MASTER_CODE)) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!email || typeof email !== "string" || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return corsResponse({ error: "Email required" }, 400, env)
   }
 
-  const total = uses || 3
+  const isUnlimited = !!unlimited
+  const total = isUnlimited ? 0 : (uses || 3)
   const code = generateCode()
   await env.DB.prepare(
-    `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, email_failed, created_at)
-     VALUES (?, ?, 'manual', 'active', ?, ?, 0, ?)`,
+    `INSERT INTO download_codes (code, email, source, status, tokens_total, tokens_remaining, unlimited, email_failed, created_at)
+     VALUES (?, ?, 'manual', 'active', ?, ?, ?, 0, ?)`,
   )
-    .bind(code, email, total, total, new Date().toISOString())
+    .bind(code, email, total, total, isUnlimited ? 1 : 0, new Date().toISOString())
     .run()
 
   await sendCodeEmail(email, code, "en", env)
@@ -169,10 +182,15 @@ async function handleCreateCode(request, env) {
 
 // ── /generate-pdf ──────────────────────────────────────────────────
 async function handleGeneratePdf(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!await checkRateLimit(env, ip, "generate-pdf", 6)) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
+
   const body = await request.json().catch(() => null)
   if (!body) return corsResponse({ error: "Invalid body" }, 400, env)
 
-  const { code, formData, languages, area, lang } = body
+  const { code, formData, backupData, languages, area, lang } = body
 
   if (
     !Array.isArray(languages) ||
@@ -187,7 +205,7 @@ async function handleGeneratePdf(request, env) {
   }
 
   // ── Auth ───────────────────────────────────────────────────────
-  const isMasterCode = code === env.MASTER_CODE
+  const isMasterCode = await timingSafeEqual(code, env.MASTER_CODE)
   let codeData = null
 
   if (!isMasterCode) {
@@ -197,7 +215,7 @@ async function handleGeneratePdf(request, env) {
       .bind(code)
       .first()
     if (!row) return corsResponse({ error: "Invalid code" }, 403, env)
-    if (row.tokens_remaining < languages.length) {
+    if (!row.unlimited && row.tokens_remaining < languages.length) {
       return corsResponse({ error: "Not enough tokens remaining" }, 403, env)
     }
     codeData = row
@@ -219,13 +237,7 @@ async function handleGeneratePdf(request, env) {
   const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
 
   if (codeData) {
-    const newRemaining = codeData.tokens_remaining - languages.length
     const now = new Date().toISOString()
-    await env.DB.prepare(
-      "UPDATE download_codes SET tokens_remaining = ?, status = ? WHERE code = ?",
-    )
-      .bind(newRemaining, newRemaining <= 0 ? "depleted" : "active", code)
-      .run()
     for (const l of languages) {
       await env.DB.prepare(
         "INSERT INTO download_uses (code, used_at, lang) VALUES (?, ?, ?)",
@@ -233,22 +245,27 @@ async function handleGeneratePdf(request, env) {
         .bind(code, now, l)
         .run()
     }
-    if (codeData.email) {
-      await sendReceiptEmail(
-        codeData.email,
-        formData,
-        languages,
-        newRemaining,
-        emailLang,
-        env,
+    if (codeData.unlimited) {
+      if (codeData.email) {
+        await sendReceiptEmail(codeData.email, backupData || formData, languages, "unlimited", emailLang, env)
+      }
+    } else {
+      const newRemaining = codeData.tokens_remaining - languages.length
+      await env.DB.prepare(
+        "UPDATE download_codes SET tokens_remaining = ?, status = ? WHERE code = ?",
       )
+        .bind(newRemaining, newRemaining <= 0 ? "depleted" : "active", code)
+        .run()
+      if (codeData.email) {
+        await sendReceiptEmail(codeData.email, backupData || formData, languages, newRemaining, emailLang, env)
+      }
     }
   } else {
     // Master code — send receipt to admin
     if (env.ADMIN_EMAIL) {
       await sendReceiptEmail(
         env.ADMIN_EMAIL,
-        formData,
+        backupData || formData,
         languages,
         "unlimited",
         emailLang,
@@ -386,8 +403,13 @@ async function renderPdf(cardData, env) {
 
 // ── /admin/codes ───────────────────────────────────────────────────
 async function handleListCodes(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!await checkRateLimit(env, ip, "admin", 10)) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
+
   const { masterCode } = await request.json().catch(() => ({}))
-  if (masterCode !== env.MASTER_CODE) {
+  if (!await timingSafeEqual(masterCode, env.MASTER_CODE)) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
@@ -415,8 +437,13 @@ async function handleListCodes(request, env) {
 
 // ── /revoke-code ───────────────────────────────────────────────────
 async function handleRevokeCode(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown"
+  if (!await checkRateLimit(env, ip, "admin", 10)) {
+    return corsResponse({ error: "Too many requests" }, 429, env)
+  }
+
   const { masterCode, code } = await request.json().catch(() => ({}))
-  if (masterCode !== env.MASTER_CODE)
+  if (!await timingSafeEqual(masterCode, env.MASTER_CODE))
     return corsResponse({ error: "Forbidden" }, 403, env)
   const row = await env.DB.prepare(
     "SELECT code FROM download_codes WHERE code = ?",
@@ -461,9 +488,9 @@ async function sendReceiptEmail(
   env,
 ) {
   const t = EMAIL_T[lang] || EMAIL_T.en
-  const vesselName = formData?.name || "your vessel"
+  const vesselName = formData?.vesselName || formData?.name || "your vessel"
   const langList = languages.map((l) => LANG_LABEL[l]).join(", ")
-  const filename = `MareSafe - ${vesselName}.json`
+  const filename = `MareSafe - ${vesselName} - Backup ${new Date().toISOString().slice(0, 10)}.json`
   const jsonBytes = new TextEncoder().encode(JSON.stringify(formData, null, 2))
   const base64 = btoa(String.fromCharCode(...jsonBytes))
 
@@ -498,16 +525,17 @@ function adminPage() {
   <title>MareSafe Admin</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 960px; margin: 60px auto; padding: 0 20px; color: #111; }
-    h2 { color: #1b3a5c; }
+    h2 { color: #1b3a5c; margin-top: 0; }
     label { display: block; font-size: 13px; margin-bottom: 4px; color: #444; }
-    input { display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 8px 10px; font-size: 14px; border: 1.5px solid #a8c4e0; border-radius: 4px; }
+    input[type=text], input[type=email], input[type=password], input[type=number], input[type=search] {
+      display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 8px 10px;
+      font-size: 14px; border: 1.5px solid #a8c4e0; border-radius: 4px;
+    }
     .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
     .tab { padding: 8px 18px; border: 1.5px solid #a8c4e0; border-radius: 4px; cursor: pointer; font-size: 14px; background: white; }
     .tab.active { background: #1b3a5c; color: white; border-color: #1b3a5c; }
     .panel { display: none; }
     .panel.active { display: block; }
-    .row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 12px; }
-    .row input { margin-bottom: 0; flex: 1; }
     button.action { background: #1b3a5c; color: white; border: none; border-radius: 4px; padding: 10px 20px; font-size: 14px; cursor: pointer; }
     button.action:hover { background: #2c5282; }
     button.action.full { width: 100%; }
@@ -529,39 +557,53 @@ function adminPage() {
     .log-entry { display: block; color: #555; }
     #codes-meta { font-size: 13px; color: #555; margin-top: 4px; }
     #codes-error { font-size: 13px; color: #a93226; margin-top: 8px; }
-    #issued-auth { margin-bottom: 16px; }
+    #gate { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    #gate-box { background: white; border-radius: 8px; padding: 32px; width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+    #gate-box h3 { margin: 0 0 20px; color: #1b3a5c; font-size: 18px; }
+    #gate-error { font-size: 13px; color: #a93226; margin-bottom: 8px; min-height: 18px; }
+    #gate-lock { font-size: 12px; color: #888; margin-top: 10px; text-align: center; }
+    #app { display: none; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; margin-bottom: 12px; cursor: pointer; }
+    .checkbox-label input { display: inline; width: auto; margin: 0; }
   </style>
 </head>
 <body>
-  <h2>MareSafe Admin</h2>
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('generate')">Generate code</button>
-    <button class="tab" onclick="showTab('issued')">Download codes</button>
-  </div>
-
-  <div id="panel-generate" class="panel active">
-    <label>Master code</label>
-    <input id="mc" type="password" autocomplete="current-password" />
-    <label>Email</label>
-    <input id="email" type="email" placeholder="customer@example.com" />
-    <label>Number of tokens</label>
-    <input id="uses" type="number" value="3" min="1" max="1000" />
-    <button class="action full" onclick="generate()">Generate code</button>
-    <div id="result"></div>
-    <div id="gen-error"></div>
-  </div>
-
-  <div id="panel-issued" class="panel">
-    <div id="issued-auth">
+  <div id="gate">
+    <div id="gate-box">
+      <h3>MareSafe Admin</h3>
       <label>Master code</label>
-      <div class="row">
-        <input id="mc2" type="password" autocomplete="current-password" />
-        <button class="action sm" onclick="loadCodes()">Load</button>
-      </div>
+      <input id="gate-mc" type="password" autocomplete="current-password" placeholder="Enter master code" />
+      <div id="gate-error"></div>
+      <button class="action full" onclick="unlock()">Unlock</button>
     </div>
-    <div id="issued-loaded" style="display:none">
+  </div>
+
+  <div id="app">
+    <h2>MareSafe Admin</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('issued')">Download codes</button>
+      <button class="tab" onclick="showTab('generate')">Generate code</button>
+    </div>
+
+    <div id="panel-generate" class="panel active">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="customer@example.com" />
+      <div id="uses-row">
+        <label>Number of tokens</label>
+        <input id="uses" type="number" value="3" min="1" max="1000" />
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" id="unlimited" onchange="toggleUnlimited()" />
+        Unlimited tokens
+      </label>
+      <button class="action full" onclick="generate()">Generate code</button>
+      <div id="result"></div>
+      <div id="gen-error"></div>
+    </div>
+
+    <div id="panel-issued" class="panel">
       <div class="toolbar">
-        <input id="email-search" type="search" placeholder="Filter by email…" oninput="renderTable()" />
+        <input type="search" id="email-search" placeholder="Filter by email…" oninput="renderTable()" />
         <select id="status-filter" onchange="renderTable()" style="padding:8px 10px;font-size:14px;border:1.5px solid #a8c4e0;border-radius:4px;background:white">
           <option value="all">All statuses</option>
           <option value="active">Active</option>
@@ -571,18 +613,11 @@ function adminPage() {
         <button class="action sm" onclick="loadCodes()">↻ Refresh</button>
       </div>
       <div id="codes-meta"></div>
-      <table id="codes-table">
+      <table>
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Email</th>
-            <th>Source</th>
-            <th>Created</th>
-            <th>Status</th>
-            <th>Tokens</th>
-            <th>Email</th>
-            <th>Use log</th>
-            <th></th>
+            <th>Code</th><th>Email</th><th>Source</th><th>Created</th>
+            <th>Status</th><th>Tokens</th><th>Email</th><th>Use log</th><th></th>
           </tr>
         </thead>
         <tbody id="codes-rows"></tbody>
@@ -593,25 +628,56 @@ function adminPage() {
 
   <script>
     let _allCodes = []
-    let _mc2 = ""
+    let _mc = ""
+
+    document.getElementById("gate-mc").addEventListener("keydown", e => {
+      if (e.key === "Enter") unlock()
+    })
+
+    async function unlock() {
+      const code = document.getElementById("gate-mc").value.trim()
+      if (!code) return
+      document.getElementById("gate-error").textContent = "Checking…"
+      const res = await fetch("/admin/codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ masterCode: code }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        document.getElementById("gate-error").textContent = data.error || "Invalid master code."
+        return
+      }
+      _mc = code
+      document.getElementById("gate").style.display = "none"
+      document.getElementById("app").style.display = "block"
+      _allCodes = data.codes
+      showTab("issued")
+    }
 
     function showTab(name) {
-      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", ["generate","issued"][i] === name))
+      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", ["issued","generate"][i] === name))
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"))
       document.getElementById("panel-" + name).classList.add("active")
+      if (name === "issued") loadCodes()
+    }
+
+    function toggleUnlimited() {
+      document.getElementById("uses-row").style.display =
+        document.getElementById("unlimited").checked ? "none" : ""
     }
 
     async function generate() {
       document.getElementById("result").textContent = ""
       document.getElementById("gen-error").textContent = ""
+      const isUnlimited = document.getElementById("unlimited").checked
+      const body = { masterCode: _mc, email: document.getElementById("email").value }
+      if (isUnlimited) body.unlimited = true
+      else body.uses = parseInt(document.getElementById("uses").value) || 3
       const res = await fetch("/create-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          masterCode: document.getElementById("mc").value,
-          email: document.getElementById("email").value,
-          uses: parseInt(document.getElementById("uses").value) || 3,
-        }),
+        body: JSON.stringify(body),
       })
       const data = await res.json()
       if (res.ok) document.getElementById("result").textContent = data.code
@@ -619,18 +685,15 @@ function adminPage() {
     }
 
     async function loadCodes() {
-      const mcInput = document.getElementById("mc2")
-      if (mcInput.value) _mc2 = mcInput.value
       document.getElementById("codes-error").textContent = ""
       const res = await fetch("/admin/codes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ masterCode: _mc2 }),
+        body: JSON.stringify({ masterCode: _mc }),
       })
       const data = await res.json()
       if (!res.ok) { document.getElementById("codes-error").textContent = data.error || "Failed."; return }
       _allCodes = data.codes
-      document.getElementById("issued-loaded").style.display = ""
       renderTable()
     }
 
@@ -642,23 +705,22 @@ function adminPage() {
         if (sf !== "all" && (c.status || "active") !== sf) return false
         return true
       })
-
       const statusBadge = (s) => {
         const map = { active: "badge-green", depleted: "badge-orange", revoked: "badge-red" }
         return \`<span class="badge \${map[s] || "badge-grey"}">\${s || "active"}</span>\`
       }
-
-      const tbody = document.getElementById("codes-rows")
-      tbody.innerHTML = filtered.map(c => {
+      const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—"
+      document.getElementById("codes-rows").innerHTML = filtered.map(c => {
+        const isUnlimited = !!c.unlimited
         const tr = c.tokens_remaining
         const tt = c.tokens_total || "?"
-        const tokenClass = tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
+        const tokenClass = isUnlimited ? "badge-green" : tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
+        const tokenLabel = isUnlimited ? "∞" : \`\${tr} / \${tt}\`
         const srcClass = c.source === "payment" ? "badge-green" : "badge-grey"
         const st = c.status || "active"
         const emailBadge = c.email_failed
           ? \`<span class="badge badge-red">Failed</span>\`
           : \`<span class="badge badge-green">Sent</span>\`
-        const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—"
         const log = (c.uses_log || []).map(e =>
           \`<span class="log-entry">\${fmt(e.at)}: \${(e.lang || "?").toUpperCase()}</span>\`
         ).join("") || "—"
@@ -671,13 +733,12 @@ function adminPage() {
           <td><span class="badge \${srcClass}">\${c.source || "?"}</span></td>
           <td>\${fmt(c.created_at)}</td>
           <td>\${statusBadge(st)}</td>
-          <td><span class="badge \${tokenClass}">\${tr} / \${tt}</span></td>
+          <td><span class="badge \${tokenClass}">\${tokenLabel}</span></td>
           <td>\${emailBadge}</td>
           <td>\${log}</td>
           <td>\${revokeBtn}</td>
         </tr>\`
       }).join("")
-
       document.getElementById("codes-meta").textContent =
         filtered.length + " of " + _allCodes.length + " code" + (_allCodes.length !== 1 ? "s" : "")
     }
@@ -687,7 +748,7 @@ function adminPage() {
       const res = await fetch("/revoke-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ masterCode: _mc2, code }),
+        body: JSON.stringify({ masterCode: _mc, code }),
       })
       const data = await res.json()
       if (!res.ok) { alert(data.error || "Failed to revoke."); return }
@@ -698,8 +759,48 @@ function adminPage() {
 </html>`
 
   return new Response(html, {
-    headers: { "Content-Type": "text/html; charset=UTF-8" },
+    headers: {
+      "Content-Type": "text/html; charset=UTF-8",
+      "X-Frame-Options": "DENY",
+      "X-Content-Type-Options": "nosniff",
+      "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'",
+      "Referrer-Policy": "no-referrer",
+      "Cache-Control": "no-store",
+    },
   })
+}
+
+// ── Rate limiting (D1-backed, atomic per 60s window) ─────────────
+async function checkRateLimit(env, ip, endpoint, limit) {
+  const key = `${endpoint}:${ip}`
+  const windowStart = new Date(Math.floor(Date.now() / 60000) * 60000).toISOString()
+  try {
+    const row = await env.DB.prepare(`
+      INSERT INTO rate_limits (key, count, window_start) VALUES (?, 1, ?)
+      ON CONFLICT(key) DO UPDATE SET
+        count = CASE WHEN window_start = excluded.window_start THEN count + 1 ELSE 1 END,
+        window_start = CASE WHEN window_start = excluded.window_start THEN window_start ELSE excluded.window_start END
+      RETURNING count
+    `).bind(key, windowStart).first()
+    return row.count <= limit
+  } catch {
+    return true
+  }
+}
+
+// ── Timing-safe comparison (HMAC — Web Crypto safe) ───────────────
+async function timingSafeEqual(a, b) {
+  const enc = new TextEncoder()
+  const key = await crypto.subtle.generateKey({ name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+  const [macA, macB] = await Promise.all([
+    crypto.subtle.sign("HMAC", key, enc.encode(String(a ?? ""))),
+    crypto.subtle.sign("HMAC", key, enc.encode(String(b ?? ""))),
+  ])
+  const a8 = new Uint8Array(macA)
+  const b8 = new Uint8Array(macB)
+  let diff = 0
+  for (let i = 0; i < a8.length; i++) diff |= a8[i] ^ b8[i]
+  return diff === 0
 }
 
 // ── Helpers ────────────────────────────────────────────────────────
