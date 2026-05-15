@@ -11,11 +11,12 @@ Browserless.
 **Worker lives at `worker/` inside this repo** — D1 database, no KV. Schema at
 `worker/schema.sql`. Deploy with `wrangler deploy` from `worker/`.
 
-### ABSOLUTE OFF-LIMITS
+### OLD APP
 
-`../maritime-emergency-card/` — the old app and its worker — must **never be
-read, referenced, or modified**. It is dead code. Treat it as if it does not
-exist. All work happens inside `/Users/steven/Development/maresafe/` only.
+`../maritime-emergency-card/` — the old app. **Read-only** for reference (e.g.
+checking prior field limits, behaviour, or copy). **Never write or modify it.**
+All active development happens inside `/Users/steven/Development/maresafe/`
+only.
 
 ---
 
