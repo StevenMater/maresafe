@@ -19,6 +19,24 @@ const LANG_LABEL = {
   de: "DE",
 }
 
+const LANG_FULL = {
+  en: { en: "English", nl: "Dutch", fr: "French", de: "German" },
+  nl: { en: "Engels", nl: "Nederlands", fr: "Frans", de: "Duits" },
+  fr: { en: "anglais", nl: "néerlandais", fr: "français", de: "allemand" },
+  de: { en: "Englisch", nl: "Niederländisch", fr: "Französisch", de: "Deutsch" },
+}
+
+const LANG_JOIN = { en: "and", nl: "en", fr: "et", de: "und" }
+
+function formatLangList(languages, mailLang) {
+  const map = LANG_FULL[mailLang] || LANG_FULL.en
+  const names = languages.map((l) => map[l] || l)
+  if (names.length === 0) return ""
+  if (names.length === 1) return names[0]
+  const joiner = LANG_JOIN[mailLang] || LANG_JOIN.en
+  return names.slice(0, -1).join(", ") + " " + joiner + " " + names[names.length - 1]
+}
+
 const EMAIL_T = {
   nl: {
     code_subject: "Welkom aan boord — je MareSafe Code is klaar",
@@ -45,7 +63,7 @@ const EMAIL_T = {
     receipt_body: (count, langList, vessel, remaining) =>
       `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
          <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
-         <p>${count > 1 ? `${count} MareSafe kaarten` : "Je MareSafe kaart"} voor <strong>${vessel}</strong> ${count > 1 ? "zijn" : "is"} gedownload naar je apparaat in ${langList}.</p>
+         <p>${count > 1 ? `${count} MareSafe kaarten` : "Je MareSafe kaart"} voor <strong>${vessel}</strong> ${count > 1 ? "zijn" : "is"} gedownload naar je apparaat in het ${langList}.</p>
          <p>${remaining === "unlimited" ? "Mastercode — <strong>onbeperkte downloads</strong> op deze code." : remaining > 0 ? `<strong>${remaining} download${remaining > 1 ? "s" : ""} resterend</strong> op je MareSafe Code.` : "Dit was de laatste download op je code."}</p>
          <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Nog één stap</p>
          <p style="margin:0">Print op A4 en lamineer indien mogelijk. Bewaar één exemplaar bij de stuurplaats en één bij je veiligheidsuitrusting — ergens waar iedereen aan boord weet te zoeken.</p>
@@ -153,7 +171,7 @@ const EMAIL_T = {
     receipt_body: (count, langList, vessel, remaining) =>
       `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
          <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
-         <p>${count > 1 ? `${count} MareSafe Karten` : "Ihre MareSafe Karte"} für <strong>${vessel}</strong> ${count > 1 ? "wurden" : "wurde"} auf Ihr Gerät in ${langList} heruntergeladen.</p>
+         <p>${count > 1 ? `${count} MareSafe Karten` : "Ihre MareSafe Karte"} für <strong>${vessel}</strong> ${count > 1 ? "wurden" : "wurde"} auf Ihr Gerät auf ${langList} heruntergeladen.</p>
          <p>${remaining === "unlimited" ? "Mastercode — <strong>unbegrenzte Downloads</strong> auf diesem Code." : remaining > 0 ? `<strong>${remaining} Download${remaining > 1 ? "s" : ""} verbleibend</strong> auf Ihrem MareSafe Code.` : "Das war der letzte Download auf Ihrem Code."}</p>
          <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Noch ein Schritt</p>
          <p style="margin:0">Drucken Sie auf A4 und laminieren Sie wenn möglich. Bewahren Sie ein Exemplar am Steuerstand und eines bei Ihrer Sicherheitsausrüstung auf — irgendwo, wo jeder an Bord nachschaut.</p>
@@ -720,7 +738,7 @@ async function sendReceiptEmail(
 ) {
   const t = EMAIL_T[lang] || EMAIL_T.en
   const vesselName = formData?.vesselName || formData?.name || "your vessel"
-  const langList = languages.map((l) => LANG_LABEL[l]).join(", ")
+  const langList = formatLangList(languages, lang)
   const filename = `MareSafe - ${vesselName} - Backup ${new Date().toISOString().slice(0, 10)}.json`
   const jsonBytes = new TextEncoder().encode(JSON.stringify(formData, null, 2))
   const base64 = btoa(String.fromCharCode(...jsonBytes))
