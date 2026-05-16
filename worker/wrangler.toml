@@ -13,6 +13,7 @@ database_id   = "2ec22b61-8912-4850-aed1-e89808ff839b"
 ALLOWED_ORIGIN = "https://maresafe.eu,https://www.maresafe.eu,http://localhost:5173"
 CARD_URL       = "https://maresafe.eu/"
 ADMIN_EMAIL    = "stevenmater@gmail.com"
+REPLY_TO_EMAIL = "stevenmater@gmail.com"
 
 [observability.logs]
 enabled = true

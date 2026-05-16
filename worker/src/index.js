@@ -37,20 +37,39 @@ const EMAIL_T = {
        <p>— MareSafe</p>`,
   },
   en: {
-    code_subject: "Your MareSafe download code",
-    code_body: (code, tokens) =>
-      `<p>Thank you for your purchase.</p>
-       <p>Your download code is:</p>
-       <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>${tokens === "unlimited" ? "This code gives you <strong>unlimited downloads</strong>." : `This code gives you <strong>${tokens} tokens</strong> (1 per language per download).`}</p>
-       <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, enter your code, and download your emergency card.</p>
-       <p>— MareSafe</p>`,
-    receipt_subject: (v) => `MareSafe — download receipt for ${v}`,
+    code_subject: "Welcome aboard — your MareSafe Code is ready",
+    code_body: (code, tokens, customerName) =>
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${customerName ? `Hi ${customerName},` : "Welcome aboard,"}</p>
+         <p>Thank you for choosing MareSafe. Your emergency card editor is unlocked and ready.</p>
+         <p style="margin:28px 0 4px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600">Your MareSafe Code</p>
+         <p style="font-family:ui-monospace,'Cascadia Code','Source Code Pro',monospace;font-size:32px;font-weight:700;letter-spacing:4px;color:#1b3a5c;margin:0 0 12px">${code}</p>
+         <p>${tokens === "unlimited" ? "This code gives you <strong>unlimited downloads</strong>." : `This gives you <strong>${tokens} download${tokens === 1 ? "" : "s"}</strong> (1 PDF in any language uses 1 download).`}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">What to do next</p>
+         <ol style="padding-left:20px;margin:0 0 16px">
+           <li style="margin-bottom:4px">Open <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a> and enter your code</li>
+           <li style="margin-bottom:4px">Fill in your vessel details</li>
+           <li style="margin-bottom:4px">Choose your languages and download your card as a PDF</li>
+           <li>Print on A4 — laminate it if you can — and keep it within easy reach on board</li>
+         </ol>
+         <p>A laminated card stays readable when wet, lives in the cockpit, and helps you communicate to rescue services exactly what they need to know without you having to remember anything in a stressful moment.</p>
+         <p>Any questions? Reply to this email and it lands straight in my inbox.</p>
+         <p style="margin-top:28px">Fair winds,<br><strong>Steven — MareSafe</strong></p>
+       </div>`,
+    receipt_subject: (v) => `Your MareSafe card & backup — ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
-      `<p>You downloaded ${count} card${count > 1 ? "s" : ""} (${langList}) for <strong>${vessel}</strong>.</p>
-       <p>${remaining === "unlimited" ? "Master code — unlimited use." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} remaining</strong> on your code.` : "Your code has been fully used."}</p>
-       <p>Attached is a JSON backup of your card data. Open <a href="https://www.maresafe.eu">maresafe.eu</a> to import it.</p>
-       <p>— MareSafe</p>`,
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>Your MareSafe card for <strong>${vessel}</strong> is ready — ${count} card${count > 1 ? "s" : ""} downloaded in ${langList}.</p>
+         <p>${remaining === "unlimited" ? "Master code — <strong>unlimited downloads</strong> on this code." : remaining > 0 ? `<strong>${remaining} download${remaining > 1 ? "s" : ""} remaining</strong> on your MareSafe Code.` : "This was the last download on your code."}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">One more step</p>
+         <p style="margin:0">Print on A4 and laminate if you can. Keep one copy at the helm and one with your safety gear — somewhere everyone on board knows to look.</p>
+         <p style="margin:24px 0 8px;font-weight:700;color:#1b3a5c">Keep your backup</p>
+         <p style="margin:0">The .json file attached to this email is a full backup of your card data. If you ever need to update your vessel details, just open <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a>, use <strong>Load backup</strong>, and your data is back in seconds.</p>
+         <p style="margin-top:28px">Stay prepared.</p>
+         <p style="margin:8px 0 0"><strong>Steven — MareSafe</strong></p>
+       </div>`,
   },
   fr: {
     code_subject: "Votre code de téléchargement MareSafe",
@@ -400,6 +419,7 @@ async function handleStripeWebhook(request, env) {
   const session = event.data?.object
   const sessionId = session.id
   const email = session?.customer_details?.email || null
+  const customerName = session?.customer_details?.name || null
   const lang = localeToLang(session?.locale)
 
   const stripeKey = isLive
@@ -429,7 +449,7 @@ async function handleStripeWebhook(request, env) {
 
   if (email) {
     try {
-      await sendCodeEmail(email, code, lang, env, tokens)
+      await sendCodeEmail(email, code, lang, env, tokens, customerName)
     } catch {
       await env.DB.prepare(
         "UPDATE download_codes SET email_failed = 1 WHERE code = ?",
@@ -609,7 +629,7 @@ async function handleExportEmails(request, env) {
 }
 
 // ── Email: code delivery ───────────────────────────────────────────
-async function sendCodeEmail(email, code, lang, env, tokens) {
+async function sendCodeEmail(email, code, lang, env, tokens, customerName) {
   const t = EMAIL_T[lang] || EMAIL_T.en
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -619,9 +639,10 @@ async function sendCodeEmail(email, code, lang, env, tokens) {
     },
     body: JSON.stringify({
       from: "MareSafe <noreply@contact.maresafe.eu>",
+      reply_to: env.REPLY_TO_EMAIL || "stevenmater@gmail.com",
       to: email,
       subject: t.code_subject,
-      html: t.code_body(code, tokens),
+      html: t.code_body(code, tokens, customerName),
     }),
   })
   if (!res.ok) throw new Error(`Resend ${res.status}`)
@@ -651,6 +672,7 @@ async function sendReceiptEmail(
     },
     body: JSON.stringify({
       from: "MareSafe <noreply@contact.maresafe.eu>",
+      reply_to: env.REPLY_TO_EMAIL || "stevenmater@gmail.com",
       to: email,
       subject: t.receipt_subject(vesselName),
       html: t.receipt_body(
@@ -670,51 +692,113 @@ function adminPage() {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>MareSafe Admin</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231b3a5c'/%3E%3Ctext x='32' y='42' font-family='system-ui,sans-serif' font-size='24' font-weight='700' fill='white' text-anchor='middle'%3EMSA%3C/text%3E%3C/svg%3E">
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 60px auto; padding: 0 20px; color: #111; }
-    h2 { color: #1b3a5c; margin-top: 0; }
+    :root { --navy:#1b3a5c; --navy2:#2c5282; --blue-border:#a8c4e0; --bg-soft:#f0f4f8; --tab-h:60px; }
+    * { box-sizing: border-box; }
+    html, body { background: #fbfcfd; }
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 32px auto; padding: 0 20px; color: #111; }
+    h2 { color: var(--navy); margin: 0 0 16px; font-size: 22px; }
     label { display: block; font-size: 13px; margin-bottom: 4px; color: #444; }
-    input[type=text], input[type=email], input[type=password], input[type=number], input[type=search] {
-      display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 8px 10px;
-      font-size: 14px; border: 1.5px solid #a8c4e0; border-radius: 4px;
+    input[type=text], input[type=email], input[type=password], input[type=number], input[type=search], select {
+      display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 10px 12px;
+      font-size: 16px; border: 1.5px solid var(--blue-border); border-radius: 6px; background: white;
+      outline: none; transition: border-color .15s, box-shadow .15s;
     }
-    .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .tab { padding: 8px 18px; border: 1.5px solid #a8c4e0; border-radius: 4px; cursor: pointer; font-size: 14px; background: white; }
-    .tab.active { background: #1b3a5c; color: white; border-color: #1b3a5c; }
+    input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,58,92,0.15); }
+    select {
+      appearance: none; -webkit-appearance: none; -moz-appearance: none;
+      padding-right: 36px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%231b3a5c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+
+    .tabs-wrap { position: sticky; top: 0; background: #fbfcfd; z-index: 50; padding: 10px 0; margin: -10px 0 12px; }
+    .tabs-wrap h2 { margin: 0 0 10px; }
+    .tabs { display: flex; gap: 6px; }
+    .tab { flex: 1; padding: 10px 12px; border: 1.5px solid var(--blue-border); border-radius: 999px; cursor: pointer; font-size: 14px; background: white; min-height: 40px; }
+    .tab.active { background: var(--navy); color: white; border-color: var(--navy); }
+
     .panel { display: none; }
     .panel.active { display: block; }
-    button.action { background: #1b3a5c; color: white; border: none; border-radius: 4px; padding: 10px 20px; font-size: 14px; cursor: pointer; }
-    button.action:hover { background: #2c5282; }
+
+    button.action { background: var(--navy); color: white; border: none; border-radius: 6px; padding: 10px 18px; font-size: 14px; cursor: pointer; min-height: 40px; }
+    button.action:hover { background: var(--navy2); }
+    button.action:disabled { opacity: 0.5; cursor: not-allowed; }
     button.action.full { width: 100%; }
-    button.action.sm { padding: 8px 14px; white-space: nowrap; }
-    button.revoke { background: #a93226; color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 11px; cursor: pointer; }
+    button.action.sm { padding: 8px 14px; white-space: nowrap; min-height: 36px; font-size: 13px; }
+    button.revoke { background: #a93226; color: white; border: none; border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600; line-height: 1.4; }
     button.revoke:hover { background: #7b241c; }
+
     #result { margin-top: 20px; font-size: 22px; font-weight: 700; color: #1e6b3c; letter-spacing: 2px; }
     #gen-error { margin-top: 12px; font-size: 13px; color: #a93226; }
+
     .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
     .badge-green  { background: #e8f4ee; color: #1e6b3c; }
     .badge-orange { background: #fef3cd; color: #856404; }
     .badge-red    { background: #fdecea; color: #a93226; }
     .badge-grey   { background: #f0f4f8; color: #555; }
-    .toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-    .toolbar input { margin-bottom: 0; max-width: 240px; flex: 1; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-    th { text-align: left; padding: 6px 8px; background: #f0f4f8; border-bottom: 2px solid #a8c4e0; white-space: nowrap; }
+
+    .toolbar { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .toolbar input[type=search] { margin-bottom: 0; max-width: 260px; flex: 1; }
+    .toolbar select { margin-bottom: 0; width: auto; padding: 8px 10px; font-size: 14px; }
+
+    .select-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 1px solid #dde6ef; border-radius: 8px; margin-bottom: 10px; cursor: pointer; user-select: none; }
+    .select-bar input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
+    .select-bar-label { font-size: 14px; color: #111; font-weight: 600; }
+    .select-bar-count { font-size: 13px; color: #777; margin-left: auto; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; background: white; }
+    th { text-align: left; padding: 6px 8px; background: var(--bg-soft); border-bottom: 2px solid var(--blue-border); white-space: nowrap; }
     td { padding: 6px 8px; border-bottom: 1px solid #e8eef4; vertical-align: top; }
-    .log-entry { display: block; color: #555; }
-    #codes-meta { font-size: 13px; color: #555; margin-top: 4px; }
-    #codes-error { font-size: 13px; color: #a93226; margin-top: 8px; }
-    #gate { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; }
-    #gate-box { background: white; border-radius: 8px; padding: 32px; width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
-    #gate-box h3 { margin: 0 0 20px; color: #1b3a5c; font-size: 18px; }
+
+    #codes-meta, #emails-meta { font-size: 13px; color: #555; margin-top: 4px; }
+    #codes-error, #emails-error { font-size: 13px; color: #a93226; margin-top: 8px; }
+
+    #gate { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    #gate-box { background: white; border-radius: 8px; padding: 28px 24px; width: 100%; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
+    #gate-box h3 { margin: 0 0 20px; color: var(--navy); font-size: 18px; }
     #gate-error { font-size: 13px; color: #a93226; margin-bottom: 8px; min-height: 18px; }
-    #gate-lock { font-size: 12px; color: #888; margin-top: 10px; text-align: center; }
     #app { display: none; }
-    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #444; margin-bottom: 12px; cursor: pointer; }
-    .checkbox-label input { display: inline; width: auto; margin: 0; }
+
+    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #444; margin-bottom: 12px; cursor: pointer; }
+    .checkbox-label input { display: inline; width: auto; margin: 0; transform: scale(1.2); }
+
+    /* Mobile cards — hidden on desktop */
+    .cards { display: none; }
+    .card-row { background: white; border: 1px solid #dde6ef; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .card-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card-line + .card-line { margin-top: 8px; }
+    .card-code { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace; font-weight: 700; font-size: 15px; color: #111; }
+    .card-email { color: #555; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-meta { color: #777; font-size: 12px; }
+    .card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
+
+    .email-card { display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #dde6ef; border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
+    .email-card.selected { border-color: var(--navy); background: #f4f8fc; }
+    .email-card input { width: 22px; height: 22px; flex-shrink: 0; margin: 0; pointer-events: none; }
+    .email-card-body { flex: 1; min-width: 0; }
+    .email-card-email { font-size: 14px; font-weight: 600; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .email-card-meta { font-size: 12px; color: #777; margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    .load-more-wrap { text-align: center; margin: 14px 0 4px; }
+    .load-more-wrap button { width: 100%; max-width: 320px; }
+
+    @media (max-width: 720px) {
+      body { margin: 12px auto; padding: 0 12px; max-width: 100%; }
+      h2 { font-size: 18px; margin: 4px 0 10px; }
+      .tabs-wrap { margin: -12px -12px 10px; padding: 10px 12px; }
+      .tabs-wrap h2 { font-size: 18px; margin: 0 0 8px; }
+      .tab { font-size: 13px; padding: 10px 8px; }
+      .toolbar input[type=search] { max-width: none; flex: 1 1 100%; }
+      .toolbar select { flex: 1; }
+      .emails-toolbar button { flex: 1 1 calc(50% - 4px); }
+      .table-wrap { display: none; }
+      .cards { display: block; }
+    }
   </style>
 </head>
 <body>
@@ -729,18 +813,50 @@ function adminPage() {
   </div>
 
   <div id="app">
-    <h2>MareSafe Admin</h2>
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('issued')">Download codes</button>
-      <button class="tab" onclick="showTab('generate')">Generate code</button>
-      <button class="tab" onclick="showTab('emails')">Email list</button>
+    <div class="tabs-wrap">
+      <h2>MareSafe Admin</h2>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('issued')">Codes</button>
+        <button class="tab" onclick="showTab('generate')">Generate</button>
+        <button class="tab" onclick="showTab('emails')">Emails</button>
+      </div>
     </div>
 
-    <div id="panel-generate" class="panel active">
+    <div id="panel-issued" class="panel active">
+      <div class="toolbar">
+        <input type="search" id="email-search" placeholder="Filter by email…" oninput="onCodeFilterChange()" />
+        <select id="status-filter" onchange="onCodeFilterChange()">
+          <option value="all">All statuses</option>
+          <option value="active" selected>Active</option>
+          <option value="depleted">Depleted</option>
+          <option value="revoked">Revoked</option>
+        </select>
+        <button class="action sm" onclick="loadCodes()">↻ Refresh</button>
+      </div>
+      <div id="codes-meta"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th><th>Email</th><th>Source</th><th>Created</th>
+              <th>Status</th><th>Tokens</th><th>Email</th><th>Use log</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="codes-rows"></tbody>
+        </table>
+      </div>
+      <div class="cards" id="codes-cards"></div>
+      <div class="load-more-wrap" id="codes-more-wrap" style="display:none">
+        <button class="action" id="codes-more-btn" onclick="loadMoreCodes()">Load more</button>
+      </div>
+      <div id="codes-error"></div>
+    </div>
+
+    <div id="panel-generate" class="panel">
       <label>Email <span style="font-weight:400;color:#aaa">(optional — leave empty to skip sending)</span></label>
       <input id="email" type="email" placeholder="customer@example.com" />
       <label>Email language</label>
-      <select id="email-lang" style="padding:8px 10px;font-size:14px;border:1.5px solid #a8c4e0;border-radius:4px;background:white;width:100%">
+      <select id="email-lang">
         <option value="en" selected>English</option>
         <option value="nl">Nederlands</option>
         <option value="fr">Français</option>
@@ -759,56 +875,44 @@ function adminPage() {
       <div id="gen-error"></div>
     </div>
 
-    <div id="panel-issued" class="panel">
-      <div class="toolbar">
-        <input type="search" id="email-search" placeholder="Filter by email…" oninput="renderTable()" />
-        <select id="status-filter" onchange="renderTable()" style="padding:8px 10px;font-size:14px;border:1.5px solid #a8c4e0;border-radius:4px;background:white">
-          <option value="all">All statuses</option>
-          <option value="active" selected>Active</option>
-          <option value="depleted">Depleted</option>
-          <option value="revoked">Revoked</option>
-        </select>
-        <button class="action sm" onclick="loadCodes()">↻ Refresh</button>
-      </div>
-      <div id="codes-meta"></div>
-      <table>
-        <thead>
-          <tr>
-            <th>Code</th><th>Email</th><th>Source</th><th>Created</th>
-            <th>Status</th><th>Tokens</th><th>Email</th><th>Use log</th><th></th>
-          </tr>
-        </thead>
-        <tbody id="codes-rows"></tbody>
-      </table>
-      <div id="codes-error"></div>
-    </div>
-
     <div id="panel-emails" class="panel">
-      <div class="toolbar">
-        <button class="action sm" onclick="selectEmails('all')">Select all</button>
-        <button class="action sm" onclick="selectEmails('none')">Select none</button>
-        <button class="action sm" onclick="selectEmails('new')">Not yet exported</button>
+      <div class="toolbar emails-toolbar">
+        <button class="action sm" onclick="selectEmails('new')">Not exported</button>
         <button class="action sm" id="export-btn" onclick="exportEmails()" disabled>Export CSV</button>
-        <span id="email-selection-count" style="font-size:13px;color:#555;margin-left:4px"></span>
       </div>
-      <div id="emails-meta" style="font-size:13px;color:#555;margin-bottom:4px"></div>
-      <table>
-        <thead>
-          <tr>
-            <th><input type="checkbox" id="email-check-all" onchange="toggleAllEmails(this)" /></th>
-            <th>Email</th><th>First purchase</th><th>Purchases</th>
-            <th>Times exported</th><th>Last exported</th>
-          </tr>
-        </thead>
-        <tbody id="emails-rows"></tbody>
-      </table>
-      <div id="emails-error" style="font-size:13px;color:#a93226;margin-top:8px"></div>
+      <div id="emails-meta"></div>
+      <label class="select-bar" for="select-all-emails">
+        <input type="checkbox" id="select-all-emails" onchange="toggleSelectAllEmails()" />
+        <span class="select-bar-label">Select all</span>
+        <span class="select-bar-count" id="select-all-count"></span>
+      </label>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:24px"></th>
+              <th>Email</th><th>First purchase</th><th>Purchases</th>
+              <th>Times exported</th><th>Last exported</th>
+            </tr>
+          </thead>
+          <tbody id="emails-rows"></tbody>
+        </table>
+      </div>
+      <div class="cards" id="emails-cards"></div>
+      <div class="load-more-wrap" id="emails-more-wrap" style="display:none">
+        <button class="action" id="emails-more-btn" onclick="loadMoreEmails()">Load more</button>
+      </div>
+      <div id="emails-error"></div>
     </div>
   </div>
 
   <script>
+    const PAGE_SIZE = 50
     let _allCodes = []
     let _allEmails = []
+    let _selectedEmails = new Set()
+    let _codesShown = PAGE_SIZE
+    let _emailsShown = PAGE_SIZE
     let _mc = ""
 
     function escapeHtml(value) {
@@ -843,9 +947,11 @@ function adminPage() {
     }
 
     function showTab(name) {
-      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", ["issued","generate","emails"][i] === name))
+      const order = ["issued","generate","emails"]
+      document.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("active", order[i] === name))
       document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"))
       document.getElementById("panel-" + name).classList.add("active")
+      window.scrollTo(0, 0)
       if (name === "issued") loadCodes()
       if (name === "emails") loadEmails()
     }
@@ -876,9 +982,9 @@ function adminPage() {
         const note = data.emailSent ? "email sent" : "no email sent"
         const codeAttr = escapeHtml(data.code)
         document.getElementById("result").innerHTML =
-          \`<div style="display:flex;align-items:center;gap:10px">
+          \`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
              <span>\${escapeHtml(data.code)}</span>
-             <button type="button" id="copy-code-btn" data-code="\${codeAttr}" style="font-size:12px;font-weight:600;letter-spacing:0;padding:4px 10px;background:#1b3a5c;color:white;border:none;border-radius:4px;cursor:pointer">Copy</button>
+             <button type="button" id="copy-code-btn" class="action sm" data-code="\${codeAttr}" style="letter-spacing:0;font-weight:600">Copy</button>
            </div>
            <div style="font-size:13px;font-weight:400;color:#555;letter-spacing:0;margin-top:6px">\${escapeHtml(note)}</div>\`
         document.getElementById("copy-code-btn").addEventListener("click", (ev) => copyCode(ev.currentTarget.dataset.code, ev.currentTarget))
@@ -906,28 +1012,52 @@ function adminPage() {
       const data = await res.json()
       if (!res.ok) { document.getElementById("codes-error").textContent = data.error || "Failed."; return }
       _allCodes = data.codes
-      renderTable()
+      _codesShown = PAGE_SIZE
+      renderCodes()
     }
 
-    function renderTable() {
+    function onCodeFilterChange() {
+      _codesShown = PAGE_SIZE
+      renderCodes()
+    }
+
+    function loadMoreCodes() {
+      _codesShown += PAGE_SIZE
+      renderCodes()
+    }
+
+    function filteredCodes() {
       const q = document.getElementById("email-search").value.toLowerCase()
       const sf = document.getElementById("status-filter").value
-      const filtered = _allCodes.filter(c => {
+      return _allCodes.filter(c => {
         if (q && !(c.email || "").toLowerCase().includes(q)) return false
         if (sf !== "all" && (c.status || "active") !== sf) return false
         return true
       })
-      const statusBadge = (s) => {
-        const map = { active: "badge-green", depleted: "badge-orange", revoked: "badge-red" }
-        return \`<span class="badge \${map[s] || "badge-grey"}">\${escapeHtml(s || "active")}</span>\`
-      }
-      const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—"
+    }
+
+    function statusBadge(s) {
+      const map = { active: "badge-green", depleted: "badge-orange", revoked: "badge-red" }
+      return \`<span class="badge \${map[s] || "badge-grey"}">\${escapeHtml(s || "active")}</span>\`
+    }
+
+    function tokenBadge(c) {
+      const isUnlimited = !!c.unlimited
+      const tr = c.tokens_remaining
+      const tt = c.tokens_total || "?"
+      const cls = isUnlimited ? "badge-green" : tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
+      const label = isUnlimited ? "∞" : \`\${tr} / \${tt}\`
+      return \`<span class="badge \${cls}">\${label}</span>\`
+    }
+
+    function fmtDt(iso) { return iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—" }
+    function fmtDate(iso) { return iso ? new Date(iso).toLocaleString("sv-SE").slice(0,10) : "—" }
+
+    function renderCodes() {
+      const filtered = filteredCodes()
+
+      // Desktop table — full list
       document.getElementById("codes-rows").innerHTML = filtered.map(c => {
-        const isUnlimited = !!c.unlimited
-        const tr = c.tokens_remaining
-        const tt = c.tokens_total || "?"
-        const tokenClass = isUnlimited ? "badge-green" : tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
-        const tokenLabel = isUnlimited ? "∞" : \`\${tr} / \${tt}\`
         const srcClass = c.source === "payment" ? "badge-green" : "badge-grey"
         const st = c.status || "active"
         const emailBadge = c.email_failed
@@ -946,22 +1076,68 @@ function adminPage() {
           <td style="font-family:monospace;font-weight:700">\${escapeHtml(c.code)}</td>
           <td>\${emailLower ? escapeHtml(emailLower) : "—"}</td>
           <td><span class="badge \${srcClass}">\${escapeHtml(c.source || "?")}</span></td>
-          <td>\${fmt(c.created_at)}</td>
+          <td>\${fmtDt(c.created_at)}</td>
           <td>\${statusBadge(st)}</td>
-          <td><span class="badge \${tokenClass}">\${tokenLabel}</span></td>
+          <td>\${tokenBadge(c)}</td>
           <td>\${emailBadge}</td>
           <td>\${logCell}</td>
           <td>\${revokeBtn}</td>
         </tr>\`
       }).join("")
-      document.querySelectorAll("#codes-rows .action-usage").forEach(b =>
+
+      // Mobile cards — paginated
+      const visible = filtered.slice(0, _codesShown)
+      document.getElementById("codes-cards").innerHTML = visible.map(c => {
+        const st = c.status || "active"
+        const useCount = (c.uses_log || []).length
+        const codeAttr = escapeHtml(c.code)
+        const emailLower = (c.email || "").toLowerCase()
+        const srcClass = c.source === "payment" ? "badge-green" : "badge-grey"
+        const mailBadge = c.email_failed
+          ? \`<span class="badge badge-red">Mail failed</span>\`
+          : (emailLower ? \`<span class="badge badge-green">Mail sent</span>\` : "")
+        const usageBtn = useCount === 0
+          ? ""
+          : \`<button type="button" class="revoke action-usage" style="background:#1b3a5c" data-code="\${codeAttr}">\${useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
+        const revokeBtn = st === "active"
+          ? \`<button type="button" class="revoke action-revoke" data-code="\${codeAttr}">Revoke</button>\`
+          : ""
+        const actions = (usageBtn || revokeBtn)
+          ? \`<div class="card-actions">\${usageBtn}\${revokeBtn}</div>\`
+          : ""
+        return \`<div class="card-row">
+          <div class="card-line">
+            <span class="card-code">\${escapeHtml(c.code)}</span>
+            <span class="card-email">\${emailLower ? escapeHtml(emailLower) : "—"}</span>
+          </div>
+          <div class="card-line">
+            \${statusBadge(st)} \${tokenBadge(c)}
+            <span class="badge \${srcClass}">\${escapeHtml(c.source || "?")}</span>
+            \${mailBadge}
+          </div>
+          <div class="card-line"><span class="card-meta">Created \${fmtDt(c.created_at)}</span></div>
+          \${actions}
+        </div>\`
+      }).join("")
+
+      document.querySelectorAll(".action-usage").forEach(b =>
         b.addEventListener("click", () => showUsageModal(b.dataset.code))
       )
-      document.querySelectorAll("#codes-rows .action-revoke").forEach(b =>
+      document.querySelectorAll(".action-revoke").forEach(b =>
         b.addEventListener("click", () => revokeCode(b.dataset.code))
       )
+
       document.getElementById("codes-meta").textContent =
         filtered.length + " of " + _allCodes.length + " code" + (_allCodes.length !== 1 ? "s" : "")
+
+      const remaining = Math.max(0, filtered.length - _codesShown)
+      const moreWrap = document.getElementById("codes-more-wrap")
+      if (remaining > 0) {
+        moreWrap.style.display = "block"
+        document.getElementById("codes-more-btn").textContent = \`Load more (\${remaining} remaining)\`
+      } else {
+        moreWrap.style.display = "none"
+      }
     }
 
     async function revokeCode(code) {
@@ -979,12 +1155,11 @@ function adminPage() {
     function showUsageModal(code) {
       const c = _allCodes.find(x => x.code === code)
       const log = c ? c.uses_log || [] : []
-      const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0, 16) : "—"
       document.getElementById("usage-modal-body").innerHTML = log.length === 0
         ? "<p style='color:#999;margin:0'>No uses yet.</p>"
         : log.map(e =>
-            \`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee">
-              <span style="color:#555">\${fmt(e.at)}</span>
+            \`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee">
+              <span style="color:#555">\${fmtDt(e.at)}</span>
               <span style="font-weight:700">\${escapeHtml((e.lang || "?").toUpperCase())}</span>
             </div>\`
           ).join("")
@@ -1006,19 +1181,33 @@ function adminPage() {
       const data = await res.json()
       if (!res.ok) { document.getElementById("emails-error").textContent = data.error || "Failed."; return }
       _allEmails = data.emails
-      renderEmailTable()
+      _selectedEmails = new Set()
+      _emailsShown = PAGE_SIZE
+      renderEmails()
     }
 
-    function renderEmailTable() {
-      const fmtDate = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0, 10) : "—"
+    function loadMoreEmails() {
+      _emailsShown += PAGE_SIZE
+      renderEmails()
+    }
+
+    function toggleEmailSelected(email) {
+      if (_selectedEmails.has(email)) _selectedEmails.delete(email)
+      else _selectedEmails.add(email)
+      renderEmails()
+    }
+
+    function renderEmails() {
+      // Desktop table
       document.getElementById("emails-rows").innerHTML = _allEmails.map(e => {
         const exportBadge = e.export_count > 0
           ? \`<span class="badge badge-orange">\${Number(e.export_count) || 0}×</span>\`
           : \`<span class="badge badge-grey">Never</span>\`
         const emailLower = (e.email || "").toLowerCase()
         const emailAttr = escapeHtml(emailLower)
+        const checked = _selectedEmails.has(emailLower) ? "checked" : ""
         return \`<tr>
-          <td><input type="checkbox" class="email-check" value="\${emailAttr}" /></td>
+          <td><input type="checkbox" class="email-check" value="\${emailAttr}" \${checked} /></td>
           <td>\${escapeHtml(emailLower)}</td>
           <td>\${fmtDate(e.first_purchase)}</td>
           <td>\${Number(e.purchase_count) || 0}</td>
@@ -1027,43 +1216,76 @@ function adminPage() {
         </tr>\`
       }).join("")
       document.querySelectorAll(".email-check").forEach(c =>
-        c.addEventListener("change", updateEmailSelection)
+        c.addEventListener("change", () => toggleEmailSelected(c.value))
       )
-      updateEmailSelection()
-      document.getElementById("emails-meta").textContent =
-        _allEmails.length + " customer email" + (_allEmails.length !== 1 ? "s" : "")
-    }
 
-    function updateEmailSelection() {
-      const checked = document.querySelectorAll(".email-check:checked")
-      const total = document.querySelectorAll(".email-check")
-      document.getElementById("email-selection-count").textContent =
-        checked.length + " of " + total.length + " selected"
-      document.getElementById("export-btn").disabled = checked.length === 0
-      const allCb = document.getElementById("email-check-all")
-      if (allCb) {
-        allCb.indeterminate = checked.length > 0 && checked.length < total.length
-        allCb.checked = total.length > 0 && checked.length === total.length
+      // Mobile cards — paginated
+      const visible = _allEmails.slice(0, _emailsShown)
+      document.getElementById("emails-cards").innerHTML = visible.map(e => {
+        const emailLower = (e.email || "").toLowerCase()
+        const emailAttr = escapeHtml(emailLower)
+        const isSel = _selectedEmails.has(emailLower)
+        const exportBadge = e.export_count > 0
+          ? \`<span class="badge badge-orange">Exported \${Number(e.export_count) || 0}×</span>\`
+          : \`<span class="badge badge-grey">Never exported</span>\`
+        const purchases = Number(e.purchase_count) || 0
+        return \`<div class="email-card\${isSel ? " selected" : ""}" data-email="\${emailAttr}">
+          <input type="checkbox" \${isSel ? "checked" : ""} />
+          <div class="email-card-body">
+            <div class="email-card-email">\${escapeHtml(emailLower)}</div>
+            <div class="email-card-meta">
+              <span>\${purchases} purchase\${purchases !== 1 ? "s" : ""}</span>
+              <span>First: \${fmtDate(e.first_purchase)}</span>
+              \${exportBadge}
+            </div>
+          </div>
+        </div>\`
+      }).join("")
+      document.querySelectorAll(".email-card").forEach(card =>
+        card.addEventListener("click", () => toggleEmailSelected(card.dataset.email))
+      )
+
+      const total = _allEmails.length
+      const sel = _selectedEmails.size
+      document.getElementById("emails-meta").innerHTML =
+        \`\${total} customer email\${total !== 1 ? "s" : ""}\`
+      document.getElementById("export-btn").disabled = sel === 0
+
+      const masterCb = document.getElementById("select-all-emails")
+      masterCb.checked = sel > 0 && sel === total
+      masterCb.indeterminate = sel > 0 && sel < total
+      document.getElementById("select-all-count").textContent =
+        sel === 0 ? "" : \`\${sel} of \${total} selected\`
+
+      const remaining = Math.max(0, total - _emailsShown)
+      const moreWrap = document.getElementById("emails-more-wrap")
+      if (remaining > 0) {
+        moreWrap.style.display = "block"
+        document.getElementById("emails-more-btn").textContent = \`Load more (\${remaining} remaining)\`
+      } else {
+        moreWrap.style.display = "none"
       }
     }
 
-    function toggleAllEmails(cb) {
-      document.querySelectorAll(".email-check").forEach(c => c.checked = cb.checked)
-      updateEmailSelection()
+    function selectEmails(mode) {
+      if (mode === "all") _allEmails.forEach(e => _selectedEmails.add((e.email || "").toLowerCase()))
+      else if (mode === "none") _selectedEmails.clear()
+      else if (mode === "new") {
+        _selectedEmails.clear()
+        _allEmails.forEach(e => {
+          if (e.export_count === 0) _selectedEmails.add((e.email || "").toLowerCase())
+        })
+      }
+      renderEmails()
     }
 
-    function selectEmails(mode) {
-      document.querySelectorAll(".email-check").forEach(c => {
-        const row = _allEmails.find(e => e.email === c.value)
-        if (mode === "all") c.checked = true
-        else if (mode === "none") c.checked = false
-        else if (mode === "new") c.checked = !!(row && row.export_count === 0)
-      })
-      updateEmailSelection()
+    function toggleSelectAllEmails() {
+      if (_selectedEmails.size === _allEmails.length) selectEmails("none")
+      else selectEmails("all")
     }
 
     async function exportEmails() {
-      const selected = [...document.querySelectorAll(".email-check:checked")].map(c => c.value)
+      const selected = [..._selectedEmails]
       if (selected.length === 0) return
       const res = await fetch("/admin/export-emails", {
         method: "POST",
@@ -1085,11 +1307,11 @@ function adminPage() {
     }
   </script>
 
-  <div id="usage-modal" onclick="if(event.target===this)closeUsageModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center">
-    <div style="background:white;border-radius:8px;padding:24px;min-width:280px;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
+  <div id="usage-modal" onclick="if(event.target===this)closeUsageModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;padding:16px">
+    <div style="background:white;border-radius:8px;padding:20px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <strong>Usage log</strong>
-        <button onclick="closeUsageModal()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#555;line-height:1">✕</button>
+        <button onclick="closeUsageModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#555;line-height:1;padding:4px 10px">✕</button>
       </div>
       <div id="usage-modal-body"></div>
     </div>
