@@ -56,7 +56,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
         />
       </div>
 
-      <hr className="my-3 border-t border-navy2 border-0" />
+      <hr className="my-3 border-0 border-t border-[#d0dbe8]" />
 
       {/* Registration numbers — 2–4 inputs (country profile, see TODO in ShipSection) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">
@@ -78,7 +78,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
         />
       </div>
 
-      <hr className="my-3 border-t border-navy2 border-0" />
+      <hr className="my-3 border-0 border-t border-[#d0dbe8]" />
 
       {/* Dimensions — 8 inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2.5">

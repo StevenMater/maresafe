@@ -83,14 +83,25 @@ export function ContactsSection({
         {t("btn_add_contact")}
       </button>
 
-      <textarea
-        className="mt-3 w-full resize-none rounded border border-[#d0dbe8] bg-white px-3 py-2 text-sm text-dark placeholder:text-lgray focus:border-mob-blue focus:outline-none"
-        rows={4}
-        maxLength={300}
-        placeholder={t("notes_placeholder")}
-        value={data.notes}
-        onChange={(e) => setNotes(e.target.value)}
-      />
+      <hr className="my-3 border-0 border-t border-[#d0dbe8]" />
+
+      <div className="flex flex-col gap-1">
+        <label
+          htmlFor="notes-textarea"
+          className="text-xs font-semibold tracking-wider uppercase text-navy2 leading-none"
+        >
+          {t("sec_notes")}
+        </label>
+        <textarea
+          id="notes-textarea"
+          className="w-full resize-none rounded border border-[#a8c4e0] bg-[#f0f6ff] px-3 py-2 font-mono text-sm text-dark placeholder:text-lgray focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)] transition-[border-color]"
+          rows={4}
+          maxLength={300}
+          placeholder={t("notes_placeholder")}
+          value={data.notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
+      </div>
     </section>
   )
 }
