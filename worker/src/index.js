@@ -4,7 +4,12 @@ const VALID_AREAS = ["netherlands"]
 const VALID_LANGS = ["nl", "en", "fr", "de"]
 
 const AREA_LABEL = {
-  netherlands: { nl: "Nederland", en: "Netherlands", fr: "Pays-Bas", de: "Niederlande" },
+  netherlands: {
+    nl: "Nederland",
+    en: "Netherlands",
+    fr: "Pays-Bas",
+    de: "Niederlande",
+  },
 }
 
 const LANG_LABEL = {
@@ -86,7 +91,18 @@ export default {
     const url = new URL(request.url)
 
     if (request.method === "OPTIONS") {
-      return corsResponse(null, 204, env)
+      if (ADMIN_ROUTES.has(url.pathname)) {
+        return new Response(null, { status: 204 })
+      }
+      return corsResponse(null, 204, env, request)
+    }
+
+    if (
+      request.method === "POST" &&
+      ADMIN_ROUTES.has(url.pathname) &&
+      !isSameOriginRequest(request)
+    ) {
+      return adminResponse({ error: "Forbidden" }, 403)
     }
 
     if (request.method === "GET" && url.pathname === "/admin") {
@@ -125,7 +141,7 @@ export default {
       return handleExportEmails(request, env)
     }
 
-    return corsResponse({ error: "Not found" }, 404, env)
+    return corsResponse({ error: "Not found" }, 404, env, request)
   },
 }
 
@@ -133,16 +149,16 @@ export default {
 async function handleCheckCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "check-code", 15))) {
-    return corsResponse({ valid: false, error: "Too many requests" }, 429, env)
+    return corsResponse({ valid: false, error: "Too many requests" }, 429, env, request)
   }
 
   const { code } = await request.json().catch(() => ({}))
   if (!code || typeof code !== "string" || code.length > 32) {
-    return corsResponse({ valid: false }, 200, env)
+    return corsResponse({ valid: false }, 200, env, request)
   }
 
   if (await timingSafeEqual(code, env.MASTER_CODE)) {
-    return corsResponse({ valid: true, tokens: "unlimited" }, 200, env)
+    return corsResponse({ valid: true, tokens: "unlimited" }, 200, env, request)
   }
 
   const row = await env.DB.prepare(
@@ -152,12 +168,13 @@ async function handleCheckCode(request, env) {
     .first()
 
   if (!row || row.status !== "active") {
-    return corsResponse({ valid: false }, 200, env)
+    return corsResponse({ valid: false }, 200, env, request)
   }
   return corsResponse(
     { valid: true, tokens: row.unlimited ? "unlimited" : row.tokens_remaining },
     200,
     env,
+    request,
   )
 }
 
@@ -165,7 +182,7 @@ async function handleCheckCode(request, env) {
 async function handleCreateCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "admin", 10))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return adminResponse({ error: "Too many requests" }, 429)
   }
 
   const { masterCode, uses, email, unlimited, lang } = await request
@@ -173,14 +190,14 @@ async function handleCreateCode(request, env) {
     .catch(() => ({}))
 
   if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
-    return corsResponse({ error: "Forbidden" }, 403, env)
+    return adminResponse({ error: "Forbidden" }, 403)
   }
 
   const hasEmail =
     email &&
     typeof email === "string" &&
     email.length <= 254 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email)
   const storedEmail = hasEmail ? email : env.ADMIN_EMAIL
 
   const isUnlimited = !!unlimited
@@ -204,18 +221,18 @@ async function handleCreateCode(request, env) {
     const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
     await sendCodeEmail(email, code, emailLang, env, isUnlimited ? "unlimited" : total)
   }
-  return corsResponse({ code, emailSent: hasEmail }, 200, env)
+  return adminResponse({ code, emailSent: hasEmail }, 200)
 }
 
 // ── /generate-pdf ──────────────────────────────────────────────────
 async function handleGeneratePdf(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "generate-pdf", 6))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return corsResponse({ error: "Too many requests" }, 429, env, request)
   }
 
   const body = await request.json().catch(() => null)
-  if (!body) return corsResponse({ error: "Invalid body" }, 400, env)
+  if (!body) return corsResponse({ error: "Invalid body" }, 400, env, request)
 
   const { code, formData, backupData, languages, area, lang } = body
 
@@ -224,11 +241,11 @@ async function handleGeneratePdf(request, env) {
     languages.length === 0 ||
     !languages.every((l) => VALID_LANGS.includes(l))
   ) {
-    return corsResponse({ error: "Invalid languages" }, 400, env)
+    return corsResponse({ error: "Invalid languages" }, 400, env, request)
   }
 
   if (!VALID_AREAS.includes(area)) {
-    return corsResponse({ error: "Invalid area" }, 400, env)
+    return corsResponse({ error: "Invalid area" }, 400, env, request)
   }
 
   // ── Auth ───────────────────────────────────────────────────────
@@ -241,9 +258,9 @@ async function handleGeneratePdf(request, env) {
     )
       .bind(code)
       .first()
-    if (!row) return corsResponse({ error: "Invalid code" }, 403, env)
+    if (!row) return corsResponse({ error: "Invalid code" }, 403, env, request)
     if (!row.unlimited && row.tokens_remaining < languages.length) {
-      return corsResponse({ error: "Not enough tokens remaining" }, 403, env)
+      return corsResponse({ error: "Not enough tokens remaining" }, 403, env, request)
     }
     codeData = row
   }
@@ -257,7 +274,7 @@ async function handleGeneratePdf(request, env) {
     }
   } catch (err) {
     console.error("PDF generation failed:", err?.message ?? err)
-    return corsResponse({ error: "PDF generation failed" }, 503, env)
+    return corsResponse({ error: "PDF generation failed" }, 503, env, request)
   }
 
   // ── Decrement tokens + log uses ────────────────────────────────
@@ -332,7 +349,7 @@ async function handleGeneratePdf(request, env) {
   return new Response(zipped, {
     status: 200,
     headers: {
-      ...corsHeaders(env),
+      ...corsHeaders(env, request),
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename="MareSafe - ${vesselName} - ${zipLabel}.zip"`,
     },
@@ -369,7 +386,7 @@ async function handleStripeWebhook(request, env) {
   }
 
   const isLive = await verifySecret(env.STRIPE_WEBHOOK_SECRET_LIVE)
-  const isTest = !isLive && await verifySecret(env.STRIPE_WEBHOOK_SECRET_TEST)
+  const isTest = !isLive && (await verifySecret(env.STRIPE_WEBHOOK_SECRET_TEST))
 
   if (!isLive && !isTest) {
     return new Response("Forbidden", { status: 403 })
@@ -462,12 +479,12 @@ async function renderPdf(cardData, env) {
 async function handleListCodes(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "admin", 10))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return adminResponse({ error: "Too many requests" }, 429)
   }
 
   const { masterCode } = await request.json().catch(() => ({}))
   if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
-    return corsResponse({ error: "Forbidden" }, 403, env)
+    return adminResponse({ error: "Forbidden" }, 403)
   }
 
   const { results } = await env.DB.prepare(
@@ -489,54 +506,59 @@ async function handleListCodes(request, env) {
       : [],
   }))
 
-  return corsResponse({ codes }, 200, env)
+  return adminResponse({ codes }, 200)
 }
 
 // ── /revoke-code ───────────────────────────────────────────────────
 async function handleRevokeCode(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "admin", 10))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return adminResponse({ error: "Too many requests" }, 429)
   }
 
   const { masterCode, code } = await request.json().catch(() => ({}))
   if (!(await timingSafeEqual(masterCode, env.MASTER_CODE)))
-    return corsResponse({ error: "Forbidden" }, 403, env)
+    return adminResponse({ error: "Forbidden" }, 403)
   const row = await env.DB.prepare(
     "SELECT code FROM download_codes WHERE code = ?",
   )
     .bind(code)
     .first()
-  if (!row) return corsResponse({ error: "Code not found" }, 404, env)
+  if (!row) return adminResponse({ error: "Code not found" }, 404)
   await env.DB.prepare(
     "UPDATE download_codes SET status = 'revoked' WHERE code = ?",
   )
     .bind(code)
     .run()
-  return corsResponse({ ok: true }, 200, env)
+  return adminResponse({ ok: true }, 200)
 }
 
 // ── /admin/emails ──────────────────────────────────────────────────
 async function handleListEmails(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "admin", 10))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return adminResponse({ error: "Too many requests" }, 429)
   }
 
   const { masterCode } = await request.json().catch(() => ({}))
   if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
-    return corsResponse({ error: "Forbidden" }, 403, env)
+    return adminResponse({ error: "Forbidden" }, 403)
   }
 
-  await env.DB.prepare(`
+  await env.DB.prepare(
+    `
     CREATE TABLE IF NOT EXISTS email_export_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       email TEXT NOT NULL,
       exported_at TEXT NOT NULL
     )
-  `).run().catch(() => {})
+  `,
+  )
+    .run()
+    .catch(() => {})
 
-  const { results } = await env.DB.prepare(`
+  const { results } = await env.DB.prepare(
+    `
     SELECT
       dc.email,
       MIN(dc.created_at) AS first_purchase,
@@ -552,25 +574,26 @@ async function handleListEmails(request, env) {
     WHERE dc.email IS NOT NULL AND dc.email != ''
     GROUP BY dc.email
     ORDER BY first_purchase DESC
-  `).all()
+  `,
+  ).all()
 
-  return corsResponse({ emails: results }, 200, env)
+  return adminResponse({ emails: results }, 200)
 }
 
 // ── /admin/export-emails ───────────────────────────────────────────
 async function handleExportEmails(request, env) {
   const ip = request.headers.get("CF-Connecting-IP") || "unknown"
   if (!(await checkRateLimit(env, ip, "admin", 10))) {
-    return corsResponse({ error: "Too many requests" }, 429, env)
+    return adminResponse({ error: "Too many requests" }, 429)
   }
 
   const { masterCode, emails } = await request.json().catch(() => ({}))
   if (!(await timingSafeEqual(masterCode, env.MASTER_CODE))) {
-    return corsResponse({ error: "Forbidden" }, 403, env)
+    return adminResponse({ error: "Forbidden" }, 403)
   }
 
   if (!Array.isArray(emails) || emails.length === 0) {
-    return corsResponse({ error: "No emails provided" }, 400, env)
+    return adminResponse({ error: "No emails provided" }, 400)
   }
 
   const now = new Date().toISOString()
@@ -582,7 +605,7 @@ async function handleExportEmails(request, env) {
       .run()
   }
 
-  return corsResponse({ ok: true, count: emails.length }, 200, env)
+  return adminResponse({ ok: true, count: emails.length }, 200)
 }
 
 // ── Email: code delivery ───────────────────────────────────────────
@@ -788,6 +811,12 @@ function adminPage() {
     let _allEmails = []
     let _mc = ""
 
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[ch])
+    }
+
     document.getElementById("gate-mc").addEventListener("keydown", e => {
       if (e.key === "Enter") unlock()
     })
@@ -845,12 +874,13 @@ function adminPage() {
       const data = await res.json()
       if (res.ok) {
         const note = data.emailSent ? "email sent" : "no email sent"
+        const codeAttr = escapeHtml(data.code)
         document.getElementById("result").innerHTML =
           \`<div style="display:flex;align-items:center;gap:10px">
-             <span>\${data.code}</span>
-             <button type="button" id="copy-code-btn" data-code="\${data.code}" style="font-size:12px;font-weight:600;letter-spacing:0;padding:4px 10px;background:#1b3a5c;color:white;border:none;border-radius:4px;cursor:pointer">Copy</button>
+             <span>\${escapeHtml(data.code)}</span>
+             <button type="button" id="copy-code-btn" data-code="\${codeAttr}" style="font-size:12px;font-weight:600;letter-spacing:0;padding:4px 10px;background:#1b3a5c;color:white;border:none;border-radius:4px;cursor:pointer">Copy</button>
            </div>
-           <div style="font-size:13px;font-weight:400;color:#555;letter-spacing:0;margin-top:6px">\${note}</div>\`
+           <div style="font-size:13px;font-weight:400;color:#555;letter-spacing:0;margin-top:6px">\${escapeHtml(note)}</div>\`
         document.getElementById("copy-code-btn").addEventListener("click", (ev) => copyCode(ev.currentTarget.dataset.code, ev.currentTarget))
       } else document.getElementById("gen-error").textContent = data.error || "Something went wrong."
     }
@@ -889,7 +919,7 @@ function adminPage() {
       })
       const statusBadge = (s) => {
         const map = { active: "badge-green", depleted: "badge-orange", revoked: "badge-red" }
-        return \`<span class="badge \${map[s] || "badge-grey"}">\${s || "active"}</span>\`
+        return \`<span class="badge \${map[s] || "badge-grey"}">\${escapeHtml(s || "active")}</span>\`
       }
       const fmt = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0,16) : "—"
       document.getElementById("codes-rows").innerHTML = filtered.map(c => {
@@ -904,16 +934,18 @@ function adminPage() {
           ? \`<span class="badge badge-red">Failed</span>\`
           : \`<span class="badge badge-green">Sent</span>\`
         const useCount = (c.uses_log || []).length
+        const codeAttr = escapeHtml(c.code)
         const logCell = useCount === 0
           ? "—"
-          : \`<button class="revoke" style="background:#1b3a5c" onclick="showUsageModal('\${c.code}')">\${useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
+          : \`<button type="button" class="revoke action-usage" style="background:#1b3a5c" data-code="\${codeAttr}">\${useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
         const revokeBtn = st === "active"
-          ? \`<button class="revoke" onclick="revokeCode('\${c.code}')">Revoke</button>\`
+          ? \`<button type="button" class="revoke action-revoke" data-code="\${codeAttr}">Revoke</button>\`
           : ""
+        const emailLower = (c.email || "").toLowerCase()
         return \`<tr>
-          <td style="font-family:monospace;font-weight:700">\${c.code}</td>
-          <td>\${(c.email || "").toLowerCase() || "—"}</td>
-          <td><span class="badge \${srcClass}">\${c.source || "?"}</span></td>
+          <td style="font-family:monospace;font-weight:700">\${escapeHtml(c.code)}</td>
+          <td>\${emailLower ? escapeHtml(emailLower) : "—"}</td>
+          <td><span class="badge \${srcClass}">\${escapeHtml(c.source || "?")}</span></td>
           <td>\${fmt(c.created_at)}</td>
           <td>\${statusBadge(st)}</td>
           <td><span class="badge \${tokenClass}">\${tokenLabel}</span></td>
@@ -922,6 +954,12 @@ function adminPage() {
           <td>\${revokeBtn}</td>
         </tr>\`
       }).join("")
+      document.querySelectorAll("#codes-rows .action-usage").forEach(b =>
+        b.addEventListener("click", () => showUsageModal(b.dataset.code))
+      )
+      document.querySelectorAll("#codes-rows .action-revoke").forEach(b =>
+        b.addEventListener("click", () => revokeCode(b.dataset.code))
+      )
       document.getElementById("codes-meta").textContent =
         filtered.length + " of " + _allCodes.length + " code" + (_allCodes.length !== 1 ? "s" : "")
     }
@@ -947,7 +985,7 @@ function adminPage() {
         : log.map(e =>
             \`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee">
               <span style="color:#555">\${fmt(e.at)}</span>
-              <span style="font-weight:700">\${(e.lang || "?").toUpperCase()}</span>
+              <span style="font-weight:700">\${escapeHtml((e.lang || "?").toUpperCase())}</span>
             </div>\`
           ).join("")
       const modal = document.getElementById("usage-modal")
@@ -975,17 +1013,22 @@ function adminPage() {
       const fmtDate = (iso) => iso ? new Date(iso).toLocaleString("sv-SE").slice(0, 10) : "—"
       document.getElementById("emails-rows").innerHTML = _allEmails.map(e => {
         const exportBadge = e.export_count > 0
-          ? \`<span class="badge badge-orange">\${e.export_count}×</span>\`
+          ? \`<span class="badge badge-orange">\${Number(e.export_count) || 0}×</span>\`
           : \`<span class="badge badge-grey">Never</span>\`
+        const emailLower = (e.email || "").toLowerCase()
+        const emailAttr = escapeHtml(emailLower)
         return \`<tr>
-          <td><input type="checkbox" class="email-check" value="\${e.email.toLowerCase()}" onchange="updateEmailSelection()" /></td>
-          <td>\${e.email.toLowerCase()}</td>
+          <td><input type="checkbox" class="email-check" value="\${emailAttr}" /></td>
+          <td>\${escapeHtml(emailLower)}</td>
           <td>\${fmtDate(e.first_purchase)}</td>
-          <td>\${e.purchase_count}</td>
+          <td>\${Number(e.purchase_count) || 0}</td>
           <td>\${exportBadge}</td>
           <td>\${fmtDate(e.last_exported)}</td>
         </tr>\`
       }).join("")
+      document.querySelectorAll(".email-check").forEach(c =>
+        c.addEventListener("change", updateEmailSelection)
+      )
       updateEmailSelection()
       document.getElementById("emails-meta").textContent =
         _allEmails.length + " customer email" + (_allEmails.length !== 1 ? "s" : "")
@@ -1060,7 +1103,7 @@ function adminPage() {
       "X-Frame-Options": "DENY",
       "X-Content-Type-Options": "nosniff",
       "Content-Security-Policy":
-        "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'",
+        "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
       "Referrer-Policy": "no-referrer",
       "Cache-Control": "no-store",
     },
@@ -1073,6 +1116,7 @@ async function checkRateLimit(env, ip, endpoint, limit) {
   const windowStart = new Date(
     Math.floor(Date.now() / 60000) * 60000,
   ).toISOString()
+  const failClosed = endpoint === "admin"
   try {
     const row = await env.DB.prepare(
       `
@@ -1087,7 +1131,7 @@ async function checkRateLimit(env, ip, endpoint, limit) {
       .first()
     return row.count <= limit
   } catch {
-    return true
+    return !failClosed
   }
 }
 
@@ -1128,15 +1172,56 @@ function localeToLang(locale) {
   return "en"
 }
 
-function corsHeaders(env) {
+function corsHeaders(env, request) {
+  const list = (env.ALLOWED_ORIGIN || "*")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const reqOrigin = request?.headers.get("Origin") || ""
+  let allow
+  if (list.includes("*")) allow = "*"
+  else if (list.includes(reqOrigin)) allow = reqOrigin
+  else allow = list[0] || "null"
   return {
-    "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+    "Access-Control-Allow-Origin": allow,
+    Vary: "Origin",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   }
 }
 
-function corsResponse(body, status, env) {
-  const headers = { ...corsHeaders(env), "Content-Type": "application/json" }
+function corsResponse(body, status, env, request) {
+  const headers = {
+    ...corsHeaders(env, request),
+    "Content-Type": "application/json",
+  }
   return new Response(body ? JSON.stringify(body) : null, { status, headers })
 }
+
+function adminResponse(body, status) {
+  return new Response(body ? JSON.stringify(body) : null, {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+    },
+  })
+}
+
+function isSameOriginRequest(request) {
+  const origin = request.headers.get("Origin")
+  if (!origin) return false
+  try {
+    return new URL(origin).origin === new URL(request.url).origin
+  } catch {
+    return false
+  }
+}
+
+const ADMIN_ROUTES = new Set([
+  "/create-code",
+  "/revoke-code",
+  "/admin/codes",
+  "/admin/emails",
+  "/admin/export-emails",
+])
