@@ -165,10 +165,10 @@ export function Select(props: SelectProps) {
       const current = props.value
       if (current.includes(value)) {
         props.onChange(current.filter((v) => v !== value))
-      } else {
-        if (props.max === undefined || current.length < props.max) {
-          props.onChange([...current, value])
-        }
+      } else if (props.max === undefined || current.length < props.max) {
+        props.onChange([...current, value])
+      } else if (props.max === 1) {
+        props.onChange([value])
       }
     } else {
       props.onChange(value)
@@ -178,7 +178,7 @@ export function Select(props: SelectProps) {
 
   function isDisabledOption(value: string): boolean {
     if (!props.multiple) return false
-    if (props.max === undefined) return false
+    if (props.max === undefined || props.max === 1) return false
     return props.value.length >= props.max && !props.value.includes(value)
   }
 
