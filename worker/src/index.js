@@ -21,7 +21,7 @@ const EMAIL_T = {
       `<p>Bedankt voor je aankoop.</p>
        <p>Jouw downloadcode is:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Deze code geeft je <strong>${tokens} tokens</strong> (1 per taal per download).</p>
+       <p>${tokens === "unlimited" ? "Deze code geeft je <strong>onbeperkte downloads</strong>." : `Deze code geeft je <strong>${tokens} tokens</strong> (1 per taal per download).`}</p>
        <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, voer je code in en download je noodkaart.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — downloadbevestiging voor ${v}`,
@@ -37,7 +37,7 @@ const EMAIL_T = {
       `<p>Thank you for your purchase.</p>
        <p>Your download code is:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>This code gives you <strong>${tokens} tokens</strong> (1 per language per download).</p>
+       <p>${tokens === "unlimited" ? "This code gives you <strong>unlimited downloads</strong>." : `This code gives you <strong>${tokens} tokens</strong> (1 per language per download).`}</p>
        <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, enter your code, and download your emergency card.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — download receipt for ${v}`,
@@ -53,7 +53,7 @@ const EMAIL_T = {
       `<p>Merci pour votre achat.</p>
        <p>Votre code de téléchargement est :</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Ce code vous donne <strong>${tokens} tokens</strong> (1 par langue par téléchargement).</p>
+       <p>${tokens === "unlimited" ? "Ce code vous donne <strong>téléchargements illimités</strong>." : `Ce code vous donne <strong>${tokens} tokens</strong> (1 par langue par téléchargement).`}</p>
        <p>Ouvrez <a href="https://www.maresafe.eu">maresafe.eu</a>, entrez votre code et téléchargez votre carte d'urgence.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — reçu de téléchargement pour ${v}`,
@@ -69,7 +69,7 @@ const EMAIL_T = {
       `<p>Vielen Dank für Ihren Kauf.</p>
        <p>Ihr Download-Code lautet:</p>
        <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>Dieser Code gibt Ihnen <strong>${tokens} Tokens</strong> (1 pro Sprache pro Download).</p>
+       <p>${tokens === "unlimited" ? "Dieser Code gibt Ihnen <strong>unbegrenzte Downloads</strong>." : `Dieser Code gibt Ihnen <strong>${tokens} Tokens</strong> (1 pro Sprache pro Download).`}</p>
        <p>Öffnen Sie <a href="https://www.maresafe.eu">maresafe.eu</a>, geben Sie Ihren Code ein und laden Sie Ihre Notfallkarte herunter.</p>
        <p>— MareSafe</p>`,
     receipt_subject: (v) => `MareSafe — Download-Beleg für ${v}`,
@@ -168,7 +168,7 @@ async function handleCreateCode(request, env) {
     return corsResponse({ error: "Too many requests" }, 429, env)
   }
 
-  const { masterCode, uses, email, unlimited } = await request
+  const { masterCode, uses, email, unlimited, lang } = await request
     .json()
     .catch(() => ({}))
 
@@ -176,14 +176,12 @@ async function handleCreateCode(request, env) {
     return corsResponse({ error: "Forbidden" }, 403, env)
   }
 
-  if (
-    !email ||
-    typeof email !== "string" ||
-    email.length > 254 ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-  ) {
-    return corsResponse({ error: "Email required" }, 400, env)
-  }
+  const hasEmail =
+    email &&
+    typeof email === "string" &&
+    email.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const storedEmail = hasEmail ? email : env.ADMIN_EMAIL
 
   const isUnlimited = !!unlimited
   const total = isUnlimited ? 0 : uses || 3
@@ -194,7 +192,7 @@ async function handleCreateCode(request, env) {
   )
     .bind(
       code,
-      email,
+      storedEmail,
       total,
       total,
       isUnlimited ? 1 : 0,
@@ -202,8 +200,11 @@ async function handleCreateCode(request, env) {
     )
     .run()
 
-  await sendCodeEmail(email, code, "en", env)
-  return corsResponse({ code }, 200, env)
+  if (hasEmail) {
+    const emailLang = VALID_LANGS.includes(lang) ? lang : "en"
+    await sendCodeEmail(email, code, emailLang, env, isUnlimited ? "unlimited" : total)
+  }
+  return corsResponse({ code, emailSent: hasEmail }, 200, env)
 }
 
 // ── /generate-pdf ──────────────────────────────────────────────────
@@ -648,6 +649,7 @@ function adminPage() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MareSafe Admin</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231b3a5c'/%3E%3Ctext x='32' y='42' font-family='system-ui,sans-serif' font-size='24' font-weight='700' fill='white' text-anchor='middle'%3EMSA%3C/text%3E%3C/svg%3E">
   <style>
     body { font-family: system-ui, sans-serif; max-width: 960px; margin: 60px auto; padding: 0 20px; color: #111; }
     h2 { color: #1b3a5c; margin-top: 0; }
@@ -712,8 +714,15 @@ function adminPage() {
     </div>
 
     <div id="panel-generate" class="panel active">
-      <label>Email</label>
+      <label>Email <span style="font-weight:400;color:#aaa">(optional — leave empty to skip sending)</span></label>
       <input id="email" type="email" placeholder="customer@example.com" />
+      <label>Email language</label>
+      <select id="email-lang" style="padding:8px 10px;font-size:14px;border:1.5px solid #a8c4e0;border-radius:4px;background:white;width:100%">
+        <option value="en" selected>English</option>
+        <option value="nl">Nederlands</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+      </select>
       <div id="uses-row">
         <label>Number of tokens</label>
         <input id="uses" type="number" value="3" min="1" max="1000" />
@@ -732,7 +741,7 @@ function adminPage() {
         <input type="search" id="email-search" placeholder="Filter by email…" oninput="renderTable()" />
         <select id="status-filter" onchange="renderTable()" style="padding:8px 10px;font-size:14px;border:1.5px solid #a8c4e0;border-radius:4px;background:white">
           <option value="all">All statuses</option>
-          <option value="active">Active</option>
+          <option value="active" selected>Active</option>
           <option value="depleted">Depleted</option>
           <option value="revoked">Revoked</option>
         </select>
@@ -818,10 +827,14 @@ function adminPage() {
     }
 
     async function generate() {
-      document.getElementById("result").textContent = ""
+      document.getElementById("result").innerHTML = ""
       document.getElementById("gen-error").textContent = ""
       const isUnlimited = document.getElementById("unlimited").checked
-      const body = { masterCode: _mc, email: document.getElementById("email").value }
+      const body = {
+        masterCode: _mc,
+        email: document.getElementById("email").value,
+        lang: document.getElementById("email-lang").value,
+      }
       if (isUnlimited) body.unlimited = true
       else body.uses = parseInt(document.getElementById("uses").value) || 3
       const res = await fetch("/create-code", {
@@ -830,8 +843,27 @@ function adminPage() {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      if (res.ok) document.getElementById("result").textContent = data.code
-      else document.getElementById("gen-error").textContent = data.error || "Something went wrong."
+      if (res.ok) {
+        const note = data.emailSent ? "email sent" : "no email sent"
+        document.getElementById("result").innerHTML =
+          \`<div style="display:flex;align-items:center;gap:10px">
+             <span>\${data.code}</span>
+             <button type="button" id="copy-code-btn" data-code="\${data.code}" style="font-size:12px;font-weight:600;letter-spacing:0;padding:4px 10px;background:#1b3a5c;color:white;border:none;border-radius:4px;cursor:pointer">Copy</button>
+           </div>
+           <div style="font-size:13px;font-weight:400;color:#555;letter-spacing:0;margin-top:6px">\${note}</div>\`
+        document.getElementById("copy-code-btn").addEventListener("click", (ev) => copyCode(ev.currentTarget.dataset.code, ev.currentTarget))
+      } else document.getElementById("gen-error").textContent = data.error || "Something went wrong."
+    }
+
+    async function copyCode(code, btn) {
+      try {
+        await navigator.clipboard.writeText(code)
+        const original = btn.textContent
+        btn.textContent = "Copied!"
+        setTimeout(() => { btn.textContent = original }, 1500)
+      } catch {
+        btn.textContent = "Failed"
+      }
     }
 
     async function loadCodes() {
