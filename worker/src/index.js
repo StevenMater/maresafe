@@ -880,7 +880,7 @@ function adminPage() {
           : ""
         return \`<tr>
           <td style="font-family:monospace;font-weight:700">\${c.code}</td>
-          <td>\${c.email || "—"}</td>
+          <td>\${(c.email || "").toLowerCase() || "—"}</td>
           <td><span class="badge \${srcClass}">\${c.source || "?"}</span></td>
           <td>\${fmt(c.created_at)}</td>
           <td>\${statusBadge(st)}</td>
@@ -946,8 +946,8 @@ function adminPage() {
           ? \`<span class="badge badge-orange">\${e.export_count}×</span>\`
           : \`<span class="badge badge-grey">Never</span>\`
         return \`<tr>
-          <td><input type="checkbox" class="email-check" value="\${e.email}" onchange="updateEmailSelection()" /></td>
-          <td>\${e.email}</td>
+          <td><input type="checkbox" class="email-check" value="\${e.email.toLowerCase()}" onchange="updateEmailSelection()" /></td>
+          <td>\${e.email.toLowerCase()}</td>
           <td>\${fmtDate(e.first_purchase)}</td>
           <td>\${e.purchase_count}</td>
           <td>\${exportBadge}</td>
