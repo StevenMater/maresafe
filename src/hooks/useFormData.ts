@@ -39,7 +39,7 @@ interface FormState {
   data: CardData
   outdated: boolean
   savedLanguage: Language | null
-  seenInfo: boolean
+  showModal: boolean
 }
 
 type RawData = Record<string, unknown>
@@ -122,7 +122,7 @@ function loadFromStorage(): FormState {
         data,
         outdated: (parsed.formData as RawData)?.version !== CURRENT_VERSION,
         savedLanguage: lang,
-        seenInfo: parsed.seenInfo === true,
+        showModal: parsed.showModal !== false,
       }
     }
   } catch {
@@ -132,7 +132,7 @@ function loadFromStorage(): FormState {
     data: EMPTY_FORM,
     outdated: false,
     savedLanguage: null,
-    seenInfo: false,
+    showModal: true,
   }
 }
 
@@ -141,7 +141,7 @@ function saveToStorage(state: FormState, lang: Language): void {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        seenInfo: state.seenInfo,
+        showModal: state.showModal,
         formData: {
           _maresafe: true,
           version: CURRENT_VERSION,
@@ -170,8 +170,8 @@ export interface UseFormDataReturn {
   outdated: boolean
   dismissOutdated: () => void
   save: (lang: Language) => void
-  seenInfo: boolean
-  markSeen: () => void
+  showModal: boolean
+  setShowModal: (value: boolean) => void
 }
 
 export function useFormData(): UseFormDataReturn {
@@ -286,8 +286,8 @@ export function useFormData(): UseFormDataReturn {
     [state],
   )
 
-  function markSeen() {
-    setState((s) => ({ ...s, seenInfo: true }))
+  function setShowModal(value: boolean) {
+    setState((s) => ({ ...s, showModal: value }))
   }
 
   const safeData = {
@@ -311,7 +311,7 @@ export function useFormData(): UseFormDataReturn {
     outdated: state.outdated,
     dismissOutdated,
     save,
-    seenInfo: state.seenInfo,
-    markSeen,
+    showModal: state.showModal,
+    setShowModal,
   }
 }

@@ -13,13 +13,14 @@ const LANG_OPTIONS = [
 ]
 
 interface HeaderProps {
-  seenInfo: boolean
-  markSeen: () => void
+  showModal: boolean
+  setShowModal: (value: boolean) => void
 }
 
-export function Header({ seenInfo, markSeen }: HeaderProps) {
+export function Header({ showModal, setShowModal }: HeaderProps) {
   const { lang, setLang, t } = useTranslation()
-  const [showInfo, setShowInfo] = useState(!seenInfo)
+  const [showInfo, setShowInfo] = useState(showModal)
+
 
   return (
     <>
@@ -45,10 +46,9 @@ export function Header({ seenInfo, markSeen }: HeaderProps) {
 
       <InfoModal
         open={showInfo}
-        onClose={() => {
-          setShowInfo(false)
-          markSeen()
-        }}
+        showModal={showModal}
+        onClose={() => setShowInfo(false)}
+        setShowModal={setShowModal}
       />
     </>
   )

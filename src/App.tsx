@@ -25,8 +25,8 @@ function AppContent() {
     importJSON,
     clearAll,
     dismissOutdated,
-    seenInfo,
-    markSeen,
+    showModal,
+    setShowModal,
   } = useFormData()
   const previewColRef = useRef<HTMLDivElement>(null)
   const cardScale = useCardScale(previewColRef)
@@ -58,7 +58,7 @@ function AppContent() {
 
   useEffect(() => {
     save(lang)
-  }, [data, lang, seenInfo, save])
+  }, [data, lang, showModal, save])
 
   function handleCodeVerified(code: string, tokens: number | "unlimited") {
     setVerifiedCode(code)
@@ -79,7 +79,7 @@ function AppContent() {
   return (
     <div className="flex flex-col min-h-dvh bg-[#f4f7fa]">
       <div className="sticky top-0 z-40">
-        <Header seenInfo={seenInfo} markSeen={markSeen} />
+        <Header showModal={showModal} setShowModal={setShowModal} />
         {notification === "payment_success" && (
           <NotificationBanner
             variant="success"

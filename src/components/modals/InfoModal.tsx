@@ -22,10 +22,12 @@ const LANG_OPTIONS = [
 
 interface InfoModalProps {
   open: boolean
+  showModal: boolean
   onClose: () => void
+  setShowModal: (value: boolean) => void
 }
 
-export function InfoModal({ open, onClose }: InfoModalProps) {
+export function InfoModal({ open, showModal, onClose, setShowModal }: InfoModalProps) {
   const { t, lang, setLang } = useTranslation()
 
   return (
@@ -75,6 +77,15 @@ export function InfoModal({ open, onClose }: InfoModalProps) {
         <p className="text-sm font-bold text-navy2 italic">
           {t("info_slogan")}
         </p>
+        <label className="flex items-center gap-2 cursor-pointer select-none self-end">
+          <input
+            type="checkbox"
+            checked={!showModal}
+            onChange={(e) => setShowModal(!e.target.checked)}
+            className="w-3.5 h-3.5 accent-navy2 cursor-pointer"
+          />
+          <span className="text-xs text-lgray">{t("info_dont_show")}</span>
+        </label>
       </div>
     </Modal>
   )
