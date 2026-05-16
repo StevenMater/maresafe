@@ -130,7 +130,7 @@ export function DownloadSection({
 
         {/* Info */}
         {code && (
-          <div className="flex flex-col items-center gap-0.5 text-xs text-center self-center">
+          <div className="flex flex-col items-center gap-2 text-xs text-center self-center">
             <span
               className={
                 remainingDownloads === 0
@@ -167,7 +167,9 @@ export function DownloadSection({
             className="inline-flex items-center justify-center gap-1.75 w-full bg-[#2a9d5c] hover:bg-[#228a4f] text-white text-xs font-bold rounded py-2 px-4 border-none cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Download size={14} />
-            {isDownloading ? "…" : t("btn_download")}
+            {isDownloading
+              ? "…"
+              : tPlural("btn_download", selectedLanguages.length)}
           </button>
           {downloadFeedback && (
             <span className={cn("text-xs", downloadFeedback.className)}>
