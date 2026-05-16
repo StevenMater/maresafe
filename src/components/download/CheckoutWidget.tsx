@@ -13,11 +13,14 @@ export function CheckoutWidget() {
         </span>
         <div className="flex flex-col items-center gap-0">
           <span className="text-base font-bold text-dark text-center">
-            MareSafe {t("checkout_download_code")}
+            {t("checkout_download_code")}
           </span>
           <span className="text-xs text-mid">{t("token_explanation")}</span>
         </div>
       </div>
+      <span className="text-xs text-lgray text-center">
+        {t("code_stacking_note")}
+      </span>
       <button
         type="button"
         onClick={() => {
