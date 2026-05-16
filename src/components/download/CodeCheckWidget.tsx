@@ -75,16 +75,27 @@ export function CodeCheckWidget({
         const depleted = count === 0
         return {
           text: (depleted ? "✗ " : "✓ ") + text,
-          className: depleted ? "text-red font-semibold" : "text-green font-semibold",
+          className: depleted
+            ? "text-red font-semibold"
+            : "text-green font-semibold",
         }
       }
       case "invalid":
-        return { text: "✗ " + t("code_invalid"), className: "text-red font-semibold" }
+        return {
+          text: "✗ " + t("code_invalid"),
+          className: "text-red font-semibold",
+        }
       case "error":
-        return { text: "✗ " + t("pdf_error"), className: "text-red font-semibold" }
+        return {
+          text: "✗ " + t("pdf_error"),
+          className: "text-red font-semibold",
+        }
       default:
         return codeValue.trim()
-          ? { text: t("code_press_check"), className: "text-dark font-semibold" }
+          ? {
+              text: t("code_press_check"),
+              className: "text-dark font-semibold",
+            }
           : { text: t("code_no_code"), className: "text-dark font-semibold" }
     }
   }
@@ -159,6 +170,8 @@ export function CodeCheckWidget({
       </div>
       <div className="flex flex-col items-center gap-0.5 text-xs text-center self-center">
         <span className={statusLine.className}>{statusLine.text}</span>
+      </div>
+      <div className="flex flex-col items-center gap-0.5 text-xs text-center self-center">
         <span className="text-lgray">{t("activate_data_note")}</span>
       </div>
     </div>
