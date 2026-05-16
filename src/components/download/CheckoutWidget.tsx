@@ -5,7 +5,7 @@ export function CheckoutWidget() {
   const { t } = useTranslation()
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl w-full sm:min-w-60 sm:max-w-96">
+    <div className="flex flex-col items-center justify-center gap-3 p-5 bg-white border border-[#d0dbe8] rounded-xl w-full md:min-w-60 md:max-w-96">
       <div className="flex flex-col items-center gap-1">
         <span className="text-xs text-mid flex items-center gap-1">
           <span className="text-base font-bold text-navy2">① </span>

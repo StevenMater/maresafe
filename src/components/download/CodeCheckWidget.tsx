@@ -62,7 +62,7 @@ export function CodeCheckWidget({
     }
   }
 
-  function getCodeFeedback(): Feedback | null {
+  function getStatusLine(): Feedback {
     switch (verifyState) {
       case "checking":
         return { text: "…", className: "text-mid" }
@@ -75,22 +75,24 @@ export function CodeCheckWidget({
         const depleted = count === 0
         return {
           text: (depleted ? "✗ " : "✓ ") + text,
-          className: depleted ? "text-red" : "text-green",
+          className: depleted ? "text-red font-semibold" : "text-green font-semibold",
         }
       }
       case "invalid":
-        return { text: t("code_invalid"), className: "text-red" }
+        return { text: "✗ " + t("code_invalid"), className: "text-red font-semibold" }
       case "error":
-        return { text: t("pdf_error"), className: "text-red" }
+        return { text: "✗ " + t("pdf_error"), className: "text-red font-semibold" }
       default:
-        return null
+        return codeValue.trim()
+          ? { text: t("code_press_check"), className: "text-dark font-semibold" }
+          : { text: t("code_no_code"), className: "text-dark font-semibold" }
     }
   }
 
-  const codeFeedback = getCodeFeedback()
+  const statusLine = getStatusLine()
 
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-5 w-full sm:flex-1 sm:max-w-108 bg-white border border-[#d0dbe8] rounded-lg">
+    <div className="flex flex-col items-center justify-center gap-3 p-5 w-full md:flex-1 md:max-w-108 bg-white border border-[#d0dbe8] rounded-lg">
       <span className="text-xs text-mid flex items-center gap-1">
         <span className="text-base font-bold text-navy2">② </span>
         {t("download_tagline")}
@@ -104,66 +106,61 @@ export function CodeCheckWidget({
         </span>
       </div>
       <div className="flex flex-col gap-1.5 w-full">
-        <div className="relative flex items-center h-8">
-          <input
-            id={codeInputId}
-            type="text"
-            maxLength={32}
-            value={codeValue}
-            placeholder={t("placeholder_code")}
-            onChange={(e) => {
-              const next = e.target.value.toUpperCase()
-              setCodeValue(next)
-              if (validCode !== null) {
-                setValidCode(null)
-                setTokensRemaining(null)
-                setVerifyState("idle")
-                onCodeCleared()
-              } else if (verifyState !== "idle") {
-                setVerifyState("idle")
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleVerify()
-            }}
-            className="h-full w-full pr-13 rounded-sm border border-[#a8c4e0] bg-[#f0f6ff] px-2.5 font-mono text-sm uppercase text-dark placeholder:text-lgray focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)] transition-[border-color]"
-          />
-          <div className="absolute right-1.5 flex items-center gap-0.5">
-            <button
-              type="button"
-              onClick={handleVerify}
-              disabled={!codeValue.trim() || verifyState === "checking"}
-              tabIndex={-1}
-              aria-label="Verify code"
-              className={cn(
-                "flex items-center justify-center w-5 h-5 rounded border-none bg-transparent cursor-pointer p-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
-                isVerified
-                  ? "text-green"
-                  : "text-mid hover:bg-green/15 hover:text-green",
-              )}
-            >
-              <Check size={12} />
-            </button>
+        <div className="flex items-center gap-2 h-8">
+          <div className="relative flex items-center h-full flex-1">
+            <input
+              id={codeInputId}
+              type="text"
+              maxLength={32}
+              value={codeValue}
+              placeholder={t("placeholder_code")}
+              onChange={(e) => {
+                const next = e.target.value.toUpperCase()
+                setCodeValue(next)
+                if (validCode !== null) {
+                  setValidCode(null)
+                  setTokensRemaining(null)
+                  setVerifyState("idle")
+                  onCodeCleared()
+                } else if (verifyState !== "idle") {
+                  setVerifyState("idle")
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleVerify()
+              }}
+              className="h-full w-full pr-7 rounded-sm border border-[#a8c4e0] bg-[#f0f6ff] px-2.5 font-mono text-sm uppercase text-dark placeholder:text-lgray focus:outline-none focus:border-navy2 focus:shadow-[0_0_0_3px_rgba(44,82,130,0.15)] transition-[border-color]"
+            />
             <button
               type="button"
               onClick={clearCode}
               tabIndex={-1}
               aria-label="Clear code"
-              className="flex items-center justify-center w-5 h-5 rounded border-none bg-transparent text-mid cursor-pointer p-0 hover:bg-[#d0dbe8] hover:text-dark transition-colors"
+              className="absolute right-1.5 flex items-center justify-center w-5 h-5 rounded border-none bg-transparent text-mid cursor-pointer p-0 hover:bg-[#d0dbe8] hover:text-dark transition-colors"
             >
               <X size={12} />
             </button>
           </div>
+          <button
+            type="button"
+            onClick={handleVerify}
+            disabled={!codeValue.trim() || verifyState === "checking"}
+            aria-label="Verify code"
+            className={cn(
+              "flex items-center justify-center h-full px-3 rounded border-none cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+              isVerified
+                ? "bg-green text-white"
+                : "bg-[#2a9d5c] hover:bg-[#228a4f] text-white",
+            )}
+          >
+            <Check size={14} />
+          </button>
         </div>
-        {codeFeedback && (
-          <span className={cn("text-xs", codeFeedback.className)}>
-            {codeFeedback.text}
-          </span>
-        )}
       </div>
-      <p className="text-xs text-lgray text-center leading-relaxed">
-        {t("activate_data_note")}
-      </p>
+      <div className="flex flex-col items-center gap-0.5 text-xs text-center self-center">
+        <span className={statusLine.className}>{statusLine.text}</span>
+        <span className="text-lgray">{t("activate_data_note")}</span>
+      </div>
     </div>
   )
 }

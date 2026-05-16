@@ -4,6 +4,7 @@
 
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
+  --breakpoint-xs: 475px;
   --color-navy: #1b3a5c;
   --color-navy2: #2c5282;
   --color-red: #a93226;
