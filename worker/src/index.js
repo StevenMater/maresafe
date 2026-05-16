@@ -850,8 +850,8 @@ function adminPage() {
     .toolbar select option { text-transform: lowercase; }
 
     .select-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 1px solid #dde6ef; border-radius: 8px; margin-bottom: 10px; cursor: pointer; user-select: none; }
-    .select-bar input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
-    .select-bar-label { font-size: 14px; color: #111; font-weight: 600; }
+    .select-bar input { width: 16px; height: 16px; margin: 0; cursor: pointer; }
+    .select-bar-label { font-size: 14px; color: #111; font-weight: 600; text-transform: lowercase; }
     .select-bar-count { font-size: 13px; color: #777; margin-left: auto; }
 
     .table-wrap { overflow-x: auto; }
