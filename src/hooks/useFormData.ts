@@ -85,7 +85,7 @@ function parseStoredData(raw: RawData): {
       altWidth: dim(raw.altWidth),
       altDraft: dim(raw.altDraft),
       altHeadway: dim(raw.altHeadway ?? raw.altAirDraft),
-      callSign: str(raw.callSign),
+      callSign: str(raw.callSign).toUpperCase(),
       homePort: str(raw.homePort),
       atis: str(raw.atis),
       mmsi: str(raw.mmsi),

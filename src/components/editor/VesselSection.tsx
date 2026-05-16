@@ -51,7 +51,7 @@ export function VesselSection({ data, setField }: VesselSectionProps) {
           label={t("f_callsign")}
           tooltip={t("tip_f_callsign")}
           value={data.callSign}
-          onChange={(e) => setField("callSign", e.target.value)}
+          onChange={(e) => setField("callSign", e.target.value.toUpperCase())}
           maxLength={6}
         />
       </div>
