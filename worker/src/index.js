@@ -21,20 +21,40 @@ const LANG_LABEL = {
 
 const EMAIL_T = {
   nl: {
-    code_subject: "Jouw MareSafe downloadcode",
-    code_body: (code, tokens) =>
-      `<p>Bedankt voor je aankoop.</p>
-       <p>Jouw downloadcode is:</p>
-       <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>${tokens === "unlimited" ? "Deze code geeft je <strong>onbeperkte downloads</strong>." : `Deze code geeft je <strong>${tokens} tokens</strong> (1 per taal per download).`}</p>
-       <p>Open <a href="https://www.maresafe.eu">maresafe.eu</a>, voer je code in en download je noodkaart.</p>
-       <p>— MareSafe</p>`,
-    receipt_subject: (v) => `MareSafe — downloadbevestiging voor ${v}`,
+    code_subject: "Welkom aan boord — je MareSafe Code is klaar",
+    code_body: (code, tokens, customerName) =>
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${customerName ? `Hoi ${customerName},` : "Welkom aan boord,"}</p>
+         <p>Bedankt dat je voor MareSafe kiest. Je noodkaart-editor is ontgrendeld en klaar voor gebruik.</p>
+         <p style="margin:28px 0 4px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600">Je MareSafe Code</p>
+         <p style="font-family:ui-monospace,'Cascadia Code','Source Code Pro',monospace;font-size:32px;font-weight:700;letter-spacing:4px;color:#1b3a5c;margin:0 0 12px">${code}</p>
+         <p>${tokens === "unlimited" ? "Deze code geeft je <strong>onbeperkte downloads</strong>." : `Hiermee krijg je <strong>${tokens} download${tokens === 1 ? "" : "s"}</strong> (1 pdf in elke taal kost 1 download).`}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Wat je nu doet</p>
+         <ol style="padding-left:20px;margin:0 0 16px">
+           <li style="margin-bottom:4px">Open <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a> en voer je code in</li>
+           <li style="margin-bottom:4px">Vul je scheepsgegevens in</li>
+           <li style="margin-bottom:4px">Kies je talen en download je kaart als PDF</li>
+           <li>Print op A4 — lamineer indien mogelijk — en houd hem binnen handbereik aan boord</li>
+         </ol>
+         <p>Een gelamineerde kaart blijft leesbaar als hij nat wordt, hangt in de stuurhut, en helpt je in een stressmoment precies de juiste informatie over te brengen aan hulpdiensten — zonder dat je iets uit je hoofd hoeft te weten.</p>
+         <p>Vragen? Stuur een reply op deze mail, dan komt het rechtstreeks bij mij binnen.</p>
+         <p style="margin-top:28px">Veilige vaart,<br><strong>Steven — MareSafe</strong></p>
+       </div>`,
+    receipt_subject: (v) => `Je MareSafe kaartbevestiging & back-up — ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
-      `<p>Je hebt ${count} kaart${count > 1 ? "en" : ""} (${langList}) gedownload voor <strong>${vessel}</strong>.</p>
-       <p>${remaining === "unlimited" ? "Mastercode — onbeperkt gebruik." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} resterend</strong> op je code.` : "Je code is volledig gebruikt."}</p>
-       <p>Bijgevoegd vind je een JSON-backup van je kaartgegevens. Open <a href="https://www.maresafe.eu">maresafe.eu</a> om hem te importeren.</p>
-       <p>— MareSafe</p>`,
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${count > 1 ? `${count} MareSafe kaarten` : "Je MareSafe kaart"} voor <strong>${vessel}</strong> ${count > 1 ? "zijn" : "is"} gedownload naar je apparaat in ${langList}.</p>
+         <p>${remaining === "unlimited" ? "Mastercode — <strong>onbeperkte downloads</strong> op deze code." : remaining > 0 ? `<strong>${remaining} download${remaining > 1 ? "s" : ""} resterend</strong> op je MareSafe Code.` : "Dit was de laatste download op je code."}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Nog één stap</p>
+         <p style="margin:0">Print op A4 en lamineer indien mogelijk. Bewaar één exemplaar bij de stuurplaats en één bij je veiligheidsuitrusting — ergens waar iedereen aan boord weet te zoeken.</p>
+         <p style="margin:12px 0 0">Tip: heb je de kaart in meer dan één taal aan boord, print ze dan rug aan rug vóór het lamineren — één kaart, meerdere talen, omdraaien om te wisselen.</p>
+         <p style="margin:24px 0 8px;font-weight:700;color:#1b3a5c">Bewaar je back-up</p>
+         <p style="margin:0">Het .json-bestand dat aan deze mail hangt is een volledige back-up van je kaartgegevens. Wil je je scheepsgegevens later bijwerken, open dan <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a>, gebruik <strong>Back-up laden</strong>, en je gegevens zijn binnen seconden terug.</p>
+         <p style="margin-top:28px">Blijf voorbereid.</p>
+         <p style="margin:8px 0 0"><strong>Steven — MareSafe</strong></p>
+       </div>`,
   },
   en: {
     code_subject: "Welcome aboard — your MareSafe Code is ready",
@@ -57,14 +77,15 @@ const EMAIL_T = {
          <p>Any questions? Reply to this email and it lands straight in my inbox.</p>
          <p style="margin-top:28px">Fair winds,<br><strong>Steven — MareSafe</strong></p>
        </div>`,
-    receipt_subject: (v) => `Your MareSafe card & backup — ${v}`,
+    receipt_subject: (v) => `Your MareSafe card receipt & backup — ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
       `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
          <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
-         <p>Your MareSafe card for <strong>${vessel}</strong> is ready — ${count} card${count > 1 ? "s" : ""} downloaded in ${langList}.</p>
+         <p>${count > 1 ? `${count} MareSafe cards` : "Your MareSafe card"} for <strong>${vessel}</strong> ${count > 1 ? "have" : "has"} been downloaded to your device in ${langList}.</p>
          <p>${remaining === "unlimited" ? "Master code — <strong>unlimited downloads</strong> on this code." : remaining > 0 ? `<strong>${remaining} download${remaining > 1 ? "s" : ""} remaining</strong> on your MareSafe Code.` : "This was the last download on your code."}</p>
          <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">One more step</p>
          <p style="margin:0">Print on A4 and laminate if you can. Keep one copy at the helm and one with your safety gear — somewhere everyone on board knows to look.</p>
+         <p style="margin:12px 0 0">Tip: if you carry the card in more than one language, print them back to back before laminating — one card, multiple languages, flip to switch.</p>
          <p style="margin:24px 0 8px;font-weight:700;color:#1b3a5c">Keep your backup</p>
          <p style="margin:0">The .json file attached to this email is a full backup of your card data. If you ever need to update your vessel details, just open <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a>, use <strong>Load backup</strong>, and your data is back in seconds.</p>
          <p style="margin-top:28px">Stay prepared.</p>
@@ -72,36 +93,76 @@ const EMAIL_T = {
        </div>`,
   },
   fr: {
-    code_subject: "Votre code de téléchargement MareSafe",
-    code_body: (code, tokens) =>
-      `<p>Merci pour votre achat.</p>
-       <p>Votre code de téléchargement est :</p>
-       <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>${tokens === "unlimited" ? "Ce code vous donne <strong>téléchargements illimités</strong>." : `Ce code vous donne <strong>${tokens} tokens</strong> (1 par langue par téléchargement).`}</p>
-       <p>Ouvrez <a href="https://www.maresafe.eu">maresafe.eu</a>, entrez votre code et téléchargez votre carte d'urgence.</p>
-       <p>— MareSafe</p>`,
-    receipt_subject: (v) => `MareSafe — reçu de téléchargement pour ${v}`,
+    code_subject: "Bienvenue à bord — votre MareSafe Code est prêt",
+    code_body: (code, tokens, customerName) =>
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${customerName ? `Bonjour ${customerName},` : "Bienvenue à bord,"}</p>
+         <p>Merci d'avoir choisi MareSafe. Votre éditeur de carte d'urgence est déverrouillé et prêt.</p>
+         <p style="margin:28px 0 4px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600">Votre MareSafe Code</p>
+         <p style="font-family:ui-monospace,'Cascadia Code','Source Code Pro',monospace;font-size:32px;font-weight:700;letter-spacing:4px;color:#1b3a5c;margin:0 0 12px">${code}</p>
+         <p>${tokens === "unlimited" ? "Ce code vous donne <strong>téléchargements illimités</strong>." : `Vous obtenez <strong>${tokens} téléchargement${tokens === 1 ? "" : "s"}</strong> (1 PDF dans n'importe quelle langue coûte 1 téléchargement).`}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Et maintenant</p>
+         <ol style="padding-left:20px;margin:0 0 16px">
+           <li style="margin-bottom:4px">Ouvrez <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a> et saisissez votre code</li>
+           <li style="margin-bottom:4px">Renseignez les détails de votre bateau</li>
+           <li style="margin-bottom:4px">Choisissez vos langues et téléchargez votre carte en PDF</li>
+           <li>Imprimez en A4 — plastifiez si vous le pouvez — et gardez-la à portée de main à bord</li>
+         </ol>
+         <p>Une carte plastifiée reste lisible quand elle est mouillée, vit dans le cockpit, et vous aide à transmettre aux secours exactement ce qu'ils doivent savoir sans avoir à vous en souvenir dans un moment de stress.</p>
+         <p>Une question ? Répondez à ce mail, il arrive directement dans ma boîte.</p>
+         <p style="margin-top:28px">Bons vents,<br><strong>Steven — MareSafe</strong></p>
+       </div>`,
+    receipt_subject: (v) => `Reçu de votre carte MareSafe & sauvegarde — ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
-      `<p>Vous avez téléchargé ${count} carte${count > 1 ? "s" : ""} (${langList}) pour <strong>${vessel}</strong>.</p>
-       <p>${remaining === "unlimited" ? "Code maître — utilisation illimitée." : remaining > 0 ? `<strong>${remaining} token${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}</strong> sur votre code.` : "Votre code est entièrement utilisé."}</p>
-       <p>Ci-joint une sauvegarde JSON de vos données. Ouvrez <a href="https://www.maresafe.eu">maresafe.eu</a> pour l'importer.</p>
-       <p>— MareSafe</p>`,
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${count > 1 ? `${count} cartes MareSafe` : "Votre carte MareSafe"} pour <strong>${vessel}</strong> ${count > 1 ? "ont" : "a"} été téléchargée${count > 1 ? "s" : ""} sur votre appareil en ${langList}.</p>
+         <p>${remaining === "unlimited" ? "Code maître — <strong>téléchargements illimités</strong> sur ce code." : remaining > 0 ? `<strong>${remaining} téléchargement${remaining > 1 ? "s" : ""} restant${remaining > 1 ? "s" : ""}</strong> sur votre MareSafe Code.` : "C'était le dernier téléchargement sur votre code."}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Une dernière chose</p>
+         <p style="margin:0">Imprimez en A4 et plastifiez si vous le pouvez. Gardez un exemplaire à la barre et un autre avec votre équipement de sécurité — quelque part où tout le monde à bord sait chercher.</p>
+         <p style="margin:12px 0 0">Astuce : si vous emportez la carte dans plus d'une langue, imprimez-les dos à dos avant de plastifier — une carte, plusieurs langues, retournez pour changer.</p>
+         <p style="margin:24px 0 8px;font-weight:700;color:#1b3a5c">Conservez votre sauvegarde</p>
+         <p style="margin:0">Le fichier .json joint à ce mail est une sauvegarde complète de vos données. Si vous avez besoin de mettre à jour les détails de votre bateau, ouvrez simplement <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a>, utilisez <strong>Charger la sauvegarde</strong>, et vos données sont restaurées en quelques secondes.</p>
+         <p style="margin-top:28px">Restez préparé.</p>
+         <p style="margin:8px 0 0"><strong>Steven — MareSafe</strong></p>
+       </div>`,
   },
   de: {
-    code_subject: "Ihr MareSafe Download-Code",
-    code_body: (code, tokens) =>
-      `<p>Vielen Dank für Ihren Kauf.</p>
-       <p>Ihr Download-Code lautet:</p>
-       <p style="font-family:monospace;font-size:32px;font-weight:700;letter-spacing:4px">${code}</p>
-       <p>${tokens === "unlimited" ? "Dieser Code gibt Ihnen <strong>unbegrenzte Downloads</strong>." : `Dieser Code gibt Ihnen <strong>${tokens} Tokens</strong> (1 pro Sprache pro Download).`}</p>
-       <p>Öffnen Sie <a href="https://www.maresafe.eu">maresafe.eu</a>, geben Sie Ihren Code ein und laden Sie Ihre Notfallkarte herunter.</p>
-       <p>— MareSafe</p>`,
-    receipt_subject: (v) => `MareSafe — Download-Beleg für ${v}`,
+    code_subject: "Willkommen an Bord — Ihr MareSafe Code ist bereit",
+    code_body: (code, tokens, customerName) =>
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${customerName ? `Hallo ${customerName},` : "Willkommen an Bord,"}</p>
+         <p>Vielen Dank, dass Sie sich für MareSafe entschieden haben. Ihr Notfallkarten-Editor ist freigeschaltet und einsatzbereit.</p>
+         <p style="margin:28px 0 4px;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:1.5px;font-weight:600">Ihr MareSafe Code</p>
+         <p style="font-family:ui-monospace,'Cascadia Code','Source Code Pro',monospace;font-size:32px;font-weight:700;letter-spacing:4px;color:#1b3a5c;margin:0 0 12px">${code}</p>
+         <p>${tokens === "unlimited" ? "Dieser Code gibt Ihnen <strong>unbegrenzte Downloads</strong>." : `Damit erhalten Sie <strong>${tokens} Download${tokens === 1 ? "" : "s"}</strong> (1 PDF in beliebiger Sprache kostet 1 Download).`}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">So geht's weiter</p>
+         <ol style="padding-left:20px;margin:0 0 16px">
+           <li style="margin-bottom:4px">Öffnen Sie <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a> und geben Sie Ihren Code ein</li>
+           <li style="margin-bottom:4px">Geben Sie Ihre Schiffsdaten ein</li>
+           <li style="margin-bottom:4px">Wählen Sie Ihre Sprachen und laden Sie Ihre Karte als PDF herunter</li>
+           <li>Drucken Sie auf A4 — laminieren Sie sie wenn möglich — und bewahren Sie sie griffbereit an Bord auf</li>
+         </ol>
+         <p>Eine laminierte Karte bleibt lesbar wenn sie nass wird, hängt im Cockpit, und hilft Ihnen, Rettungskräften in einem stressigen Moment genau das mitzuteilen, was sie wissen müssen — ohne dass Sie sich etwas merken müssen.</p>
+         <p>Fragen? Antworten Sie auf diese E-Mail, sie landet direkt in meinem Posteingang.</p>
+         <p style="margin-top:28px">Allzeit gute Fahrt,<br><strong>Steven — MareSafe</strong></p>
+       </div>`,
+    receipt_subject: (v) => `Ihr MareSafe Kartenbeleg & Backup — ${v}`,
     receipt_body: (count, langList, vessel, remaining) =>
-      `<p>Sie haben ${count} Karte${count > 1 ? "n" : ""} (${langList}) für <strong>${vessel}</strong> heruntergeladen.</p>
-       <p>${remaining === "unlimited" ? "Mastercode — unbegrenzte Nutzung." : remaining > 0 ? `<strong>${remaining} Token${remaining > 1 ? "s" : ""} verbleibend</strong> auf Ihrem Code.` : "Ihr Code wurde vollständig verbraucht."}</p>
-       <p>Anbei eine JSON-Sicherung Ihrer Kartendaten. Öffnen Sie <a href="https://www.maresafe.eu">maresafe.eu</a>, um sie zu importieren.</p>
-       <p>— MareSafe</p>`,
+      `<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:560px;margin:0 auto;color:#222;line-height:1.55">
+         <p style="margin:0 0 24px"><img src="https://www.maresafe.eu/maresafe-logo.png" alt="MareSafe" width="72" height="72" style="display:block;border:0"></p>
+         <p>${count > 1 ? `${count} MareSafe Karten` : "Ihre MareSafe Karte"} für <strong>${vessel}</strong> ${count > 1 ? "wurden" : "wurde"} auf Ihr Gerät in ${langList} heruntergeladen.</p>
+         <p>${remaining === "unlimited" ? "Mastercode — <strong>unbegrenzte Downloads</strong> auf diesem Code." : remaining > 0 ? `<strong>${remaining} Download${remaining > 1 ? "s" : ""} verbleibend</strong> auf Ihrem MareSafe Code.` : "Das war der letzte Download auf Ihrem Code."}</p>
+         <p style="margin:28px 0 8px;font-weight:700;color:#1b3a5c">Noch ein Schritt</p>
+         <p style="margin:0">Drucken Sie auf A4 und laminieren Sie wenn möglich. Bewahren Sie ein Exemplar am Steuerstand und eines bei Ihrer Sicherheitsausrüstung auf — irgendwo, wo jeder an Bord nachschaut.</p>
+         <p style="margin:12px 0 0">Tipp: Wenn Sie die Karte in mehr als einer Sprache an Bord haben, drucken Sie sie Rücken an Rücken vor dem Laminieren — eine Karte, mehrere Sprachen, einfach umdrehen.</p>
+         <p style="margin:24px 0 8px;font-weight:700;color:#1b3a5c">Behalten Sie Ihr Backup</p>
+         <p style="margin:0">Die an diese E-Mail angehängte .json-Datei ist eine vollständige Sicherung Ihrer Kartendaten. Wenn Sie Ihre Schiffsdaten später aktualisieren möchten, öffnen Sie einfach <a href="https://www.maresafe.eu" style="color:#1b3a5c">maresafe.eu</a>, verwenden Sie <strong>Backup laden</strong>, und Ihre Daten sind in Sekunden wieder da.</p>
+         <p style="margin-top:28px">Bleiben Sie vorbereitet.</p>
+         <p style="margin:8px 0 0"><strong>Steven — MareSafe</strong></p>
+       </div>`,
   },
 }
 
@@ -693,18 +754,20 @@ function adminPage() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <title>MareSafe Admin</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%231b3a5c'/%3E%3Ctext x='32' y='42' font-family='system-ui,sans-serif' font-size='24' font-weight='700' fill='white' text-anchor='middle'%3EMSA%3C/text%3E%3C/svg%3E">
   <style>
     :root { --navy:#1b3a5c; --navy2:#2c5282; --blue-border:#a8c4e0; --bg-soft:#f0f4f8; --tab-h:60px; }
     * { box-sizing: border-box; }
     html, body { background: #fbfcfd; }
-    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 32px auto; padding: 0 20px; color: #111; }
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 32px auto; padding: 0 20px; color: #111; -webkit-text-size-adjust: 100%; }
+    input, select, textarea { color: #111; -webkit-text-fill-color: #111; }
     h2 { color: var(--navy); margin: 0 0 16px; font-size: 22px; }
-    label { display: block; font-size: 13px; margin-bottom: 4px; color: #444; }
-    input[type=text], input[type=email], input[type=password], input[type=number], input[type=search], select {
+    label { display: block; font-size: 13px; margin-bottom: 4px; color: #111; }
+    input[type=text], input[type=email], input[type=password], input[type=number], input[type=search], select, textarea {
       display: block; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding: 10px 12px;
-      font-size: 16px; border: 1.5px solid var(--blue-border); border-radius: 6px; background: white;
+      font-size: 1rem; border: 1.5px solid var(--blue-border); border-radius: 6px; background: white;
       outline: none; transition: border-color .15s, box-shadow .15s;
     }
     input:focus, select:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,58,92,0.15); }
@@ -716,9 +779,10 @@ function adminPage() {
     }
 
     .tabs-wrap { position: sticky; top: 0; background: #fbfcfd; z-index: 50; padding: 10px 0; margin: -10px 0 12px; }
-    .tabs-wrap h2 { margin: 0 0 10px; }
+    .tabs-wrap h2 { margin: 0 0 10px; display: flex; align-items: center; gap: 10px; }
+    .tabs-wrap h2 svg.brand { width: 26px; height: 26px; flex-shrink: 0; }
     .tabs { display: flex; gap: 6px; }
-    .tab { flex: 1; padding: 10px 12px; border: 1.5px solid var(--blue-border); border-radius: 999px; cursor: pointer; font-size: 14px; background: white; min-height: 40px; }
+    .tab { flex: 1; padding: 10px 12px; border: 1.5px solid var(--blue-border); border-radius: 999px; cursor: pointer; font-size: 14px; background: white; min-height: 40px; color: #111; -webkit-appearance: none; appearance: none; }
     .tab.active { background: var(--navy); color: white; border-color: var(--navy); }
 
     .panel { display: none; }
@@ -729,8 +793,13 @@ function adminPage() {
     button.action:disabled { opacity: 0.5; cursor: not-allowed; }
     button.action.full { width: 100%; }
     button.action.sm { padding: 8px 14px; white-space: nowrap; min-height: 36px; font-size: 13px; }
-    button.revoke { background: #a93226; color: white; border: none; border-radius: 4px; padding: 3px 8px; font-size: 11px; cursor: pointer; font-weight: 600; line-height: 1.4; }
+    button.revoke { background: #a93226; color: white; border: none; border-radius: 4px; padding: 3px 6px; font-size: 11px; cursor: pointer; font-weight: 600; line-height: 1.4; width: 62px; text-align: center; }
     button.revoke:hover { background: #7b241c; }
+    .tab, button.action, button.revoke, .badge { text-transform: lowercase; }
+    .copy-btn { background: none; border: none; padding: 2px 4px; margin-left: 4px; cursor: pointer; color: #8395a8; line-height: 0; vertical-align: middle; border-radius: 3px; }
+    .copy-btn:hover { color: var(--navy); background: rgba(27,58,92,0.06); }
+    .copy-btn.copied { color: #1e6b3c; }
+    .copy-btn svg { width: 12px; height: 12px; display: block; }
 
     #result { margin-top: 20px; font-size: 22px; font-weight: 700; color: #1e6b3c; letter-spacing: 2px; }
     #gen-error { margin-top: 12px; font-size: 13px; color: #a93226; }
@@ -742,8 +811,24 @@ function adminPage() {
     .badge-grey   { background: #f0f4f8; color: #555; }
 
     .toolbar { margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .toolbar input[type=search] { margin-bottom: 0; max-width: 260px; flex: 1; }
-    .toolbar select { margin-bottom: 0; width: auto; padding: 8px 10px; font-size: 14px; }
+    .toolbar input[type=search], .toolbar select {
+      margin-bottom: 0; height: 40px; min-height: 40px; padding-top: 0; padding-bottom: 0;
+      font-size: 1rem; box-sizing: border-box;
+    }
+    .toolbar button.action.sm {
+      margin-bottom: 0; height: 40px; min-height: 40px; padding-top: 0; padding-bottom: 0;
+      font-size: 14px; box-sizing: border-box;
+    }
+    .toolbar input[type=search] { max-width: 100%; flex: 1; text-transform: lowercase; padding-right: 32px; }
+    .toolbar input[type=search]::placeholder { text-transform: lowercase; }
+    .toolbar input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+    .search-wrap { position: relative; flex: 1; max-width: 260px; display: flex; height: 40px; }
+    .search-wrap input { width: 100%; }
+    .clear-search { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #888; font-size: 16px; padding: 6px 8px; line-height: 1; display: none; border-radius: 4px; }
+    .clear-search:hover { color: var(--navy); background: rgba(27,58,92,0.06); }
+    .search-wrap.has-value .clear-search { display: block; }
+    .toolbar select { width: auto; min-width: 150px; padding-right: 36px; }
+    .toolbar select option { text-transform: lowercase; }
 
     .select-bar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 1px solid #dde6ef; border-radius: 8px; margin-bottom: 10px; cursor: pointer; user-select: none; }
     .select-bar input { width: 20px; height: 20px; margin: 0; cursor: pointer; }
@@ -753,9 +838,9 @@ function adminPage() {
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; background: white; }
     th { text-align: left; padding: 6px 8px; background: var(--bg-soft); border-bottom: 2px solid var(--blue-border); white-space: nowrap; }
-    td { padding: 6px 8px; border-bottom: 1px solid #e8eef4; vertical-align: top; }
+    td { padding: 6px 8px; border-bottom: 1px solid #e8eef4; vertical-align: middle; }
 
-    #codes-meta, #emails-meta { font-size: 13px; color: #555; margin-top: 4px; }
+    #codes-meta, #emails-meta { font-size: 13px; color: #111; margin-top: 4px; }
     #codes-error, #emails-error { font-size: 13px; color: #a93226; margin-top: 8px; }
 
     #gate { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
@@ -764,25 +849,28 @@ function adminPage() {
     #gate-error { font-size: 13px; color: #a93226; margin-bottom: 8px; min-height: 18px; }
     #app { display: none; }
 
-    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #444; margin-bottom: 12px; cursor: pointer; }
+    .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #111; margin-bottom: 12px; cursor: pointer; }
     .checkbox-label input { display: inline; width: auto; margin: 0; transform: scale(1.2); }
 
     /* Mobile cards — hidden on desktop */
     .cards { display: none; }
     .card-row { background: white; border: 1px solid #dde6ef; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+    .card-row.status-active   { background: #f4faf6; border-color: #d6ead9; }
+    .card-row.status-depleted { background: #fffaeb; border-color: #f1e3b8; }
+    .card-row.status-revoked  { background: #fdf4f3; border-color: #ecd3cf; }
     .card-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .card-line + .card-line { margin-top: 8px; }
     .card-code { font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace; font-weight: 700; font-size: 15px; color: #111; }
-    .card-email { color: #555; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .card-meta { color: #777; font-size: 12px; }
-    .card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
+    .card-email { color: #111; font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-meta { color: #111; font-size: 12px; }
+    .card-line .revoke { margin-left: auto; }
 
     .email-card { display: flex; align-items: center; gap: 12px; background: white; border: 1px solid #dde6ef; border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; }
     .email-card.selected { border-color: var(--navy); background: #f4f8fc; }
-    .email-card input { width: 22px; height: 22px; flex-shrink: 0; margin: 0; pointer-events: none; }
+    .email-card input { width: 16px; height: 16px; flex-shrink: 0; margin: 0; pointer-events: none; }
     .email-card-body { flex: 1; min-width: 0; }
     .email-card-email { font-size: 14px; font-weight: 600; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .email-card-meta { font-size: 12px; color: #777; margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .email-card-meta { font-size: 12px; color: #111; margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
     .load-more-wrap { text-align: center; margin: 14px 0 4px; }
     .load-more-wrap button { width: 100%; max-width: 320px; }
@@ -793,9 +881,10 @@ function adminPage() {
       .tabs-wrap { margin: -12px -12px 10px; padding: 10px 12px; }
       .tabs-wrap h2 { font-size: 18px; margin: 0 0 8px; }
       .tab { font-size: 13px; padding: 10px 8px; }
-      .toolbar input[type=search] { max-width: none; flex: 1 1 100%; }
+      .search-wrap { flex: 1 1 100%; max-width: none; }
       .toolbar select { flex: 1; }
-      .emails-toolbar button { flex: 1 1 calc(50% - 4px); }
+      .toolbar .action.sm { flex: 0 0 auto; }
+      .toolbar.emails-toolbar button.action.sm { flex: 1 1 calc(50% - 4px); width: calc(50% - 4px); }
       .table-wrap { display: none; }
       .cards { display: block; }
     }
@@ -814,7 +903,18 @@ function adminPage() {
 
   <div id="app">
     <div class="tabs-wrap">
-      <h2>MareSafe Admin</h2>
+      <h2>
+        <svg class="brand" viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M260 512C399.176 512 512 399.176 512 260C512 120.824 399.176 8 260 8C120.824 8 8 120.824 8 260C8 399.176 120.824 512 260 512Z" fill="white" stroke="#C82929" stroke-width="20"/>
+          <path d="M290 8H230V96H290V8Z" fill="#C82929"/>
+          <path d="M290 424H230V512H290V424Z" fill="#C82929"/>
+          <path d="M96 230H8V290H96V230Z" fill="#C82929"/>
+          <path d="M512 230H424V290H512V230Z" fill="#C82929"/>
+          <path d="M260 430C353.888 430 430 353.888 430 260C430 166.112 353.888 90 260 90C166.112 90 90 166.112 90 260C90 353.888 166.112 430 260 430Z" fill="#F0F6FF" stroke="#C82929" stroke-width="20"/>
+          <path d="M282.4 325C282.4 331.133 282.4 336.067 282.4 339.8C282.4 343.267 282.533 345.667 282.8 347C283.6 355 284.8 359 286.4 359C286.133 359 286.8 358.867 288.4 358.6C290 358.333 292 357.933 294.4 357.4L294 357.8C294.8 357.533 295.733 357.267 296.8 357C298.133 356.733 299.733 356.6 301.6 356.6C315.467 356.6 322.4 362.467 322.4 374.2C322.4 379.533 320.133 383.933 315.6 387.4C311.333 390.867 305.867 392.6 299.2 392.6C297.067 392.6 294.4 392.467 291.2 392.2C288 391.933 284.267 391.533 280 391C276 390.467 272.533 390.067 269.6 389.8C266.667 389.267 264.267 389 262.4 389C259.467 389 256.133 389.133 252.4 389.4C248.933 389.667 245.2 390.067 241.2 390.6C236.4 391.133 232.267 391.533 228.8 391.8C225.6 392.333 222.933 392.6 220.8 392.6C206.4 392.6 199.2 386.467 199.2 374.2C199.2 362.467 205.733 356.6 218.8 356.6C219.333 356.6 220.8 356.733 223.2 357C225.867 357.267 228 357.533 229.6 357.8C231.467 358.333 232.933 358.6 234 358.6C235.067 358.6 235.867 358.6 236.4 358.6C238.533 358.6 240 352.2 240.8 339.4V243C240 230.467 238.4 224.2 236 224.2C235.467 224.2 234.533 224.333 233.2 224.6C231.867 224.867 230.267 225.267 228.4 225.8C227.067 226.333 225.467 226.733 223.6 227C222 227 220.667 227 219.6 227C206 227 199.2 221.133 199.2 209.4C199.2 197.4 206.933 191.4 222.4 191.4C225.333 191.4 227.733 191.4 229.6 191.4C231.467 191.4 232.8 191.533 233.6 191.8C237.333 192.333 240.4 192.733 242.8 193C245.467 193.267 247.2 193.4 248 193.4C248.533 193.4 249.6 193.4 251.2 193.4C253.067 193.133 254.8 192.867 256.4 192.6L266.8 191.4C278.267 191.4 284 198.067 284 211.4V217C283.733 218.067 283.6 219 283.6 219.8C283.6 220.333 283.6 220.733 283.6 221C283.333 221.8 283.2 225.533 283.2 232.2C283.2 234.067 283.067 236.067 282.8 238.2C282.8 240.067 282.8 242.067 282.8 244.2C282.533 249.533 282.4 254.867 282.4 260.2C282.4 265.267 282.4 270.467 282.4 275.8V325ZM256 181.8C248.267 181.8 241.733 179.267 236.4 174.2C231.067 169.133 228.4 162.867 228.4 155.4C228.4 147.933 231.067 141.8 236.4 137C241.733 131.933 248.267 129.4 256 129.4C263.733 129.4 270.267 131.933 275.6 137C281.2 141.8 284 147.933 284 155.4C284 162.867 281.2 169.133 275.6 174.2C270.267 179.267 263.733 181.8 256 181.8Z" fill="#1B3A5C"/>
+        </svg>
+        MareSafe Admin
+      </h2>
       <div class="tabs">
         <button class="tab active" onclick="showTab('issued')">Codes</button>
         <button class="tab" onclick="showTab('generate')">Generate</button>
@@ -824,14 +924,17 @@ function adminPage() {
 
     <div id="panel-issued" class="panel active">
       <div class="toolbar">
-        <input type="search" id="email-search" placeholder="Filter by email…" oninput="onCodeFilterChange()" />
+        <div class="search-wrap" id="search-wrap">
+          <input type="search" id="email-search" placeholder="filter by code or email…" oninput="onCodeFilterChange()" />
+          <button type="button" class="clear-search" onclick="clearCodeFilter()" aria-label="clear filter">✕</button>
+        </div>
         <select id="status-filter" onchange="onCodeFilterChange()">
-          <option value="all">All statuses</option>
-          <option value="active" selected>Active</option>
-          <option value="depleted">Depleted</option>
-          <option value="revoked">Revoked</option>
+          <option value="all">all statuses</option>
+          <option value="active" selected>active</option>
+          <option value="depleted">depleted</option>
+          <option value="revoked">revoked</option>
         </select>
-        <button class="action sm" onclick="loadCodes()">↻ Refresh</button>
+        <button class="action sm" onclick="loadCodes()">↻ refresh</button>
       </div>
       <div id="codes-meta"></div>
       <div class="table-wrap">
@@ -921,6 +1024,30 @@ function adminPage() {
       })[ch])
     }
 
+    const COPY_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'
+    const CHECK_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+
+    function copyBtn(code) {
+      return \`<button type="button" class="copy-btn copy-action" data-code="\${escapeHtml(code)}" aria-label="Copy code">\${COPY_ICON}</button>\`
+    }
+
+    async function handleCopyClick(btn) {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.code)
+        btn.classList.add("copied")
+        btn.innerHTML = CHECK_ICON
+        setTimeout(() => {
+          btn.classList.remove("copied")
+          btn.innerHTML = COPY_ICON
+        }, 1200)
+      } catch {}
+    }
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".copy-action")
+      if (btn) { e.preventDefault(); handleCopyClick(btn) }
+    })
+
     document.getElementById("gate-mc").addEventListener("keydown", e => {
       if (e.key === "Enter") unlock()
     })
@@ -982,24 +1109,11 @@ function adminPage() {
         const note = data.emailSent ? "email sent" : "no email sent"
         const codeAttr = escapeHtml(data.code)
         document.getElementById("result").innerHTML =
-          \`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-             <span>\${escapeHtml(data.code)}</span>
-             <button type="button" id="copy-code-btn" class="action sm" data-code="\${codeAttr}" style="letter-spacing:0;font-weight:600">Copy</button>
+          \`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+             <span>\${escapeHtml(data.code)}</span>\${copyBtn(data.code)}
            </div>
            <div style="font-size:13px;font-weight:400;color:#555;letter-spacing:0;margin-top:6px">\${escapeHtml(note)}</div>\`
-        document.getElementById("copy-code-btn").addEventListener("click", (ev) => copyCode(ev.currentTarget.dataset.code, ev.currentTarget))
       } else document.getElementById("gen-error").textContent = data.error || "Something went wrong."
-    }
-
-    async function copyCode(code, btn) {
-      try {
-        await navigator.clipboard.writeText(code)
-        const original = btn.textContent
-        btn.textContent = "Copied!"
-        setTimeout(() => { btn.textContent = original }, 1500)
-      } catch {
-        btn.textContent = "Failed"
-      }
     }
 
     async function loadCodes() {
@@ -1018,7 +1132,16 @@ function adminPage() {
 
     function onCodeFilterChange() {
       _codesShown = PAGE_SIZE
+      const input = document.getElementById("email-search")
+      document.getElementById("search-wrap").classList.toggle("has-value", input.value.length > 0)
       renderCodes()
+    }
+
+    function clearCodeFilter() {
+      const input = document.getElementById("email-search")
+      input.value = ""
+      input.focus()
+      onCodeFilterChange()
     }
 
     function loadMoreCodes() {
@@ -1027,10 +1150,14 @@ function adminPage() {
     }
 
     function filteredCodes() {
-      const q = document.getElementById("email-search").value.toLowerCase()
+      const q = document.getElementById("email-search").value.toLowerCase().trim()
       const sf = document.getElementById("status-filter").value
       return _allCodes.filter(c => {
-        if (q && !(c.email || "").toLowerCase().includes(q)) return false
+        if (q) {
+          const email = (c.email || "").toLowerCase()
+          const code = (c.code || "").toLowerCase()
+          if (!email.includes(q) && !code.includes(q)) return false
+        }
         if (sf !== "all" && (c.status || "active") !== sf) return false
         return true
       })
@@ -1045,7 +1172,9 @@ function adminPage() {
       const isUnlimited = !!c.unlimited
       const tr = c.tokens_remaining
       const tt = c.tokens_total || "?"
-      const cls = isUnlimited ? "badge-green" : tr === 0 ? "badge-red" : tr === 1 ? "badge-orange" : "badge-green"
+      const cls = isUnlimited || tr === tt ? "badge-green"
+        : tr === 0 ? "badge-red"
+        : "badge-orange"
       const label = isUnlimited ? "∞" : \`\${tr} / \${tt}\`
       return \`<span class="badge \${cls}">\${label}</span>\`
     }
@@ -1073,7 +1202,7 @@ function adminPage() {
           : ""
         const emailLower = (c.email || "").toLowerCase()
         return \`<tr>
-          <td style="font-family:monospace;font-weight:700">\${escapeHtml(c.code)}</td>
+          <td style="font-family:monospace;font-weight:700;white-space:nowrap">\${escapeHtml(c.code)}\${copyBtn(c.code)}</td>
           <td>\${emailLower ? escapeHtml(emailLower) : "—"}</td>
           <td><span class="badge \${srcClass}">\${escapeHtml(c.source || "?")}</span></td>
           <td>\${fmtDt(c.created_at)}</td>
@@ -1098,25 +1227,25 @@ function adminPage() {
           : (emailLower ? \`<span class="badge badge-green">Mail sent</span>\` : "")
         const usageBtn = useCount === 0
           ? ""
-          : \`<button type="button" class="revoke action-usage" style="background:#1b3a5c" data-code="\${codeAttr}">\${useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
+          : \`<button type="button" class="revoke action-usage" style="background:#1b3a5c" data-code="\${codeAttr}">\${useCount > 99 ? "99+" : useCount} use\${useCount !== 1 ? "s" : ""}</button>\`
         const revokeBtn = st === "active"
           ? \`<button type="button" class="revoke action-revoke" data-code="\${codeAttr}">Revoke</button>\`
           : ""
-        const actions = (usageBtn || revokeBtn)
-          ? \`<div class="card-actions">\${usageBtn}\${revokeBtn}</div>\`
-          : ""
-        return \`<div class="card-row">
+        return \`<div class="card-row status-\${st}">
           <div class="card-line">
-            <span class="card-code">\${escapeHtml(c.code)}</span>
+            <span class="card-code">\${escapeHtml(c.code)}</span>\${copyBtn(c.code)}
             <span class="card-email">\${emailLower ? escapeHtml(emailLower) : "—"}</span>
           </div>
           <div class="card-line">
             \${statusBadge(st)} \${tokenBadge(c)}
             <span class="badge \${srcClass}">\${escapeHtml(c.source || "?")}</span>
             \${mailBadge}
+            \${usageBtn}
           </div>
-          <div class="card-line"><span class="card-meta">Created \${fmtDt(c.created_at)}</span></div>
-          \${actions}
+          <div class="card-line">
+            <span class="card-meta">Created \${fmtDt(c.created_at)}</span>
+            \${revokeBtn}
+          </div>
         </div>\`
       }).join("")
 
