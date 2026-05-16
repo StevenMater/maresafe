@@ -781,6 +781,7 @@ function adminPage() {
     html, body { background: #fbfcfd; }
     body { font-family: system-ui, sans-serif; max-width: 960px; margin: 32px auto; padding: 0 20px; color: #111; -webkit-text-size-adjust: 100%; }
     input, select, textarea { color: #111; -webkit-text-fill-color: #111; }
+    input::placeholder, textarea::placeholder { color: #999; -webkit-text-fill-color: #999; opacity: 1; }
     h2 { color: var(--navy); margin: 0 0 16px; font-size: 22px; }
     label { display: block; font-size: 13px; margin-bottom: 4px; color: #111; }
     input[type=text], input[type=email], input[type=password], input[type=number], input[type=search], select, textarea {
@@ -922,7 +923,7 @@ function adminPage() {
   <div id="app">
     <div class="tabs-wrap">
       <h2>
-        <svg class="brand" viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="brand" viewBox="-12 -12 544 544" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M260 512C399.176 512 512 399.176 512 260C512 120.824 399.176 8 260 8C120.824 8 8 120.824 8 260C8 399.176 120.824 512 260 512Z" fill="white" stroke="#C82929" stroke-width="20"/>
           <path d="M290 8H230V96H290V8Z" fill="#C82929"/>
           <path d="M290 424H230V512H290V424Z" fill="#C82929"/>
